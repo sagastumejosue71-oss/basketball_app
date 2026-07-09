@@ -6,6 +6,19 @@ date_default_timezone_set('America/Guatemala');
 define('BASE_DIR', dirname(__DIR__));
 define('DATA_DIR', BASE_DIR . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR);
 
+// Carga variables de entorno desde .env en local (en Render, DATABASE_URL ya viene como variable de entorno real)
+$archivoEnv = BASE_DIR . DIRECTORY_SEPARATOR . '.env';
+if (getenv('DATABASE_URL') === false && file_exists($archivoEnv)) {
+    foreach (file($archivoEnv, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $linea) {
+        $linea = trim($linea);
+        if ($linea === '' || str_starts_with($linea, '#') || !str_contains($linea, '=')) {
+            continue;
+        }
+        [$clave, $valor] = explode('=', $linea, 2);
+        putenv(trim($clave) . '=' . trim($valor));
+    }
+}
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }

@@ -2,10 +2,11 @@
 declare(strict_types=1);
 
 /**
- * Procesa la subida opcional de una imagen (logo/escudo/foto).
- * Devuelve la ruta relativa pública (para guardar en JSON) o null si no se subió nada válido.
+ * Procesa la subida opcional de una imagen (logo/escudo/foto) y la guarda en la base de datos
+ * (no en disco: el hosting gratuito no garantiza almacenamiento persistente en el sistema de archivos).
+ * Devuelve el id de la imagen guardada (para guardar en la columna logo/foto) o null si no se subió nada válido.
  */
-function manejar_subida_imagen(string $campo, string $subcarpeta): ?string
+function manejar_subida_imagen(string $campo, string $subcarpeta = ''): ?string
 {
     if (empty($_FILES[$campo]) || $_FILES[$campo]['error'] === UPLOAD_ERR_NO_FILE) {
         return null;
@@ -14,15 +15,10 @@ function manejar_subida_imagen(string $campo, string $subcarpeta): ?string
         return null;
     }
 
-    $permitidos = [
-        'image/png' => 'png',
-        'image/jpeg' => 'jpg',
-        'image/webp' => 'webp',
-        'image/svg+xml' => 'svg',
-    ];
+    $permitidos = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'];
 
     $tipoDetectado = mime_content_type($_FILES[$campo]['tmp_name']);
-    if (!isset($permitidos[$tipoDetectado])) {
+    if (!in_array($tipoDetectado, $permitidos, true)) {
         return null;
     }
 
@@ -30,31 +26,32 @@ function manejar_subida_imagen(string $campo, string $subcarpeta): ?string
         return null;
     }
 
-    $extension = $permitidos[$tipoDetectado];
-    $nombreArchivo = bin2hex(random_bytes(8)) . '.' . $extension;
-    $carpetaDestino = BASE_DIR . '/assets/img/' . $subcarpeta . '/';
-    if (!is_dir($carpetaDestino)) {
-        mkdir($carpetaDestino, 0777, true);
-    }
-
-    $rutaDestino = $carpetaDestino . $nombreArchivo;
-    if (!move_uploaded_file($_FILES[$campo]['tmp_name'], $rutaDestino)) {
+    $datosImagen = file_get_contents($_FILES[$campo]['tmp_name']);
+    if ($datosImagen === false) {
         return null;
     }
 
-    return 'assets/img/' . $subcarpeta . '/' . $nombreArchivo;
+    $pdo = db_conexion();
+    $stmt = $pdo->prepare('INSERT INTO imagenes (mime, datos) VALUES (:mime, :datos) RETURNING id');
+    $stmt->bindValue(':mime', $tipoDetectado, PDO::PARAM_STR);
+    $stmt->bindValue(':datos', $datosImagen, PDO::PARAM_LOB);
+    $stmt->execute();
+
+    $id = $stmt->fetchColumn();
+    return $id !== false ? (string) $id : null;
 }
 
 /**
- * Elimina un archivo de imagen previamente subido (al reemplazar o borrar un registro).
+ * Elimina una imagen previamente subida (al reemplazar o borrar un registro).
+ * $referencia es el id guardado en la columna logo/foto (ver manejar_subida_imagen).
  */
-function eliminar_imagen(?string $rutaRelativa): void
+function eliminar_imagen(?string $referencia): void
 {
-    if (empty($rutaRelativa)) {
+    if (empty($referencia) || !ctype_digit($referencia)) {
         return;
     }
-    $rutaAbsoluta = BASE_DIR . '/' . ltrim($rutaRelativa, '/');
-    if (is_file($rutaAbsoluta)) {
-        @unlink($rutaAbsoluta);
-    }
+    $pdo = db_conexion();
+    $stmt = $pdo->prepare('DELETE FROM imagenes WHERE id = :id');
+    $stmt->bindValue(':id', (int) $referencia, PDO::PARAM_INT);
+    $stmt->execute();
 }

@@ -1,0 +1,6 @@
+.git
+.claude
+.env
+*.md
+schema.sql
+scripts

@@ -60,7 +60,7 @@ require __DIR__ . '/includes/layout_top.php';
             <div class="col-lg-5">
                 <div class="card-suave p-4 text-center h-100">
                     <?php if (!empty($organizador['foto'])): ?>
-                        <img src="<?= e(url($organizador['foto'])) ?>" alt="<?= e($organizador['nombre']) ?>" class="rounded-circle mx-auto mb-3" width="120" height="120" style="object-fit:cover;">
+                        <img src="<?= e(url_imagen($organizador['foto'])) ?>" alt="<?= e($organizador['nombre']) ?>" class="rounded-circle mx-auto mb-3" width="120" height="120" style="object-fit:cover;">
                     <?php else: ?>
                         <div class="avatar-organizador mx-auto mb-3" style="width:120px;height:120px;font-size:2.4rem;"><?= e(iniciales_de($organizador['nombre'])) ?></div>
                     <?php endif; ?>

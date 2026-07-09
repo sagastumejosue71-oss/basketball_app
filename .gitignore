@@ -1,6 +1,9 @@
 # Configuración local de herramientas (no forma parte de la app)
 .claude/
 
+# Credenciales locales (conexión a la base de datos). En Render se configuran como variables de entorno reales.
+.env
+
 # Archivos del sistema operativo / editores
 .DS_Store
 Thumbs.db

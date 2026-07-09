@@ -2,21 +2,28 @@
 
 Plataforma de gestión y sitio público para un campeonato femenino de basketball: tabla de posiciones, calendario de encuentros, perfiles de equipo, patrocinadores, perfil del organizador con comentarios anónimos, y un panel de administración completo.
 
-No usa base de datos: todos los datos se guardan en archivos JSON dentro de `data/`, con bloqueo de archivo para evitar corrupción por escrituras simultáneas.
+Los datos (equipos, partidos, patrocinadores, comentarios, torneo, organizador) se guardan en una base de datos **PostgreSQL**. Las imágenes subidas (escudos, logos, foto de perfil) se guardan como datos binarios dentro de la misma base de datos — así todo persiste correctamente incluso en hostings sin disco persistente como Render.
 
 ## Requisitos
 
 - PHP **8.1 o superior** (usa `match`, `str_starts_with`, tipado estricto)
-- Extensión `fileinfo` habilitada (para validar imágenes subidas) — viene activada por defecto en la mayoría de hostings
-- Que el proceso de PHP pueda **escribir archivos** en `data/` y `assets/img/` (importante: hostings "serverless" como Vercel, Netlify o el plan gratuito de Render/Railway **no sirven**, porque su disco es efímero y se borrarían los datos)
+- Extensión `pdo_pgsql` habilitada
+- Una base de datos PostgreSQL accesible por internet (ver sección Neon abajo)
 
 ## Correr en local
 
-```
-php -S localhost:8000
-```
-
-Y abre `http://localhost:8000`.
+1. Copia `.env.example` a `.env` y pon tu connection string real de PostgreSQL:
+   ```
+   DATABASE_URL=postgresql://usuario:password@host.neon.tech/basedatos?sslmode=require
+   ```
+2. Crea las tablas y (opcionalmente) migra los datos de ejemplo:
+   ```
+   php scripts/migrar_json_a_postgres.php
+   ```
+3. Levanta el servidor:
+   ```
+   php -S localhost:8000
+   ```
 
 ## Acceso al panel del organizador
 
@@ -29,25 +36,37 @@ Y abre `http://localhost:8000`.
 ## Estructura del proyecto
 
 ```
-data/                   Archivos JSON (equipos, partidos, patrocinadores, torneo, organizador, comentarios)
+schema.sql               Esquema de la base de datos PostgreSQL
+scripts/                 Script de migración (JSON antiguo → PostgreSQL)
 includes/                Lógica compartida (auth, acceso a datos, cálculo de tabla, helpers, filtro de groserías)
-assets/                  CSS, JS e imágenes subidas
+assets/                  CSS y JS (las imágenes ya no se guardan aquí, van en la base de datos)
 admin/                   Panel del organizador (protegido por sesión)
-*.php (raíz)             Páginas públicas del sitio
+imagen.php               Sirve las imágenes guardadas en la base de datos
+*.php (raíz)              Páginas públicas del sitio
 ```
 
-## Desplegar en un hosting gratuito de PHP (tipo InfinityFree)
+## Base de datos gratuita: Neon
 
-1. Crea la cuenta y el sitio en tu proveedor de hosting gratuito.
-2. En el panel de control, selecciona **PHP 8.1 o superior** como versión de PHP del sitio (por defecto suelen traer una versión vieja).
-3. Sube **todo el contenido** de este proyecto a la carpeta raíz web del hosting (normalmente `htdocs` o `public_html`) vía FTP o el administrador de archivos. `index.php` debe quedar directamente dentro de esa carpeta, no en una subcarpeta.
-4. Verifica permisos de escritura en `data/` y `assets/img/` (y sus subcarpetas `equipos/`, `patrocinadores/`, `torneo/`, `organizador/`). Si subir un logo o guardar un resultado falla, prueba poniendo esas carpetas en permisos `755`; si el hosting lo exige, `777`.
-5. Entra a `tu-sitio.com/login.php` y **cambia la contraseña por defecto** de inmediato.
-6. Prueba crear un equipo o capturar un resultado para confirmar que la escritura a disco funciona en ese hosting.
+1. Crea una cuenta gratis en [neon.tech](https://neon.tech) y un proyecto nuevo.
+2. Copia el **Connection string** que te dan (empieza con `postgresql://...`) — lo vas a necesitar tanto en local (`.env`) como en Render.
+3. El plan gratuito de Neon no tiene fecha de expiración fija (a diferencia de la Postgres gratuita de Render, que se borra a los 90 días); solo se "duerme" tras un rato sin uso y despierta sola con la siguiente visita.
 
-### Importante sobre actualizaciones futuras
+## Desplegar en Render (gratis)
 
-Este proyecto no se despliega automáticamente desde GitHub — subir cambios a GitHub no actualiza el sitio en línea por sí solo. Cuando quieras subir una actualización de código (nuevas funciones, corrección de bugs) al hosting:
+Este proyecto incluye un `Dockerfile` porque Render no ejecuta PHP de forma nativa.
 
-- **Haz un respaldo de la carpeta `data/` y `assets/img/` del servidor antes de sobrescribir archivos**, para no perder los equipos, partidos y comentarios reales que el organizador ya haya cargado.
-- Sube solo los archivos de código que cambiaron, o si subes todo, restaura después la carpeta `data/` desde tu respaldo.
+1. En [render.com](https://render.com), crea una cuenta (puedes usar tu GitHub) y conecta el repositorio `basketball_app`.
+2. **New > Web Service**, selecciona el repo, y Render detectará el `Dockerfile` automáticamente (Runtime: Docker).
+3. Plan: **Free**.
+4. En "Environment", agrega la variable:
+   - `DATABASE_URL` = tu connection string de Neon
+5. Deploy. La primera vez que despliegues, entra una sola vez por SSH/Shell de Render (o corre el script en local apuntando a la misma base) para ejecutar:
+   ```
+   php scripts/migrar_json_a_postgres.php
+   ```
+   Esto crea las tablas. Si ya lo corriste en local contra la misma base de datos de Neon, no hace falta repetirlo.
+6. Entra a `https://tu-servicio.onrender.com/login.php` y **cambia la contraseña por defecto**.
+
+### Nota sobre el plan gratuito de Render
+
+El servicio se "duerme" tras ~15 minutos sin visitas y tarda unos segundos en despertar con la siguiente visita — normal en el plan gratuito, no es un error.

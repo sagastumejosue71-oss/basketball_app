@@ -64,7 +64,7 @@ require __DIR__ . '/includes/admin_layout_top.php';
             <input type="hidden" name="accion" value="datos">
             <div class="d-flex align-items-center gap-3 mb-4">
                 <?php if (!empty($organizador['foto'])): ?>
-                    <img src="<?= e(url($organizador['foto'])) ?>" class="rounded-circle" width="90" height="90" style="object-fit:cover;">
+                    <img src="<?= e(url_imagen($organizador['foto'])) ?>" class="rounded-circle" width="90" height="90" style="object-fit:cover;">
                 <?php else: ?>
                     <div class="avatar-organizador"><?= e(iniciales_de($organizador['nombre'])) ?></div>
                 <?php endif; ?>

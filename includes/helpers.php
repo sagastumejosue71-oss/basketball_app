@@ -47,12 +47,21 @@ SVG;
 }
 
 /**
+ * Las columnas logo/foto guardan el id de la imagen en la tabla `imagenes` (ver includes/upload.php),
+ * no una ruta de archivo. Esta función arma la URL pública que la sirve.
+ */
+function url_imagen(string $idImagen): string
+{
+    return url('imagen.php?id=' . rawurlencode($idImagen));
+}
+
+/**
  * Devuelve el HTML (img o svg inline) para el logo de un equipo, usando el escudo generado si no hay logo propio.
  */
 function logo_equipo(array $equipo, int $size = 96, string $clase = ''): string
 {
     if (!empty($equipo['logo'])) {
-        $src = e(url($equipo['logo']));
+        $src = e(url_imagen((string) $equipo['logo']));
         $alt = e($equipo['nombre'] ?? '');
         return "<img src=\"{$src}\" alt=\"{$alt}\" width=\"{$size}\" height=\"{$size}\" class=\"{$clase}\" style=\"object-fit:cover;border-radius:50%;\">";
     }
@@ -67,7 +76,7 @@ function logo_equipo(array $equipo, int $size = 96, string $clase = ''): string
 function badge_patrocinador(array $patrocinador): string
 {
     if (!empty($patrocinador['logo'])) {
-        $src = e(url($patrocinador['logo']));
+        $src = e(url_imagen((string) $patrocinador['logo']));
         $alt = e($patrocinador['nombre'] ?? '');
         return "<img src=\"{$src}\" alt=\"{$alt}\" class=\"sponsor-logo-img\" loading=\"lazy\">";
     }

@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: copa-estrellas
+    runtime: docker
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        sync: false
