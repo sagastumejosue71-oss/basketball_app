@@ -50,7 +50,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             redirigir_con_mensaje(url('admin/equipos.php'), 'error', 'El nombre del equipo es obligatorio.');
         }
 
-        $logoSubido = manejar_subida_imagen('logo', 'equipos');
+        try {
+            $logoSubido = manejar_subida_imagen('logo', 'equipos');
+        } catch (RuntimeException $e) {
+            redirigir_con_mensaje(url('admin/equipos.php'), 'error', $e->getMessage());
+        }
 
         if ($id > 0) {
             foreach ($equipos as &$e) {

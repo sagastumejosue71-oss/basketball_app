@@ -42,7 +42,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             redirigir_con_mensaje(url('admin/patrocinadores.php'), 'error', 'El nombre del patrocinador es obligatorio.');
         }
 
-        $logoSubido = manejar_subida_imagen('logo', 'patrocinadores');
+        try {
+            $logoSubido = manejar_subida_imagen('logo', 'patrocinadores');
+        } catch (RuntimeException $e) {
+            redirigir_con_mensaje(url('admin/patrocinadores.php'), 'error', $e->getMessage());
+        }
 
         if ($id > 0) {
             foreach ($patrocinadores as &$p) {

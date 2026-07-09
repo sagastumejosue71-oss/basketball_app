@@ -15,7 +15,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_validar();
 
     if (($_POST['accion'] ?? '') === 'datos') {
-        $fotoSubida = manejar_subida_imagen('foto', 'organizador');
+        try {
+            $fotoSubida = manejar_subida_imagen('foto', 'organizador');
+        } catch (RuntimeException $e) {
+            redirigir_con_mensaje(url('admin/perfil.php'), 'error', $e->getMessage());
+        }
         $organizador['nombre'] = trim((string) $_POST['nombre']);
         $organizador['cargo'] = trim((string) $_POST['cargo']);
         $organizador['email'] = trim((string) $_POST['email']);

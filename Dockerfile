@@ -5,6 +5,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends libpq-dev \
     && docker-php-ext-install pdo pdo_pgsql fileinfo \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# Por defecto PHP solo acepta subidas de 2MB, pero una foto tomada con la cámara
+# de un celular fácilmente pesa varios MB más que eso.
+RUN { \
+        echo 'upload_max_filesize = 12M'; \
+        echo 'post_max_size = 13M'; \
+    } > /usr/local/etc/php/conf.d/uploads.ini
+
 COPY . /var/www/html/
 WORKDIR /var/www/html
 

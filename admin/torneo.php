@@ -13,7 +13,11 @@ $torneo = db_leer('torneo');
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_validar();
 
-    $logoSubido = manejar_subida_imagen('logo', 'torneo');
+    try {
+        $logoSubido = manejar_subida_imagen('logo', 'torneo');
+    } catch (RuntimeException $e) {
+        redirigir_con_mensaje(url('admin/torneo.php'), 'error', $e->getMessage());
+    }
 
     $datos = [
         'nombre' => trim((string) $_POST['nombre']),
