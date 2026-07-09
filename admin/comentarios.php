@@ -10,6 +10,8 @@ auth_requerir();
 $comentarios = db_leer('comentarios');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_validar();
+
     $id = (int) ($_POST['id'] ?? 0);
 
     if (($_POST['accion'] ?? '') === 'marcar_leido') {
@@ -63,12 +65,14 @@ require __DIR__ . '/includes/admin_layout_top.php';
         <div class="d-flex gap-2">
             <?php if (empty($c['leido'])): ?>
             <form method="post">
+                <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
                 <input type="hidden" name="accion" value="marcar_leido">
                 <input type="hidden" name="id" value="<?= $c['id'] ?>">
                 <button type="submit" class="btn btn-sm btn-outline-secondary"><i class="bi bi-check2 me-1"></i>Marcar como leído</button>
             </form>
             <?php endif; ?>
             <form method="post" data-confirm="¿Eliminar este comentario?">
+                <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
                 <input type="hidden" name="accion" value="eliminar">
                 <input type="hidden" name="id" value="<?= $c['id'] ?>">
                 <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash me-1"></i>Eliminar</button>

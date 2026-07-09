@@ -12,16 +12,24 @@ if (auth_check()) {
 
 $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $usuario = trim((string) ($_POST['usuario'] ?? ''));
-    $password = (string) ($_POST['password'] ?? '');
+    $ip = obtener_ip_cliente();
 
-    if ($usuario === '' || $password === '') {
-        $error = 'Ingresa tu usuario y contraseña.';
-    } elseif (auth_intentar_login($usuario, $password)) {
-        header('Location: ' . url('admin/index.php'));
-        exit;
+    if (auth_ip_bloqueada($ip)) {
+        $error = 'Demasiados intentos. Espera un minuto antes de volver a intentar.';
     } else {
-        $error = 'Usuario o contraseña incorrectos.';
+        auth_registrar_intento($ip);
+
+        $usuario = trim((string) ($_POST['usuario'] ?? ''));
+        $password = (string) ($_POST['password'] ?? '');
+
+        if ($usuario === '' || $password === '') {
+            $error = 'Ingresa tu usuario y contraseña.';
+        } elseif (auth_intentar_login($usuario, $password)) {
+            header('Location: ' . url('admin/index.php'));
+            exit;
+        } else {
+            $error = 'Usuario o contraseña incorrectos.';
+        }
     }
 }
 

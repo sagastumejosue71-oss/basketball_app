@@ -11,6 +11,8 @@ auth_requerir();
 $torneo = db_leer('torneo');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_validar();
+
     $logoSubido = manejar_subida_imagen('logo', 'torneo');
 
     $datos = [
@@ -46,6 +48,7 @@ require __DIR__ . '/includes/admin_layout_top.php';
 <h3 class="mb-4">Configuración del Torneo</h3>
 
 <form method="post" enctype="multipart/form-data" class="card-suave p-4" style="max-width:820px;">
+    <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
     <div class="row g-3">
         <div class="col-md-6">
             <label class="form-label small fw-semibold">Nombre del torneo</label>
@@ -101,7 +104,7 @@ require __DIR__ . '/includes/admin_layout_top.php';
         </div>
         <div class="col-12">
             <label class="form-label small fw-semibold">Logo del torneo (opcional)</label>
-            <input type="file" name="logo" class="form-control" accept=".png,.jpg,.jpeg,.webp,.svg">
+            <input type="file" name="logo" class="form-control" accept=".png,.jpg,.jpeg,.webp">
             <div class="form-text">Si no subes uno, se usará el ícono de balón generado automáticamente.</div>
         </div>
     </div>

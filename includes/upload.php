@@ -15,7 +15,9 @@ function manejar_subida_imagen(string $campo, string $subcarpeta = ''): ?string
         return null;
     }
 
-    $permitidos = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'];
+    // SVG queda excluido a propósito: puede llevar <script> embebido y ejecutarse
+    // si el navegador lo abre directo (riesgo de XSS almacenado).
+    $permitidos = ['image/png', 'image/jpeg', 'image/webp'];
 
     $tipoDetectado = mime_content_type($_FILES[$campo]['tmp_name']);
     if (!in_array($tipoDetectado, $permitidos, true)) {

@@ -16,6 +16,8 @@ $idEditar = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 $itemEditar = $idEditar ? db_buscar_por_id($patrocinadores, $idEditar) : null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_validar();
+
     if (($_POST['accion'] ?? '') === 'eliminar') {
         $id = (int) $_POST['id'];
         $itemAEliminar = db_buscar_por_id($patrocinadores, $id);
@@ -80,6 +82,7 @@ require __DIR__ . '/includes/admin_layout_top.php';
     </div>
 
     <form method="post" enctype="multipart/form-data" class="card-suave p-4" style="max-width:680px;">
+        <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
         <input type="hidden" name="accion" value="guardar">
         <input type="hidden" name="id" value="<?= $itemEditar['id'] ?? 0 ?>">
 
@@ -106,7 +109,7 @@ require __DIR__ . '/includes/admin_layout_top.php';
             </div>
             <div class="col-12">
                 <label class="form-label small fw-semibold">Logo (opcional)</label>
-                <input type="file" name="logo" class="form-control" accept=".png,.jpg,.jpeg,.webp,.svg">
+                <input type="file" name="logo" class="form-control" accept=".png,.jpg,.jpeg,.webp">
                 <div class="form-text">Si no subes uno, se mostrará el nombre como insignia de texto.</div>
             </div>
         </div>
@@ -138,6 +141,7 @@ require __DIR__ . '/includes/admin_layout_top.php';
                 <div class="d-flex flex-column gap-1">
                     <a href="<?= url('admin/patrocinadores.php?accion=editar&id=' . $p['id']) ?>" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
                     <form method="post" data-confirm="¿Eliminar a <?= e($p['nombre']) ?>?">
+                        <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
                         <input type="hidden" name="accion" value="eliminar">
                         <input type="hidden" name="id" value="<?= $p['id'] ?>">
                         <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>

@@ -19,9 +19,43 @@ if (getenv('DATABASE_URL') === false && file_exists($archivoEnv)) {
     }
 }
 
+// Render (y la mayoría de hostings con proxy) terminan el HTTPS antes de llegar a PHP;
+// hay que revisar X-Forwarded-Proto además de $_SERVER['HTTPS'] para detectarlo correctamente.
+$esHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+    || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
+
 if (session_status() === PHP_SESSION_NONE) {
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path' => '/',
+        'httponly' => true,
+        'samesite' => 'Lax',
+        'secure' => $esHttps,
+    ]);
     session_start();
 }
+
+// Cabeceras de seguridad básicas para todas las respuestas del sitio
+if (!headers_sent()) {
+    header('X-Content-Type-Options: nosniff');
+    header('X-Frame-Options: DENY');
+    header('Referrer-Policy: strict-origin-when-cross-origin');
+    header("Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com; script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com;");
+    if ($esHttps) {
+        header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
+    }
+}
+
+// Evita filtrar detalles internos (rutas, credenciales de conexión, stack traces) a los visitantes
+ini_set('display_errors', '0');
+set_exception_handler(function (Throwable $e): void {
+    error_log($e->getMessage() . ' en ' . $e->getFile() . ':' . $e->getLine());
+    if (!headers_sent()) {
+        http_response_code(500);
+    }
+    echo 'Ocurrió un error inesperado. Por favor intenta de nuevo más tarde.';
+    exit;
+});
 
 // Ruta base para generar enlaces correctamente sin importar la subcarpeta desde la que se sirva el sitio
 if (!defined('BASE_URL')) {

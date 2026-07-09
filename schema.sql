@@ -73,6 +73,14 @@ CREATE TABLE IF NOT EXISTS imagenes (
     creado_en TIMESTAMP NOT NULL DEFAULT now()
 );
 
+-- Registra cada intento de login (correcto o incorrecto) por IP, para limitar fuerza bruta.
+CREATE TABLE IF NOT EXISTS intentos_login (
+    id SERIAL PRIMARY KEY,
+    ip TEXT NOT NULL,
+    intentado_en TIMESTAMP NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_intentos_login_ip_fecha ON intentos_login (ip, intentado_en);
+
 CREATE TABLE IF NOT EXISTS organizador (
     id INTEGER PRIMARY KEY DEFAULT 1,
     usuario TEXT NOT NULL,

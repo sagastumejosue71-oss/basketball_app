@@ -12,6 +12,8 @@ $organizador = db_leer('organizador');
 $errores = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_validar();
+
     if (($_POST['accion'] ?? '') === 'datos') {
         $fotoSubida = manejar_subida_imagen('foto', 'organizador');
         $organizador['nombre'] = trim((string) $_POST['nombre']);
@@ -61,6 +63,7 @@ require __DIR__ . '/includes/admin_layout_top.php';
 <div class="row g-4">
     <div class="col-lg-7">
         <form method="post" enctype="multipart/form-data" class="card-suave p-4">
+            <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
             <input type="hidden" name="accion" value="datos">
             <div class="d-flex align-items-center gap-3 mb-4">
                 <?php if (!empty($organizador['foto'])): ?>
@@ -102,6 +105,7 @@ require __DIR__ . '/includes/admin_layout_top.php';
 
     <div class="col-lg-5">
         <form method="post" class="card-suave p-4">
+            <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
             <input type="hidden" name="accion" value="password">
             <h5 class="mb-3"><i class="bi bi-shield-lock me-2"></i>Cambiar contraseña</h5>
             <div class="mb-3">

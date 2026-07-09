@@ -14,6 +14,8 @@ $idEditar = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 $equipoEditar = $idEditar ? db_buscar_por_id($equipos, $idEditar) : null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_validar();
+
     if (($_POST['accion'] ?? '') === 'eliminar') {
         $id = (int) $_POST['id'];
         $equipoAEliminar = db_buscar_por_id($equipos, $id);
@@ -88,6 +90,7 @@ require __DIR__ . '/includes/admin_layout_top.php';
     </div>
 
     <form method="post" enctype="multipart/form-data" class="card-suave p-4" style="max-width:760px;">
+        <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
         <input type="hidden" name="accion" value="guardar">
         <input type="hidden" name="id" value="<?= $equipoEditar['id'] ?? 0 ?>">
 
@@ -126,7 +129,7 @@ require __DIR__ . '/includes/admin_layout_top.php';
             </div>
             <div class="col-12">
                 <label class="form-label small fw-semibold">Escudo / Logo (opcional)</label>
-                <input type="file" name="logo" class="form-control" accept=".png,.jpg,.jpeg,.webp,.svg">
+                <input type="file" name="logo" class="form-control" accept=".png,.jpg,.jpeg,.webp">
                 <div class="form-text">Si no subes uno, se generará un escudo automático con las iniciales y colores del equipo.</div>
                 <?php if (!empty($equipoEditar)): ?>
                 <div class="mt-2"><?= logo_equipo($equipoEditar, 64) ?></div>
@@ -159,6 +162,7 @@ require __DIR__ . '/includes/admin_layout_top.php';
                 <div class="d-flex flex-column gap-1">
                     <a href="<?= url('admin/equipos.php?accion=editar&id=' . $eq['id']) ?>" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
                     <form method="post" data-confirm="¿Eliminar a <?= e($eq['nombre']) ?>? Esta acción no se puede deshacer.">
+                        <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
                         <input type="hidden" name="accion" value="eliminar">
                         <input type="hidden" name="id" value="<?= $eq['id'] ?>">
                         <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
