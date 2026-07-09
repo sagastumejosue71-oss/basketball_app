@@ -8,7 +8,7 @@
                 </div>
                 <p class="small mb-3"><?= e($torneo['descripcion']) ?></p>
                 <?php if (!empty($torneo['instagram'])): ?>
-                <a href="<?= e($torneo['instagram']) ?>" target="_blank" rel="noopener" class="small"><i class="bi bi-instagram me-1"></i>Síguenos en Instagram</a>
+                <a href="<?= url_externa_segura($torneo['instagram']) ?>" target="_blank" rel="noopener" class="small"><i class="bi bi-instagram me-1"></i>Síguenos en Instagram</a>
                 <?php endif; ?>
             </div>
             <div class="col-lg-2 col-6">

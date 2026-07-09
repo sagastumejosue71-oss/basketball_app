@@ -15,7 +15,7 @@ declare(strict_types=1);
         <?php if (!empty($patrocOficiales)): ?>
         <div class="d-flex flex-wrap justify-content-center gap-4 mb-5">
             <?php foreach ($patrocOficiales as $p): ?>
-            <a href="<?= e($p['url'] ?: '#') ?>" target="_blank" rel="noopener" class="text-decoration-none">
+            <a href="<?= url_externa_segura($p['url']) ?>" target="_blank" rel="noopener" class="text-decoration-none">
                 <div class="sponsor-card nivel-oficial position-relative">
                     <span class="tier-pill oficial position-absolute top-0 start-50 translate-middle"><?= e(nivel_patrocinio_label($p['nivel'])) ?></span>
                     <?= badge_patrocinador($p) ?>
@@ -29,7 +29,7 @@ declare(strict_types=1);
         <div class="marquee-track-wrap mb-4">
             <div class="marquee-track">
                 <?php foreach (array_merge($patrocOro, $patrocOro) as $p): ?>
-                <a href="<?= e($p['url'] ?: '#') ?>" target="_blank" rel="noopener" class="text-decoration-none">
+                <a href="<?= url_externa_segura($p['url']) ?>" target="_blank" rel="noopener" class="text-decoration-none">
                     <div class="sponsor-card"><?= badge_patrocinador($p) ?></div>
                 </a>
                 <?php endforeach; ?>
@@ -41,7 +41,7 @@ declare(strict_types=1);
         <div class="marquee-track-wrap">
             <div class="marquee-track reversa">
                 <?php foreach (array_merge($patrocPlata, $patrocPlata) as $p): ?>
-                <a href="<?= e($p['url'] ?: '#') ?>" target="_blank" rel="noopener" class="text-decoration-none">
+                <a href="<?= url_externa_segura($p['url']) ?>" target="_blank" rel="noopener" class="text-decoration-none">
                     <div class="sponsor-card"><?= badge_patrocinador($p) ?></div>
                 </a>
                 <?php endforeach; ?>

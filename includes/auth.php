@@ -12,14 +12,20 @@ function auth_check(): bool
 }
 
 /**
- * IP real del visitante. Render (y la mayoría de hostings con proxy) entregan la IP
- * original en X-Forwarded-For; REMOTE_ADDR sería la IP interna del proxy.
+ * IP real del visitante detrás del proxy de Render.
+ *
+ * X-Forwarded-For es una lista que cada proxy en el camino va completando:
+ * "ip_dicha_por_el_cliente, ip_vista_por_el_siguiente_proxy, ...". El primer valor
+ * lo puede inventar cualquiera con curl -H, así que NO sirve para bloquear fuerza
+ * bruta. El único valor confiable es el ÚLTIMO: el que Render agregó al recibir
+ * la conexión real, que el cliente no puede falsificar.
  */
 function obtener_ip_cliente(): string
 {
     $reenviada = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? '';
     if ($reenviada !== '') {
-        $ip = trim(explode(',', $reenviada)[0]);
+        $partes = array_map('trim', explode(',', $reenviada));
+        $ip = end($partes);
         if (filter_var($ip, FILTER_VALIDATE_IP)) {
             return $ip;
         }

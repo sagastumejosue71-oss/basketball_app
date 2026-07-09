@@ -6,6 +6,24 @@ function e(?string $valor): string
     return htmlspecialchars($valor ?? '', ENT_QUOTES, 'UTF-8');
 }
 
+/**
+ * Sanea una URL externa (patrocinador, Instagram, etc.) antes de usarla en un href.
+ * Solo permite http/https; cualquier otro esquema (javascript:, data:, etc.) se descarta,
+ * ya que un enlace así podría ejecutar código si alguien le da clic.
+ */
+function url_externa_segura(?string $url): string
+{
+    $url = trim((string) $url);
+    if ($url === '') {
+        return '#';
+    }
+    $esquema = parse_url($url, PHP_URL_SCHEME);
+    if ($esquema !== null && !in_array(strtolower($esquema), ['http', 'https'], true)) {
+        return '#';
+    }
+    return e($url);
+}
+
 function iniciales_de(string $nombre): string
 {
     $palabras = preg_split('/\s+/', trim($nombre));
