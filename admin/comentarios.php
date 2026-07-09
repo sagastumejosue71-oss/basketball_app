@@ -1,9 +1,11 @@
 <?php
 declare(strict_types=1);
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/helpers.php';
 
-$seccion_activa = 'comentarios';
-$titulo_pagina = 'Comentarios';
-require __DIR__ . '/includes/admin_layout_top.php';
+auth_requerir();
 
 $comentarios = db_leer('comentarios');
 
@@ -30,6 +32,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 usort($comentarios, fn($a, $b) => strcmp($b['fecha'], $a['fecha']));
 $noLeidos = count(array_filter($comentarios, fn($c) => empty($c['leido'])));
+
+$seccion_activa = 'comentarios';
+$titulo_pagina = 'Comentarios';
+require __DIR__ . '/includes/admin_layout_top.php';
 ?>
 
 <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">

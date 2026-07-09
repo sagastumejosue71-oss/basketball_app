@@ -1,10 +1,12 @@
 <?php
 declare(strict_types=1);
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/helpers.php';
 require_once __DIR__ . '/../includes/upload.php';
 
-$seccion_activa = 'equipos';
-$titulo_pagina = 'Equipos';
-require __DIR__ . '/includes/admin_layout_top.php';
+auth_requerir();
 
 $equipos = db_leer('equipos');
 $accion = $_GET['accion'] ?? 'lista';
@@ -73,6 +75,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         redirigir_con_mensaje(url('admin/equipos.php'), 'success', $mensaje);
     }
 }
+
+$seccion_activa = 'equipos';
+$titulo_pagina = 'Equipos';
+require __DIR__ . '/includes/admin_layout_top.php';
 ?>
 
 <?php if ($accion === 'nuevo' || $accion === 'editar'): ?>

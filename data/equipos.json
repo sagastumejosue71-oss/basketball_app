@@ -94,5 +94,17 @@
         "color_secundario": "#f72585",
         "logo": "",
         "descripcion": "El equipo más nuevo de la liga, construyendo identidad partido a partido."
+    },
+    {
+        "nombre": "fighthers",
+        "ciudad": "casillas",
+        "sede": "nueva santa rosa",
+        "entrenador": "Marjorie",
+        "fundacion": "2014",
+        "color_primario": "#f430f8",
+        "color_secundario": "#ad33ff",
+        "descripcion": "",
+        "id": 9,
+        "logo": "assets/img/equipos/e4a0b4ebcdabe6d3.jpg"
     }
 ]

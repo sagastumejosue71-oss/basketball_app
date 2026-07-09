@@ -1,10 +1,12 @@
 <?php
 declare(strict_types=1);
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/helpers.php';
 require_once __DIR__ . '/../includes/upload.php';
 
-$seccion_activa = 'patrocinadores';
-$titulo_pagina = 'Patrocinadores';
-require __DIR__ . '/includes/admin_layout_top.php';
+auth_requerir();
 
 $patrocinadores = db_leer('patrocinadores');
 usort($patrocinadores, fn($a, $b) => ($a['orden'] ?? 0) <=> ($b['orden'] ?? 0));
@@ -65,6 +67,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         redirigir_con_mensaje(url('admin/patrocinadores.php'), 'success', $mensaje);
     }
 }
+
+$seccion_activa = 'patrocinadores';
+$titulo_pagina = 'Patrocinadores';
+require __DIR__ . '/includes/admin_layout_top.php';
 ?>
 
 <?php if ($accion === 'nuevo' || $accion === 'editar'): ?>

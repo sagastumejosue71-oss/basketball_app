@@ -1,10 +1,14 @@
 <?php
 declare(strict_types=1);
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/helpers.php';
 require_once __DIR__ . '/../includes/upload.php';
 
-$seccion_activa = 'torneo';
-$titulo_pagina = 'Configuración del Torneo';
-require __DIR__ . '/includes/admin_layout_top.php';
+auth_requerir();
+
+$torneo = db_leer('torneo');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $logoSubido = manejar_subida_imagen('logo', 'torneo');
@@ -33,6 +37,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     db_guardar('torneo', $datos);
     redirigir_con_mensaje(url('admin/torneo.php'), 'success', 'Configuración del torneo actualizada.');
 }
+
+$seccion_activa = 'torneo';
+$titulo_pagina = 'Configuración del Torneo';
+require __DIR__ . '/includes/admin_layout_top.php';
 ?>
 
 <h3 class="mb-4">Configuración del Torneo</h3>

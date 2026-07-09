@@ -1,11 +1,14 @@
 <?php
 declare(strict_types=1);
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/helpers.php';
 require_once __DIR__ . '/../includes/upload.php';
 
-$seccion_activa = 'perfil';
-$titulo_pagina = 'Mi Perfil';
-require __DIR__ . '/includes/admin_layout_top.php';
+auth_requerir();
 
+$organizador = db_leer('organizador');
 $errores = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -47,6 +50,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+
+$seccion_activa = 'perfil';
+$titulo_pagina = 'Mi Perfil';
+require __DIR__ . '/includes/admin_layout_top.php';
 ?>
 
 <h3 class="mb-4">Mi Perfil</h3>

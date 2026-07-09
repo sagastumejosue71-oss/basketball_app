@@ -1,10 +1,12 @@
 <?php
 declare(strict_types=1);
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/helpers.php';
 require_once __DIR__ . '/../includes/tabla.php';
 
-$seccion_activa = 'partidos';
-$titulo_pagina = 'Encuentros';
-require __DIR__ . '/includes/admin_layout_top.php';
+auth_requerir();
 
 $equipos = db_leer('equipos');
 $partidos = db_leer('partidos');
@@ -86,6 +88,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $jornadas = partidos_por_jornada($partidos);
 $siguienteJornada = empty($jornadas) ? 1 : max(array_keys($jornadas));
+
+$seccion_activa = 'partidos';
+$titulo_pagina = 'Encuentros';
+require __DIR__ . '/includes/admin_layout_top.php';
 ?>
 
 <?php if ($accion === 'nuevo' || $accion === 'editar'): ?>
