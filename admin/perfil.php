@@ -1,0 +1,117 @@
+<?php
+declare(strict_types=1);
+require_once __DIR__ . '/../includes/upload.php';
+
+$seccion_activa = 'perfil';
+$titulo_pagina = 'Mi Perfil';
+require __DIR__ . '/includes/admin_layout_top.php';
+
+$errores = [];
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (($_POST['accion'] ?? '') === 'datos') {
+        $fotoSubida = manejar_subida_imagen('foto', 'organizador');
+        $organizador['nombre'] = trim((string) $_POST['nombre']);
+        $organizador['cargo'] = trim((string) $_POST['cargo']);
+        $organizador['email'] = trim((string) $_POST['email']);
+        $organizador['telefono'] = trim((string) $_POST['telefono']);
+        $organizador['bio'] = trim((string) $_POST['bio']);
+        if ($fotoSubida) {
+            eliminar_imagen($organizador['foto'] ?? null);
+            $organizador['foto'] = $fotoSubida;
+        }
+
+        if ($organizador['nombre'] === '' || $organizador['email'] === '') {
+            redirigir_con_mensaje(url('admin/perfil.php'), 'error', 'Nombre y correo son obligatorios.');
+        }
+
+        db_guardar('organizador', $organizador);
+        redirigir_con_mensaje(url('admin/perfil.php'), 'success', 'Perfil actualizado correctamente.');
+    }
+
+    if (($_POST['accion'] ?? '') === 'password') {
+        $actual = (string) $_POST['password_actual'];
+        $nueva = (string) $_POST['password_nueva'];
+        $confirmar = (string) $_POST['password_confirmar'];
+
+        if (!password_verify($actual, $organizador['password_hash'])) {
+            redirigir_con_mensaje(url('admin/perfil.php'), 'error', 'La contraseña actual no es correcta.');
+        } elseif (mb_strlen($nueva) < 8) {
+            redirigir_con_mensaje(url('admin/perfil.php'), 'error', 'La nueva contraseña debe tener al menos 8 caracteres.');
+        } elseif ($nueva !== $confirmar) {
+            redirigir_con_mensaje(url('admin/perfil.php'), 'error', 'La confirmación no coincide con la nueva contraseña.');
+        } else {
+            $organizador['password_hash'] = password_hash($nueva, PASSWORD_DEFAULT);
+            db_guardar('organizador', $organizador);
+            redirigir_con_mensaje(url('admin/perfil.php'), 'success', 'Contraseña actualizada correctamente.');
+        }
+    }
+}
+?>
+
+<h3 class="mb-4">Mi Perfil</h3>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <form method="post" enctype="multipart/form-data" class="card-suave p-4">
+            <input type="hidden" name="accion" value="datos">
+            <div class="d-flex align-items-center gap-3 mb-4">
+                <?php if (!empty($organizador['foto'])): ?>
+                    <img src="<?= e(url($organizador['foto'])) ?>" class="rounded-circle" width="90" height="90" style="object-fit:cover;">
+                <?php else: ?>
+                    <div class="avatar-organizador"><?= e(iniciales_de($organizador['nombre'])) ?></div>
+                <?php endif; ?>
+                <div>
+                    <label class="form-label small fw-semibold mb-1">Foto de perfil</label>
+                    <input type="file" name="foto" class="form-control form-control-sm" accept=".png,.jpg,.jpeg,.webp">
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label small fw-semibold">Nombre completo</label>
+                    <input type="text" name="nombre" class="form-control" value="<?= e($organizador['nombre']) ?>" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small fw-semibold">Cargo</label>
+                    <input type="text" name="cargo" class="form-control" value="<?= e($organizador['cargo']) ?>">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small fw-semibold">Correo electrónico</label>
+                    <input type="email" name="email" class="form-control" value="<?= e($organizador['email']) ?>" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small fw-semibold">Teléfono</label>
+                    <input type="text" name="telefono" class="form-control" value="<?= e($organizador['telefono'] ?? '') ?>">
+                </div>
+                <div class="col-12">
+                    <label class="form-label small fw-semibold">Biografía</label>
+                    <textarea name="bio" class="form-control" rows="3"><?= e($organizador['bio'] ?? '') ?></textarea>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-degradado rounded-pill px-4 mt-4">Guardar cambios</button>
+        </form>
+    </div>
+
+    <div class="col-lg-5">
+        <form method="post" class="card-suave p-4">
+            <input type="hidden" name="accion" value="password">
+            <h5 class="mb-3"><i class="bi bi-shield-lock me-2"></i>Cambiar contraseña</h5>
+            <div class="mb-3">
+                <label class="form-label small fw-semibold">Contraseña actual</label>
+                <input type="password" name="password_actual" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label small fw-semibold">Nueva contraseña</label>
+                <input type="password" name="password_nueva" class="form-control" minlength="8" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label small fw-semibold">Confirmar nueva contraseña</label>
+                <input type="password" name="password_confirmar" class="form-control" minlength="8" required>
+            </div>
+            <button type="submit" class="btn btn-outline-secondary rounded-pill px-4">Actualizar contraseña</button>
+        </form>
+    </div>
+</div>
+
+<?php require __DIR__ . '/includes/admin_layout_bottom.php'; ?>

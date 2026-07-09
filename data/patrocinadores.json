@@ -1,0 +1,12 @@
+[
+    { "id": 1, "nombre": "Banco Atlántico", "nivel": "oficial", "url": "https://example.com", "logo": "", "orden": 1 },
+    { "id": 2, "nombre": "AguaVital", "nivel": "oficial", "url": "https://example.com", "logo": "", "orden": 2 },
+    { "id": 3, "nombre": "TechSport Wear", "nivel": "oro", "url": "https://example.com", "logo": "", "orden": 3 },
+    { "id": 4, "nombre": "Constructora del Valle", "nivel": "oro", "url": "https://example.com", "logo": "", "orden": 4 },
+    { "id": 5, "nombre": "Supermercados Frescura", "nivel": "oro", "url": "https://example.com", "logo": "", "orden": 5 },
+    { "id": 6, "nombre": "Radio Deportiva 101.5", "nivel": "oro", "url": "https://example.com", "logo": "", "orden": 6 },
+    { "id": 7, "nombre": "Café Andino", "nivel": "plata", "url": "https://example.com", "logo": "", "orden": 7 },
+    { "id": 8, "nombre": "Farmacia Bienestar", "nivel": "plata", "url": "https://example.com", "logo": "", "orden": 8 },
+    { "id": 9, "nombre": "Autoservicio Rápido", "nivel": "plata", "url": "https://example.com", "logo": "", "orden": 9 },
+    { "id": 10, "nombre": "Panadería Dulce Hogar", "nivel": "plata", "url": "https://example.com", "logo": "", "orden": 10 }
+]

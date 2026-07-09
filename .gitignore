@@ -1,0 +1,8 @@
+# Configuración local de herramientas (no forma parte de la app)
+.claude/
+
+# Archivos del sistema operativo / editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

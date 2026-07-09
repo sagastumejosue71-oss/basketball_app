@@ -1,0 +1,98 @@
+[
+    {
+        "id": 1,
+        "nombre": "Águilas Doradas",
+        "ciudad": "Ciudad Capital",
+        "sede": "Coliseo Capital",
+        "entrenador": "Marcela Ibarra",
+        "fundacion": "2014",
+        "color_primario": "#5b0ecc",
+        "color_secundario": "#ffc93c",
+        "logo": "",
+        "descripcion": "El equipo más laureado de la liga, conocido por su defensa asfixiante y su banca profunda."
+    },
+    {
+        "id": 2,
+        "nombre": "Panteras Negras",
+        "ciudad": "Puerto Sol",
+        "sede": "Arena Puerto Sol",
+        "entrenador": "Daniela Ochoa",
+        "fundacion": "2016",
+        "color_primario": "#1a1a2e",
+        "color_secundario": "#ff2e63",
+        "logo": "",
+        "descripcion": "Ataque veloz y transiciones letales; el equipo revelación de las últimas dos temporadas."
+    },
+    {
+        "id": 3,
+        "nombre": "Tiburonas",
+        "ciudad": "Bahía Azul",
+        "sede": "Polideportivo Bahía Azul",
+        "entrenador": "Gabriela Soto",
+        "fundacion": "2011",
+        "color_primario": "#0077b6",
+        "color_secundario": "#caf0f8",
+        "logo": "",
+        "descripcion": "Historia y garra; siempre pelean cada balón dividido hasta el último segundo."
+    },
+    {
+        "id": 4,
+        "nombre": "Cobras Rojas",
+        "ciudad": "Villa Norte",
+        "sede": "Gimnasio Villa Norte",
+        "entrenador": "Renata Vega",
+        "fundacion": "2019",
+        "color_primario": "#c1121f",
+        "color_secundario": "#0b090a",
+        "logo": "",
+        "descripcion": "Equipo joven en plena reconstrucción, apostando por talento formado en casa."
+    },
+    {
+        "id": 5,
+        "nombre": "Lobas de Plata",
+        "ciudad": "Monte Alto",
+        "sede": "Coliseo Monte Alto",
+        "entrenador": "Camila Rossi",
+        "fundacion": "2013",
+        "color_primario": "#3a506b",
+        "color_secundario": "#c0c0c0",
+        "logo": "",
+        "descripcion": "Disciplina táctica y triples de alto porcentaje son su sello distintivo."
+    },
+    {
+        "id": 6,
+        "nombre": "Fénix Naranja",
+        "ciudad": "San Rafael",
+        "sede": "Cancha San Rafael",
+        "entrenador": "Isabel Marín",
+        "fundacion": "2017",
+        "color_primario": "#ff6b35",
+        "color_secundario": "#1a1a2e",
+        "logo": "",
+        "descripcion": "Resurgen cada temporada con un juego rápido y contragolpes constantes."
+    },
+    {
+        "id": 7,
+        "nombre": "Estrellas del Sur",
+        "ciudad": "Costa Verde",
+        "sede": "Estadio Costa Verde",
+        "entrenador": "Paula Jiménez",
+        "fundacion": "2012",
+        "color_primario": "#1b998b",
+        "color_secundario": "#ffe066",
+        "logo": "",
+        "descripcion": "Colectivo balanceado, sin grandes estrellas pero con un banquillo temible."
+    },
+    {
+        "id": 8,
+        "nombre": "Halcones Violeta",
+        "ciudad": "Río Claro",
+        "sede": "Gimnasio Río Claro",
+        "entrenador": "Valentina Cruz",
+        "fundacion": "2020",
+        "color_primario": "#7209b7",
+        "color_secundario": "#f72585",
+        "logo": "",
+        "descripcion": "El equipo más nuevo de la liga, construyendo identidad partido a partido."
+    }
+]

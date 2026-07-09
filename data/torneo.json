@@ -1,0 +1,16 @@
+{
+    "nombre": "Copa Estrellas",
+    "subtitulo": "Liga Femenina de Basketball 2026",
+    "temporada": "2026",
+    "descripcion": "El torneo femenino de basketball más competitivo de la región. Ocho equipos, una vuelta de temporada regular y el sueño de levantar la copa.",
+    "sede_principal": "Ciudad Capital",
+    "logo": "",
+    "color_primario": "#8b2fd9",
+    "color_secundario": "#ff6b35",
+    "color_acento": "#ffc93c",
+    "fecha_inicio": "2026-05-03",
+    "fecha_fin": "2026-08-16",
+    "formato": "Todos contra todos (ida) + Playoffs",
+    "instagram": "https://instagram.com/copaestrellas",
+    "hero_frase": "Donde cada rebote escribe historia"
+}

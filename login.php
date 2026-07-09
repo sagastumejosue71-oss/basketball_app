@@ -1,0 +1,74 @@
+<?php
+declare(strict_types=1);
+require_once __DIR__ . '/includes/config.php';
+require_once __DIR__ . '/includes/db.php';
+require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/includes/helpers.php';
+
+if (auth_check()) {
+    header('Location: ' . url('admin/index.php'));
+    exit;
+}
+
+$error = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $usuario = trim((string) ($_POST['usuario'] ?? ''));
+    $password = (string) ($_POST['password'] ?? '');
+
+    if ($usuario === '' || $password === '') {
+        $error = 'Ingresa tu usuario y contraseña.';
+    } elseif (auth_intentar_login($usuario, $password)) {
+        header('Location: ' . url('admin/index.php'));
+        exit;
+    } else {
+        $error = 'Usuario o contraseña incorrectos.';
+    }
+}
+
+$torneo = db_leer('torneo');
+$titulo_pagina = 'Acceso Organizador — ' . $torneo['nombre'];
+?>
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><?= e($titulo_pagina) ?></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="<?= url('assets/css/style.css') ?>" rel="stylesheet">
+</head>
+<body>
+<div class="auth-wrap">
+    <div class="auth-card">
+        <div class="text-center mb-4">
+            <span class="badge-pill-icon mx-auto mb-3" style="width:56px;height:56px;font-size:1.6rem;"><?= icono_balon(28) ?></span>
+            <h3 class="mb-1">Panel del Organizador</h3>
+            <p class="text-muted small mb-0"><?= e($torneo['nombre']) ?> — <?= e($torneo['subtitulo']) ?></p>
+        </div>
+
+        <?php if ($error): ?>
+        <div class="alert alert-danger rounded-3 py-2 small"><i class="bi bi-exclamation-triangle me-1"></i><?= e($error) ?></div>
+        <?php endif; ?>
+
+        <form method="post" novalidate>
+            <div class="mb-3">
+                <label class="form-label small fw-semibold">Usuario</label>
+                <input type="text" name="usuario" class="form-control form-control-lg" value="<?= e($_POST['usuario'] ?? '') ?>" autofocus required>
+            </div>
+            <div class="mb-4">
+                <label class="form-label small fw-semibold">Contraseña</label>
+                <input type="password" name="password" class="form-control form-control-lg" required>
+            </div>
+            <button type="submit" class="btn btn-degradado btn-lg w-100 rounded-pill">Ingresar</button>
+        </form>
+        <div class="text-center mt-4">
+            <a href="<?= url('index.php') ?>" class="small text-muted text-decoration-none"><i class="bi bi-arrow-left me-1"></i>Volver al sitio público</a>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
