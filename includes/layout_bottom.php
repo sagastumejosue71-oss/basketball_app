@@ -35,7 +35,8 @@
             </div>
         </div>
         <hr class="border-secondary opacity-25 my-4">
-        <p class="small text-center mb-0 opacity-75">© <?= date('Y') ?> <?= e($torneo['nombre']) ?> · <?= e($torneo['subtitulo']) ?></p>
+        <p class="small text-center mb-1 opacity-75">© <?= date('Y') ?> <?= e($torneo['nombre']) ?> · <?= e($torneo['subtitulo']) ?></p>
+        <p class="small text-center mb-0 opacity-50">By Josué Sagastume</p>
     </div>
 </footer>
 
