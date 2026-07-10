@@ -280,6 +280,24 @@ h1, h2, h3, h4, h5, h6, .fw-heading {
     box-shadow: none;
 }
 
+/* Portada: dos balones 3D superpuestos (basketball + fútbol) representando que la
+   plataforma no es de un solo deporte. Reutiliza el mismo balón que cada copa ya
+   usa en su propia portada, solo que aquí van dos a la vez con tamaños distintos. */
+.portada-balones {
+    position: relative;
+    height: 300px;
+    max-width: 380px;
+    margin: 0 auto;
+}
+
+.portada-balones .hero-basquet.hero-futbol .balon {
+    animation-delay: 1.2s;
+}
+
+@media (max-width: 991.98px) {
+    .portada-balones { height: 260px; }
+}
+
 /* ---------- Secciones ---------- */
 .seccion {
     padding: 4.5rem 0;

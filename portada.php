@@ -17,19 +17,20 @@ require __DIR__ . '/includes/layout_top.php';
                 <p class="kicker mb-3"><i class="bi bi-stars me-1"></i>Torneos y ligas, a tu manera</p>
                 <h1 class="text-white mb-3">Crea tu <span class="text-degradado">propia copa</span></h1>
                 <p class="fs-5 mb-4" style="color:rgba(255,255,255,.8);max-width:560px;">Basketball, fútbol o el deporte que organices: equipos, calendario, tabla de posiciones y patrocinadores, con tu propia URL, tu QR y un código corto para compartirla en segundos.</p>
-                <div class="d-flex flex-wrap gap-3 mb-5">
+                <div class="d-flex flex-wrap gap-3 mb-4">
                     <a href="<?= url('registro.php') ?>" class="btn btn-degradado btn-lg rounded-pill px-4"><i class="bi bi-plus-circle me-2"></i>Crear tu torneo</a>
                     <a href="<?= url('torneos.php') ?>" class="btn btn-outline-luz btn-lg rounded-pill px-4">Ver todas las copas</a>
                 </div>
+                <form method="get" action="<?= url('codigo.php') ?>" class="d-flex flex-wrap align-items-center gap-2" style="max-width:420px;">
+                    <span class="small" style="color:rgba(255,255,255,.65);white-space:nowrap;"><i class="bi bi-key-fill me-1"></i>¿Tienes un código?</span>
+                    <input type="text" name="c" class="form-control form-control-sm text-center text-uppercase fw-bold" style="letter-spacing:.2em;max-width:130px;" maxlength="6" placeholder="ABC123" autocomplete="off" required>
+                    <button type="submit" class="btn btn-outline-luz btn-sm rounded-pill px-3">Ir</button>
+                </form>
             </div>
             <div class="col-lg-5">
-                <div class="card-suave p-4">
-                    <h5 class="mb-1"><i class="bi bi-key-fill me-2"></i>¿Ya tienes un código?</h5>
-                    <p class="text-muted small mb-3">Entra directo a esa copa sin buscar el enlace.</p>
-                    <form method="get" action="<?= url('codigo.php') ?>" class="d-flex gap-2">
-                        <input type="text" name="c" class="form-control text-center text-uppercase fw-bold" style="letter-spacing:.2em;" maxlength="6" placeholder="ABC123" autocomplete="off" required>
-                        <button type="submit" class="btn btn-degradado px-4">Ir</button>
-                    </form>
+                <div class="portada-balones">
+                    <div class="hero-basquet" style="width:230px;height:230px;position:absolute;top:0;left:10px;"><div class="balon"></div></div>
+                    <div class="hero-basquet hero-futbol" style="width:145px;height:145px;position:absolute;bottom:0;right:15px;"><div class="balon"></div></div>
                 </div>
             </div>
         </div>
