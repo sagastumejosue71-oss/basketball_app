@@ -87,7 +87,11 @@ function admin_tarjeta_usuario(array $usuario): string
 <div class="d-flex">
     <aside class="sidebar-admin d-none d-lg-flex flex-column p-3" style="width:270px;flex-shrink:0;">
         <a href="<?= url('admin/index.php') ?>" class="d-flex align-items-center gap-2 text-decoration-none text-white mb-3 px-2 pt-2">
-            <span class="badge-pill-icon"><?= icono_deporte($torneoActivo['deporte'] ?? null, 20) ?></span>
+            <?php if ($torneoActivo): ?>
+                <span class="badge-pill-icon"><?= icono_deporte($torneoActivo['deporte'], 20) ?></span>
+            <?php else: ?>
+                <?= icono_multideporte(36) ?>
+            <?php endif; ?>
             <span class="fw-heading fs-6"><?= e($nombreMarca) ?></span>
         </a>
         <a href="<?= url('admin/torneos.php') ?>" class="d-block small text-decoration-none px-2 mb-3" style="color:rgba(255,255,255,.6);">

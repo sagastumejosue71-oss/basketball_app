@@ -44,7 +44,11 @@ function nav_activa(string $clave, string $activa): string
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top navbar-copa">
     <div class="container">
         <a class="navbar-brand d-flex align-items-center gap-2" href="<?= $torneo ? url_copa('index.php') : url('torneos.php') ?>">
-            <span class="badge-pill-icon"><?= icono_deporte($torneo['deporte'] ?? null, 22) ?></span>
+            <?php if ($torneo): ?>
+                <span class="badge-pill-icon"><?= icono_deporte($torneo['deporte'], 22) ?></span>
+            <?php else: ?>
+                <?= icono_multideporte(40) ?>
+            <?php endif; ?>
             <span><?= e($torneo['nombre'] ?? 'Plataforma de Copas') ?></span>
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navPrincipal">

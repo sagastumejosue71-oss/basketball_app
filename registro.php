@@ -82,7 +82,7 @@ $titulo_pagina = 'Crear tu cuenta';
 <div class="auth-wrap">
     <div class="auth-card" style="max-width:460px;">
         <div class="text-center mb-4">
-            <span class="badge-pill-icon mx-auto mb-3" style="width:56px;height:56px;font-size:1.6rem;"><?= icono_deporte(null, 28) ?></span>
+            <div class="mx-auto mb-3" style="width:64px;"><?= icono_multideporte(64) ?></div>
             <h3 class="mb-1">Crea tu cuenta</h3>
             <p class="text-muted small mb-0">Organiza tu propio torneo o liga en minutos.</p>
         </div>

@@ -56,7 +56,7 @@ $flash = obtener_flash();
 <div class="auth-wrap">
     <div class="auth-card">
         <div class="text-center mb-4">
-            <span class="badge-pill-icon mx-auto mb-3" style="width:56px;height:56px;font-size:1.6rem;"><?= icono_deporte($torneo['deporte'] ?? null, 28) ?></span>
+            <div class="mx-auto mb-3" style="width:64px;"><?= icono_multideporte(64) ?></div>
             <h3 class="mb-1">Panel del Organizador</h3>
             <p class="text-muted small mb-0"><?= e($torneo['nombre']) ?> — <?= e($torneo['subtitulo']) ?></p>
         </div>

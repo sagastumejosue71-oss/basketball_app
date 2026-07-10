@@ -3,7 +3,11 @@
         <div class="row gy-4">
             <div class="col-lg-4">
                 <div class="d-flex align-items-center gap-2 mb-3">
-                    <span class="badge-pill-icon"><?= icono_deporte($torneo['deporte'] ?? null, 20) ?></span>
+                    <?php if ($torneo): ?>
+                        <span class="badge-pill-icon"><?= icono_deporte($torneo['deporte'], 20) ?></span>
+                    <?php else: ?>
+                        <?= icono_multideporte(36) ?>
+                    <?php endif; ?>
                     <span class="fw-heading text-white fs-5"><?= e($torneo['nombre'] ?? 'Plataforma de Copas') ?></span>
                 </div>
                 <?php if ($torneo): ?>
