@@ -19,6 +19,11 @@ if (getenv('DATABASE_URL') === false && file_exists($archivoEnv)) {
     }
 }
 
+// Credenciales de Google OAuth ("Continuar con Google"). En Render se configuran como
+// variables de entorno reales (panel "Environment"), igual que DATABASE_URL.
+define('GOOGLE_CLIENT_ID', getenv('GOOGLE_CLIENT_ID') ?: '');
+define('GOOGLE_CLIENT_SECRET', getenv('GOOGLE_CLIENT_SECRET') ?: '');
+
 // Render (y la mayoría de hostings con proxy) terminan el HTTPS antes de llegar a PHP;
 // hay que revisar X-Forwarded-Proto además de $_SERVER['HTTPS'] para detectarlo correctamente.
 $esHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')

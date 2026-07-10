@@ -37,6 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // solo para mostrar algo de marca en la pantalla, no porque el login "pertenezca" a ella.
 $torneo = torneos_obtener_predeterminado() ?? ['nombre' => 'Panel Organizador', 'subtitulo' => ''];
 $titulo_pagina = 'Acceso Organizador — ' . $torneo['nombre'];
+$flash = obtener_flash();
 ?>
 <!doctype html>
 <html lang="es">
@@ -62,6 +63,9 @@ $titulo_pagina = 'Acceso Organizador — ' . $torneo['nombre'];
         <?php if ($error): ?>
         <div class="alert alert-danger rounded-3 py-2 small"><i class="bi bi-exclamation-triangle me-1"></i><?= e($error) ?></div>
         <?php endif; ?>
+        <?php if ($flash): ?>
+        <div class="alert alert-<?= $flash['tipo'] === 'error' ? 'danger' : $flash['tipo'] ?> rounded-3 py-2 small"><i class="bi bi-info-circle me-1"></i><?= e($flash['mensaje']) ?></div>
+        <?php endif; ?>
 
         <form method="post" novalidate>
             <div class="mb-3">
@@ -74,6 +78,14 @@ $titulo_pagina = 'Acceso Organizador — ' . $torneo['nombre'];
             </div>
             <button type="submit" class="btn btn-degradado btn-lg w-100 rounded-pill">Ingresar</button>
         </form>
+        <?php if (GOOGLE_CLIENT_ID !== ''): ?>
+        <div class="d-flex align-items-center gap-2 my-3">
+            <hr class="flex-grow-1"><span class="small text-muted">o</span><hr class="flex-grow-1">
+        </div>
+        <a href="<?= url('google_iniciar.php') ?>" class="btn btn-outline-secondary btn-lg w-100 rounded-pill d-flex align-items-center justify-content-center gap-2">
+            <i class="bi bi-google"></i>Continuar con Google
+        </a>
+        <?php endif; ?>
         <div class="text-center mt-4 d-flex flex-column gap-1">
             <a href="<?= url('registro.php') ?>" class="small text-muted text-decoration-none">¿No tienes cuenta? Regístrate</a>
             <a href="<?= url('index.php') ?>" class="small text-muted text-decoration-none"><i class="bi bi-arrow-left me-1"></i>Volver al sitio público</a>

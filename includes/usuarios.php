@@ -41,27 +41,52 @@ function usuarios_obtener_por_email(string $email): ?array
     return $fila ? usuarios_normalizar($fila) : null;
 }
 
+function usuarios_obtener_por_google_id(string $googleId): ?array
+{
+    $pdo = db_conexion();
+    $stmt = $pdo->prepare('SELECT * FROM usuarios WHERE google_id = :google_id');
+    $stmt->bindValue(':google_id', $googleId, PDO::PARAM_STR);
+    $stmt->execute();
+    $fila = $stmt->fetch();
+    return $fila ? usuarios_normalizar($fila) : null;
+}
+
 /**
- * Crea una cuenta nueva. $datos: usuario, email, password_hash, nombre (el resto de
- * COLUMNAS_USUARIO es opcional). Devuelve el id ya creado.
+ * Crea una cuenta nueva. $datos: usuario, email, nombre; password_hash es opcional
+ * (queda NULL para cuentas que solo entran con "Continuar con Google"); google_id
+ * opcional. Devuelve el id ya creado.
  */
 function usuarios_crear(array $datos): int
 {
     $pdo = db_conexion();
     $stmt = $pdo->prepare(
-        'INSERT INTO usuarios (usuario, email, password_hash, nombre, cargo, telefono, foto, bio)
-         VALUES (:usuario, :email, :password_hash, :nombre, :cargo, :telefono, :foto, :bio) RETURNING id'
+        'INSERT INTO usuarios (usuario, email, password_hash, nombre, cargo, telefono, foto, bio, google_id)
+         VALUES (:usuario, :email, :password_hash, :nombre, :cargo, :telefono, :foto, :bio, :google_id) RETURNING id'
     );
     $stmt->bindValue(':usuario', $datos['usuario'], PDO::PARAM_STR);
     $stmt->bindValue(':email', $datos['email'], PDO::PARAM_STR);
-    $stmt->bindValue(':password_hash', $datos['password_hash'], PDO::PARAM_STR);
+    db_bind($stmt, ':password_hash', $datos['password_hash'] ?? null);
     $stmt->bindValue(':nombre', $datos['nombre'] ?? '', PDO::PARAM_STR);
     $stmt->bindValue(':cargo', $datos['cargo'] ?? '', PDO::PARAM_STR);
     $stmt->bindValue(':telefono', $datos['telefono'] ?? '', PDO::PARAM_STR);
     $stmt->bindValue(':foto', $datos['foto'] ?? '', PDO::PARAM_STR);
     $stmt->bindValue(':bio', $datos['bio'] ?? '', PDO::PARAM_STR);
+    db_bind($stmt, ':google_id', $datos['google_id'] ?? null);
     $stmt->execute();
     return (int) $stmt->fetchColumn();
+}
+
+/**
+ * Vincula una cuenta de Google a una cuenta ya existente (creada con usuario/contraseña),
+ * para que a partir de ahora también pueda entrar con "Continuar con Google" sin duplicar cuentas.
+ */
+function usuarios_vincular_google(int $id, string $googleId): void
+{
+    $pdo = db_conexion();
+    $stmt = $pdo->prepare('UPDATE usuarios SET google_id = :google_id WHERE id = :id');
+    $stmt->bindValue(':google_id', $googleId, PDO::PARAM_STR);
+    $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+    $stmt->execute();
 }
 
 /**

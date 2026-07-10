@@ -135,7 +135,8 @@ CREATE TABLE IF NOT EXISTS usuarios (
     id SERIAL PRIMARY KEY,
     usuario TEXT UNIQUE NOT NULL,
     email TEXT UNIQUE NOT NULL,
-    password_hash TEXT NOT NULL,
+    -- NULL para cuentas creadas solo con "Continuar con Google" (sin contraseña propia)
+    password_hash TEXT,
     nombre TEXT NOT NULL DEFAULT '',
     cargo TEXT NOT NULL DEFAULT '',
     telefono TEXT NOT NULL DEFAULT '',
@@ -143,6 +144,10 @@ CREATE TABLE IF NOT EXISTS usuarios (
     bio TEXT NOT NULL DEFAULT '',
     creado_en TIMESTAMP NOT NULL DEFAULT now()
 );
+-- Identificador estable de Google ("sub"), para iniciar sesión con Google sin depender
+-- del correo (que en teoría podría cambiar de dueño en Google en casos raros).
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS google_id TEXT UNIQUE;
+ALTER TABLE usuarios ALTER COLUMN password_hash DROP NOT NULL;
 
 -- Rate-limit de registro de cuentas nuevas, mismo patrón que intentos_login pero en su propia
 -- tabla para no arriesgar el límite de login que ya funciona en producción.

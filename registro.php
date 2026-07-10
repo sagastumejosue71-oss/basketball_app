@@ -118,6 +118,14 @@ $titulo_pagina = 'Crear tu cuenta';
             </div>
             <button type="submit" class="btn btn-degradado btn-lg w-100 rounded-pill">Crear mi cuenta</button>
         </form>
+        <?php if (GOOGLE_CLIENT_ID !== ''): ?>
+        <div class="d-flex align-items-center gap-2 my-3">
+            <hr class="flex-grow-1"><span class="small text-muted">o</span><hr class="flex-grow-1">
+        </div>
+        <a href="<?= url('google_iniciar.php') ?>" class="btn btn-outline-secondary btn-lg w-100 rounded-pill d-flex align-items-center justify-content-center gap-2">
+            <i class="bi bi-google"></i>Continuar con Google
+        </a>
+        <?php endif; ?>
         <div class="text-center mt-4 d-flex flex-column gap-1">
             <a href="<?= url('login.php') ?>" class="small text-muted text-decoration-none">¿Ya tienes cuenta? Inicia sesión</a>
             <a href="<?= url('index.php') ?>" class="small text-muted text-decoration-none"><i class="bi bi-arrow-left me-1"></i>Volver al sitio público</a>
