@@ -29,8 +29,8 @@ require __DIR__ . '/includes/layout_top.php';
             </div>
             <div class="col-lg-5">
                 <div class="portada-balones">
-                    <div class="hero-basquet" style="width:230px;height:230px;position:absolute;top:0;left:10px;"><div class="balon"></div></div>
-                    <div class="hero-basquet hero-futbol" style="width:145px;height:145px;position:absolute;bottom:0;right:15px;"><div class="balon"></div></div>
+                    <img src="<?= url('assets/img/balon-basketball.png') ?>" alt="" class="balon-real balon-flotante-1" style="width:230px;height:230px;top:0;left:10px;">
+                    <img src="<?= url('assets/img/balon-futbol.png') ?>" alt="" class="balon-real balon-flotante-2" style="width:150px;height:150px;bottom:0;right:15px;">
                 </div>
             </div>
         </div>
