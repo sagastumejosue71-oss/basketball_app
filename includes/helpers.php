@@ -272,21 +272,43 @@ function color_hex_valido(?string $hex, string $porDefecto): string
  * Estrellas); el resto usa su propio color de acento, así el panel admin y el sitio
  * público de las demás copas se ven neutros según lo que el organizador eligió.
  */
+function color_hex_a_rgb(string $hex): string
+{
+    if (!preg_match('/^#?([0-9a-fA-F]{6})$/', $hex, $m)) {
+        return '0,0,0';
+    }
+    $valor = $m[1];
+    return hexdec(substr($valor, 0, 2)) . ',' . hexdec(substr($valor, 2, 2)) . ',' . hexdec(substr($valor, 4, 2));
+}
+
+/**
+ * Ya no existe ninguna copa "predeterminada" (ese concepto se quitó), así que el acento
+ * rosa fijo de marca tampoco aplica a nadie: cada copa (o el contexto genérico sin copa)
+ * usa su propio acento como "rosa" también, para que degradados/sombras que dependan de
+ * --color-rosa se vean coherentes con los colores que el organizador eligió.
+ */
 function torneo_variables_css(?array $torneo): string
 {
     $primario = color_hex_valido($torneo['color_primario'] ?? null, '#475569');
     $secundario = color_hex_valido($torneo['color_secundario'] ?? null, '#64748b');
     $acento = color_hex_valido($torneo['color_acento'] ?? null, '#94a3b8');
-    $rosa = !empty($torneo['es_predeterminado']) ? '#f72585' : $acento;
     $oscuro = color_oscurecer($primario, 0.35);
 
-    return '<style>:root{'
-        . '--color-primario:' . e($primario) . ';'
-        . '--color-primario-oscuro:' . e($oscuro) . ';'
-        . '--color-secundario:' . e($secundario) . ';'
-        . '--color-acento:' . e($acento) . ';'
-        . '--color-rosa:' . e($rosa) . ';'
-        . '}</style>';
+    $variables = [
+        'color-primario' => $primario,
+        'color-primario-oscuro' => $oscuro,
+        'color-secundario' => $secundario,
+        'color-acento' => $acento,
+        'color-rosa' => $acento,
+    ];
+
+    $css = '';
+    foreach ($variables as $nombre => $valor) {
+        $css .= "--{$nombre}:" . e($valor) . ';';
+        $css .= "--{$nombre}-rgb:" . color_hex_a_rgb($valor) . ';';
+    }
+
+    return "<style>:root{{$css}}</style>";
 }
 
 function redirigir_con_mensaje(string $ruta, string $tipo, string $mensaje): void
