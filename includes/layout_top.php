@@ -10,12 +10,14 @@ declare(strict_types=1);
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/auth.php';
+require_once __DIR__ . '/usuarios.php';
 require_once __DIR__ . '/helpers.php';
 
 $torneo = $torneo ?? null;
 $pagina_activa = $pagina_activa ?? '';
 $titulo_pagina = $titulo_pagina ?? ($torneo ? $torneo['nombre'] . ' — ' . $torneo['subtitulo'] : 'Plataforma de Copas');
 $flash = obtener_flash();
+$usuarioActual = auth_check() ? usuarios_obtener_por_id((int) $_SESSION['usuario_id']) : null;
 
 function nav_activa(string $clave, string $activa): string
 {
@@ -69,8 +71,23 @@ function nav_activa(string $clave, string $activa): string
                     </button>
                 </li>
                 <li class="nav-item ms-lg-2">
-                    <?php if (auth_check()): ?>
-                        <a class="btn btn-outline-luz btn-sm rounded-pill px-3" href="<?= url('admin/index.php') ?>"><i class="bi bi-speedometer2 me-1"></i>Panel</a>
+                    <?php if ($usuarioActual): ?>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-luz btn-sm rounded-pill px-2 d-flex align-items-center gap-2 dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <?php if (!empty($usuarioActual['foto'])): ?>
+                                <img src="<?= e(url_imagen($usuarioActual['foto'])) ?>" width="26" height="26" class="rounded-circle" style="object-fit:cover;" alt="">
+                            <?php else: ?>
+                                <span class="avatar-organizador" style="width:26px;height:26px;font-size:.72rem;"><?= e(iniciales_de($usuarioActual['nombre'] ?: $usuarioActual['usuario'])) ?></span>
+                            <?php endif; ?>
+                            <span class="d-none d-lg-inline"><?= e($usuarioActual['nombre'] !== '' ? explode(' ', $usuarioActual['nombre'])[0] : $usuarioActual['usuario']) ?></span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="<?= url('admin/index.php') ?>"><i class="bi bi-speedometer2 me-2"></i>Panel</a></li>
+                            <li><a class="dropdown-item" href="<?= url('admin/perfil.php') ?>"><i class="bi bi-person-circle me-2"></i>Mi perfil</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="<?= url('logout.php') ?>"><i class="bi bi-box-arrow-right me-2"></i>Cerrar sesión</a></li>
+                        </ul>
+                    </div>
                     <?php else: ?>
                         <a class="btn btn-degradado btn-sm rounded-pill px-3" href="<?= url('login.php') ?>"><i class="bi bi-person-circle me-1"></i>Acceder</a>
                     <?php endif; ?>

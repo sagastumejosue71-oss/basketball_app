@@ -4,7 +4,6 @@ declare(strict_types=1);
 // (config.php, db.php y helpers.php ya están cargados por index.php).
 
 $torneo = null;
-$copasDestacadas = array_slice(torneos_listar(true), 0, 3);
 
 $titulo_pagina = 'Crea tu propia copa';
 $pagina_activa = 'inicio';
@@ -68,39 +67,6 @@ require __DIR__ . '/includes/layout_top.php';
         </div>
     </div>
 </section>
-
-<?php if (!empty($copasDestacadas)): ?>
-<section class="seccion pt-0">
-    <div class="container">
-        <div class="seccion-titulo mb-4">
-            <p class="eyebrow mb-1">Ya en marcha</p>
-            <h2 class="mb-0">Copas activas ahora mismo</h2>
-        </div>
-        <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
-            <?php foreach ($copasDestacadas as $t): ?>
-            <div class="col">
-                <a href="<?= e(url_copa_de($t)) ?>" class="text-decoration-none text-dark">
-                    <div class="card-suave p-4 h-100 text-center">
-                        <div class="mx-auto mb-3">
-                            <?php if (!empty($t['logo'])): ?>
-                                <img src="<?= e(url_imagen($t['logo'])) ?>" alt="<?= e($t['nombre']) ?>" width="64" height="64" class="rounded-circle" style="object-fit:cover;">
-                            <?php else: ?>
-                                <span class="badge-pill-icon mx-auto" style="width:64px;height:64px;font-size:1.6rem;"><?= icono_deporte($t['deporte'], 28) ?></span>
-                            <?php endif; ?>
-                        </div>
-                        <h5 class="mb-1"><?= e($t['nombre']) ?></h5>
-                        <p class="text-muted small mb-0"><?= e($t['subtitulo']) ?></p>
-                    </div>
-                </a>
-            </div>
-            <?php endforeach; ?>
-        </div>
-        <div class="text-center mt-4">
-            <a href="<?= url('torneos.php') ?>" class="btn btn-outline-secondary rounded-pill px-4">Ver todas las copas <i class="bi bi-arrow-right ms-1"></i></a>
-        </div>
-    </div>
-</section>
-<?php endif; ?>
 
 <section class="seccion pt-0">
     <div class="container">
