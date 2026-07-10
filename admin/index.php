@@ -1,15 +1,22 @@
 <?php
 declare(strict_types=1);
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/helpers.php';
 require_once __DIR__ . '/../includes/tabla.php';
+
+auth_requerir();
+$torneo = admin_requerir_torneo_activo();
 
 $seccion_activa = 'dashboard';
 $titulo_pagina = 'Dashboard';
 require __DIR__ . '/includes/admin_layout_top.php';
 
-$equipos = db_leer('equipos');
-$partidos = db_leer('partidos');
-$patrocinadores = db_leer('patrocinadores');
-$tabla = calcular_tabla($equipos, $partidos);
+$equipos = db_leer('equipos', $torneo['id']);
+$partidos = db_leer('partidos', $torneo['id']);
+$patrocinadores = db_leer('patrocinadores', $torneo['id']);
+$tabla = calcular_tabla($equipos, $partidos, $torneo);
 $lider = $tabla[0] ?? null;
 
 $jugados = array_filter($partidos, fn($p) => $p['estado'] === 'jugado');

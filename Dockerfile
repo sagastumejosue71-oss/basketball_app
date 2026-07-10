@@ -3,7 +3,12 @@ FROM php:8.3-apache
 # libpq-dev es necesario para compilar la extensión pdo_pgsql (no viene en la imagen base)
 RUN apt-get update && apt-get install -y --no-install-recommends libpq-dev \
     && docker-php-ext-install pdo pdo_pgsql fileinfo \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    && apt-get clean && rm -rf /var/lib/apt/lists/* \
+    && a2enmod rewrite
+
+# Cada copa tiene su propia URL (/slug/...); esta config reescribe esas rutas
+# hacia los archivos .php reales con ?copa=slug, sin afectar archivos reales.
+COPY apache-vhost.conf /etc/apache2/sites-available/000-default.conf
 
 # Por defecto PHP solo acepta subidas de 2MB, pero una foto tomada con la cámara
 # de un celular fácilmente pesa varios MB más que eso.

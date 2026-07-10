@@ -4,10 +4,10 @@ require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/helpers.php';
 require_once __DIR__ . '/includes/tabla.php';
+require_once __DIR__ . '/includes/torneo_actual.php';
 
-$torneo = db_leer('torneo');
-$equipos = db_leer('equipos');
-$partidos = db_leer('partidos');
+$equipos = db_leer('equipos', $torneo['id']);
+$partidos = db_leer('partidos', $torneo['id']);
 
 $id = (int) ($_GET['id'] ?? 0);
 $equipo = db_buscar_por_id($equipos, $id);
@@ -15,7 +15,7 @@ if (!$equipo) {
     http_response_code(404);
     $titulo_pagina = 'Equipo no encontrado';
     require __DIR__ . '/includes/layout_top.php';
-    echo '<div class="container seccion text-center"><h1>Equipo no encontrado</h1><a href="' . url('equipos.php') . '" class="btn btn-degradado rounded-pill mt-3">Volver a equipos</a></div>';
+    echo '<div class="container seccion text-center"><h1>Equipo no encontrado</h1><a href="' . url_copa('equipos.php') . '" class="btn btn-degradado rounded-pill mt-3">Volver a equipos</a></div>';
     require __DIR__ . '/includes/layout_bottom.php';
     exit;
 }
@@ -25,7 +25,7 @@ foreach ($equipos as $eq) {
     $equiposPorId[$eq['id']] = $eq;
 }
 
-$tabla = calcular_tabla($equipos, $partidos);
+$tabla = calcular_tabla($equipos, $partidos, $torneo);
 $filaEquipo = null;
 foreach ($tabla as $fila) {
     if ($fila['equipo']['id'] === $id) {
@@ -75,7 +75,11 @@ require __DIR__ . '/includes/layout_top.php';
                 <div class="stat-tile text-center"><div class="fs-3 fw-bold"><?= e($equipo['fundacion']) ?></div><div class="small text-muted">Fundación</div></div>
             </div>
             <div class="col-6 col-md-3">
+                <?php if ($torneo['permite_empates']): ?>
+                <div class="stat-tile text-center"><div class="fs-3 fw-bold"><?= $filaEquipo['pg'] ?? 0 ?>-<?= $filaEquipo['pe'] ?? 0 ?>-<?= $filaEquipo['pp'] ?? 0 ?></div><div class="small text-muted">Récord (G-E-P)</div></div>
+                <?php else: ?>
                 <div class="stat-tile text-center"><div class="fs-3 fw-bold"><?= $filaEquipo['pg'] ?? 0 ?>-<?= $filaEquipo['pp'] ?? 0 ?></div><div class="small text-muted">Récord (G-P)</div></div>
+                <?php endif; ?>
             </div>
         </div>
 

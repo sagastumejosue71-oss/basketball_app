@@ -101,6 +101,25 @@ function auth_requerir(): void
 }
 
 /**
+ * Exige que haya una copa activa elegida en la sesión del admin (equipos, partidos,
+ * patrocinadores y comentarios viven "dentro" de una copa). Si no hay ninguna, manda
+ * a elegir/crear una. Devuelve la copa activa ya resuelta desde la base de datos.
+ */
+function admin_requerir_torneo_activo(): array
+{
+    $torneoId = $_SESSION['torneo_activo_id'] ?? null;
+    $torneo = $torneoId !== null ? torneos_obtener_por_id((int) $torneoId) : null;
+
+    if ($torneo === null) {
+        unset($_SESSION['torneo_activo_id']);
+        header('Location: ' . url('admin/torneos.php'));
+        exit;
+    }
+
+    return $torneo;
+}
+
+/**
  * Token anti-CSRF para formularios del panel: evita que un sitio externo pueda enviar
  * acciones (crear/editar/eliminar) en nombre del organizador ya autenticado.
  */

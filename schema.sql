@@ -1,55 +1,11 @@
--- Esquema PostgreSQL para Copa Estrellas — Liga Femenina de Basketball
--- Los IDs son asignados por la aplicación (no autoincrementales), igual que en la versión JSON.
+-- Esquema PostgreSQL para la plataforma multi-torneo (varias copas, varios deportes, un solo admin)
+-- Los IDs de las tablas "por torneo" son asignados por la aplicación (no autoincrementales),
+-- salvo torneos e imagenes que sí son SERIAL.
 
-CREATE TABLE IF NOT EXISTS equipos (
-    id INTEGER PRIMARY KEY,
-    nombre TEXT NOT NULL,
-    ciudad TEXT NOT NULL DEFAULT '',
-    sede TEXT NOT NULL DEFAULT '',
-    entrenador TEXT NOT NULL DEFAULT '',
-    fundacion TEXT NOT NULL DEFAULT '',
-    color_primario TEXT NOT NULL DEFAULT '#7b2ff7',
-    color_secundario TEXT NOT NULL DEFAULT '#ff6b35',
-    logo TEXT NOT NULL DEFAULT '',
-    descripcion TEXT NOT NULL DEFAULT ''
-);
-
-CREATE TABLE IF NOT EXISTS partidos (
-    id INTEGER PRIMARY KEY,
-    jornada INTEGER NOT NULL,
-    equipo_local INTEGER NOT NULL,
-    equipo_visitante INTEGER NOT NULL,
-    fecha TEXT NOT NULL,
-    hora TEXT NOT NULL,
-    cancha TEXT NOT NULL DEFAULT '',
-    estado TEXT NOT NULL DEFAULT 'programado',
-    marcador_local INTEGER,
-    marcador_visitante INTEGER,
-    -- 'grupos' = fase regular (tabla de posiciones); 'cuartos'/'semifinal'/'final' = eliminación directa
-    fase TEXT NOT NULL DEFAULT 'grupos'
-);
--- Por si la tabla ya existía de antes (base en producción) sin esta columna
-ALTER TABLE partidos ADD COLUMN IF NOT EXISTS fase TEXT NOT NULL DEFAULT 'grupos';
-
-CREATE TABLE IF NOT EXISTS patrocinadores (
-    id INTEGER PRIMARY KEY,
-    nombre TEXT NOT NULL,
-    nivel TEXT NOT NULL DEFAULT 'plata',
-    url TEXT NOT NULL DEFAULT '',
-    logo TEXT NOT NULL DEFAULT '',
-    orden INTEGER NOT NULL DEFAULT 0
-);
-
-CREATE TABLE IF NOT EXISTS comentarios (
-    id INTEGER PRIMARY KEY,
-    mensaje TEXT NOT NULL,
-    fecha TEXT NOT NULL,
-    leido INTEGER NOT NULL DEFAULT 0
-);
-
--- Tablas "singleton": siempre tienen exactamente una fila (id = 1)
-CREATE TABLE IF NOT EXISTS torneo (
-    id INTEGER PRIMARY KEY DEFAULT 1,
+-- Cada fila es una copa independiente (Copa Estrellas, Papifútbol Masculino, etc.)
+CREATE TABLE IF NOT EXISTS torneos (
+    id SERIAL PRIMARY KEY,
+    slug TEXT UNIQUE NOT NULL,
     nombre TEXT NOT NULL DEFAULT '',
     subtitulo TEXT NOT NULL DEFAULT '',
     temporada TEXT NOT NULL DEFAULT '',
@@ -64,12 +20,80 @@ CREATE TABLE IF NOT EXISTS torneo (
     formato TEXT NOT NULL DEFAULT '',
     instagram TEXT NOT NULL DEFAULT '',
     hero_frase TEXT NOT NULL DEFAULT '',
-    CONSTRAINT torneo_singleton CHECK (id = 1)
+    -- 'basketball' | 'futbol': define los valores por defecto de empates/puntos al crear la copa
+    deporte TEXT NOT NULL DEFAULT 'basketball',
+    -- informativo: se muestra en el sitio, no genera automáticamente el cuadro de playoffs
+    num_equipos INTEGER NOT NULL DEFAULT 8,
+    -- catálogo fijo de fases posibles: dieciseisavos, octavos, cuartos, semifinal, final
+    fases_playoff TEXT[] NOT NULL DEFAULT ARRAY['cuartos','semifinal','final'],
+    permite_empates BOOLEAN NOT NULL DEFAULT FALSE,
+    puntos_victoria INTEGER NOT NULL DEFAULT 2,
+    puntos_empate INTEGER NOT NULL DEFAULT 0,
+    puntos_derrota INTEGER NOT NULL DEFAULT 1,
+    -- solo una copa debe tener esto en TRUE: es la que responde en las URLs sin prefijo /slug/
+    es_predeterminado BOOLEAN NOT NULL DEFAULT FALSE,
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+    creado_en TIMESTAMP NOT NULL DEFAULT now()
 );
 
--- Almacena las imágenes subidas (escudos, logos, foto de perfil) como datos binarios.
--- Se usa en vez de archivos en disco porque el plan gratuito de Render no tiene disco persistente:
--- cualquier archivo escrito en assets/img/ se perdería en el próximo reinicio o despliegue.
+CREATE TABLE IF NOT EXISTS equipos (
+    id INTEGER PRIMARY KEY,
+    torneo_id INTEGER NOT NULL REFERENCES torneos(id) ON DELETE CASCADE,
+    nombre TEXT NOT NULL,
+    ciudad TEXT NOT NULL DEFAULT '',
+    sede TEXT NOT NULL DEFAULT '',
+    entrenador TEXT NOT NULL DEFAULT '',
+    fundacion TEXT NOT NULL DEFAULT '',
+    color_primario TEXT NOT NULL DEFAULT '#7b2ff7',
+    color_secundario TEXT NOT NULL DEFAULT '#ff6b35',
+    logo TEXT NOT NULL DEFAULT '',
+    descripcion TEXT NOT NULL DEFAULT ''
+);
+-- Migración aditiva para la tabla que ya existía en producción (sin torneo_id todavía)
+ALTER TABLE equipos ADD COLUMN IF NOT EXISTS torneo_id INTEGER REFERENCES torneos(id) ON DELETE CASCADE;
+
+CREATE TABLE IF NOT EXISTS partidos (
+    id INTEGER PRIMARY KEY,
+    torneo_id INTEGER NOT NULL REFERENCES torneos(id) ON DELETE CASCADE,
+    jornada INTEGER NOT NULL,
+    equipo_local INTEGER NOT NULL,
+    equipo_visitante INTEGER NOT NULL,
+    fecha TEXT NOT NULL,
+    hora TEXT NOT NULL,
+    cancha TEXT NOT NULL DEFAULT '',
+    estado TEXT NOT NULL DEFAULT 'programado',
+    marcador_local INTEGER,
+    marcador_visitante INTEGER,
+    -- 'grupos' = fase regular (tabla de posiciones); las demás son las fases de playoff de la copa
+    fase TEXT NOT NULL DEFAULT 'grupos'
+);
+ALTER TABLE partidos ADD COLUMN IF NOT EXISTS fase TEXT NOT NULL DEFAULT 'grupos';
+ALTER TABLE partidos ADD COLUMN IF NOT EXISTS torneo_id INTEGER REFERENCES torneos(id) ON DELETE CASCADE;
+
+CREATE TABLE IF NOT EXISTS patrocinadores (
+    id INTEGER PRIMARY KEY,
+    torneo_id INTEGER NOT NULL REFERENCES torneos(id) ON DELETE CASCADE,
+    nombre TEXT NOT NULL,
+    nivel TEXT NOT NULL DEFAULT 'plata',
+    url TEXT NOT NULL DEFAULT '',
+    logo TEXT NOT NULL DEFAULT '',
+    orden INTEGER NOT NULL DEFAULT 0
+);
+ALTER TABLE patrocinadores ADD COLUMN IF NOT EXISTS torneo_id INTEGER REFERENCES torneos(id) ON DELETE CASCADE;
+
+CREATE TABLE IF NOT EXISTS comentarios (
+    id INTEGER PRIMARY KEY,
+    torneo_id INTEGER NOT NULL REFERENCES torneos(id) ON DELETE CASCADE,
+    mensaje TEXT NOT NULL,
+    fecha TEXT NOT NULL,
+    leido INTEGER NOT NULL DEFAULT 0
+);
+ALTER TABLE comentarios ADD COLUMN IF NOT EXISTS torneo_id INTEGER REFERENCES torneos(id) ON DELETE CASCADE;
+
+-- Almacena las imágenes subidas (escudos, logos, foto de perfil) como datos binarios, compartida
+-- entre todas las copas. Se usa en vez de archivos en disco porque el plan gratuito de Render no
+-- tiene disco persistente: cualquier archivo escrito en assets/img/ se perdería en el próximo
+-- reinicio o despliegue.
 CREATE TABLE IF NOT EXISTS imagenes (
     id SERIAL PRIMARY KEY,
     mime TEXT NOT NULL,
@@ -78,6 +102,7 @@ CREATE TABLE IF NOT EXISTS imagenes (
 );
 
 -- Registra cada intento de login (correcto o incorrecto) por IP, para limitar fuerza bruta.
+-- Global: hay un solo admin para todas las copas.
 CREATE TABLE IF NOT EXISTS intentos_login (
     id SERIAL PRIMARY KEY,
     ip TEXT NOT NULL,
@@ -85,6 +110,7 @@ CREATE TABLE IF NOT EXISTS intentos_login (
 );
 CREATE INDEX IF NOT EXISTS idx_intentos_login_ip_fecha ON intentos_login (ip, intentado_en);
 
+-- Singleton: un solo organizador para todas las copas.
 CREATE TABLE IF NOT EXISTS organizador (
     id INTEGER PRIMARY KEY DEFAULT 1,
     usuario TEXT NOT NULL,

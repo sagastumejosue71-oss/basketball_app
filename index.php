@@ -4,19 +4,19 @@ require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/helpers.php';
 require_once __DIR__ . '/includes/tabla.php';
+require_once __DIR__ . '/includes/torneo_actual.php';
 
-$torneo = db_leer('torneo');
-$equipos = db_leer('equipos');
-$partidos = db_leer('partidos');
-$patrocinadores = db_leer('patrocinadores');
+$equipos = db_leer('equipos', $torneo['id']);
+$partidos = db_leer('partidos', $torneo['id']);
+$patrocinadores = db_leer('patrocinadores', $torneo['id']);
 
-$tabla = calcular_tabla($equipos, $partidos);
+$tabla = calcular_tabla($equipos, $partidos, $torneo);
 $top5 = array_slice($tabla, 0, 5);
 $proximos = proximos_partidos($partidos, 3);
 $resultados = ultimos_resultados($partidos, 3);
 $totalJugados = count(array_filter($partidos, fn($p) => $p['estado'] === 'jugado'));
 $totalProgramados = count(array_filter($partidos, fn($p) => $p['estado'] === 'programado'));
-$jornadaActual = max(array_column($partidos, 'jornada'));
+$jornadaActual = empty($partidos) ? 0 : max(array_column($partidos, 'jornada'));
 
 $equiposPorId = [];
 foreach ($equipos as $eq) {
@@ -41,8 +41,8 @@ require __DIR__ . '/includes/layout_top.php';
                 <h1 class="text-white mb-3"><?= e($torneo['nombre']) ?> <span class="text-degradado d-block d-sm-inline"><?= e($torneo['subtitulo']) ?></span></h1>
                 <p class="fs-5 mb-4" style="color:rgba(255,255,255,.8);max-width:560px;"><?= e($torneo['hero_frase']) ?>. <?= e($torneo['descripcion']) ?></p>
                 <div class="d-flex flex-wrap gap-3 mb-5">
-                    <a href="<?= url('tabla.php') ?>" class="btn btn-degradado btn-lg rounded-pill px-4">Ver tabla de posiciones</a>
-                    <a href="<?= url('calendario.php') ?>" class="btn btn-outline-luz btn-lg rounded-pill px-4">Calendario completo</a>
+                    <a href="<?= url_copa('tabla.php') ?>" class="btn btn-degradado btn-lg rounded-pill px-4">Ver tabla de posiciones</a>
+                    <a href="<?= url_copa('calendario.php') ?>" class="btn btn-outline-luz btn-lg rounded-pill px-4">Calendario completo</a>
                 </div>
                 <div class="row row-cols-2 row-cols-sm-4 g-3">
                     <div class="col"><div class="hero-stat"><div class="valor"><?= count($equipos) ?></div><div class="etiqueta">Equipos</div></div></div>
@@ -66,7 +66,7 @@ require __DIR__ . '/includes/layout_top.php';
                 <p class="eyebrow mb-1">Clasificación</p>
                 <h2 class="mb-0">Tabla de posiciones</h2>
             </div>
-            <a href="<?= url('tabla.php') ?>" class="btn btn-sm btn-outline-secondary rounded-pill px-3 mt-3 mt-sm-0">Ver tabla completa <i class="bi bi-arrow-right ms-1"></i></a>
+            <a href="<?= url_copa('tabla.php') ?>" class="btn btn-sm btn-outline-secondary rounded-pill px-3 mt-3 mt-sm-0">Ver tabla completa <i class="bi bi-arrow-right ms-1"></i></a>
         </div>
         <div class="table-responsive">
             <table class="table tabla-posiciones align-middle mb-0">
@@ -88,7 +88,7 @@ require __DIR__ . '/includes/layout_top.php';
                             <span class="pos-num <?= $fila['posicion'] === 1 ? 'oro' : ($fila['posicion'] === 2 ? 'plata' : ($fila['posicion'] === 3 ? 'bronce' : '')) ?>"><?= $fila['posicion'] ?></span>
                         </td>
                         <td>
-                            <a href="<?= url('equipo.php?id=' . $fila['equipo']['id']) ?>" class="d-flex align-items-center gap-2 text-decoration-none text-dark">
+                            <a href="<?= url_copa('equipo.php?id=' . $fila['equipo']['id']) ?>" class="d-flex align-items-center gap-2 text-decoration-none text-dark">
                                 <?= logo_equipo($fila['equipo'], 34) ?>
                                 <span class="fw-semibold"><?= e($fila['equipo']['nombre']) ?></span>
                             </a>
@@ -177,7 +177,7 @@ require __DIR__ . '/includes/layout_top.php';
         <div class="row row-cols-2 row-cols-md-4 g-3">
             <?php foreach ($equipos as $eq): ?>
             <div class="col">
-                <a href="<?= url('equipo.php?id=' . $eq['id']) ?>" class="equipo-tile">
+                <a href="<?= url_copa('equipo.php?id=' . $eq['id']) ?>" class="equipo-tile">
                     <?= logo_equipo($eq, 68) ?>
                     <div class="nombre"><?= e($eq['nombre']) ?></div>
                     <div class="ciudad"><?= e($eq['ciudad']) ?></div>

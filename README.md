@@ -22,7 +22,7 @@ Los datos (equipos, partidos, patrocinadores, comentarios, torneo, organizador) 
    ```
 3. Levanta el servidor:
    ```
-   php -S localhost:8000
+   php -S localhost:8000 router.php
    ```
 
 ## Acceso al panel del organizador

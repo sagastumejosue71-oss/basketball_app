@@ -327,6 +327,7 @@ h1, h2, h3, h4, h5, h6, .fw-heading {
 }
 .racha-punto.g { background: #22c55e; }
 .racha-punto.p { background: #e5484d; }
+.racha-punto.e { background: #f0b429; }
 
 /* ---------- Partidos ---------- */
 .partido-card {

@@ -69,3 +69,17 @@ function url(string $path = ''): string
 {
     return BASE_URL . '/' . ltrim($path, '/');
 }
+
+/**
+ * Igual que url(), pero antepone el slug de la copa actual (variable global $torneo)
+ * cuando no es la copa predeterminada, para que los links del sitio se queden dentro
+ * de la misma copa (/slug/tabla.php en vez de /tabla.php).
+ */
+function url_copa(string $path = ''): string
+{
+    global $torneo;
+    $prefijo = (!empty($torneo) && empty($torneo['es_predeterminado']) && !empty($torneo['slug']))
+        ? '/' . $torneo['slug']
+        : '';
+    return BASE_URL . $prefijo . '/' . ltrim($path, '/');
+}

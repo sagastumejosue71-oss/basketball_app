@@ -1,15 +1,35 @@
 <?php
 declare(strict_types=1);
 
+// Catálogo fijo de todas las fases de eliminación directa posibles, de mayor a menor.
+// Cada copa elige un subconjunto (torneo['fases_playoff']) al crearse/editarse.
+const FASES_PLAYOFF_CATALOGO = ['dieciseisavos', 'octavos', 'cuartos', 'semifinal', 'final'];
+
+const FASES_LABEL = [
+    'grupos' => 'Fase de Grupos',
+    'dieciseisavos' => 'Dieciseisavos de Final',
+    'octavos' => 'Octavos de Final',
+    'cuartos' => 'Cuartos de Final',
+    'semifinal' => 'Semifinal',
+    'final' => 'Final',
+];
+
 /**
- * Calcula la tabla de posiciones a partir de los equipos y los partidos jugados.
- * Orden: Puntos de tabla (2 x victoria + 1 x derrota jugada) > Diferencia de puntos > Puntos a favor.
+ * Calcula la tabla de posiciones a partir de los equipos y los partidos jugados de fase de grupos.
+ * Las reglas (si hay empates, cuántos puntos vale cada resultado) vienen del torneo, porque
+ * basketball y fútbol se califican distinto.
  *
+ * @param array $reglas ['permite_empates' => bool, 'puntos_victoria' => int, 'puntos_empate' => int, 'puntos_derrota' => int]
  * @return array<int, array> Tabla ordenada, cada fila incluye los datos del equipo + estadísticas + posición.
  */
-function calcular_tabla(array $equipos, array $partidos): array
+function calcular_tabla(array $equipos, array $partidos, array $reglas): array
 {
-    // Los encuentros de playoffs (cuartos/semifinal/final) no cuentan para la tabla de la fase regular
+    $permiteEmpates = !empty($reglas['permite_empates']);
+    $ptsVictoria = (int) ($reglas['puntos_victoria'] ?? 2);
+    $ptsEmpate = (int) ($reglas['puntos_empate'] ?? 0);
+    $ptsDerrota = (int) ($reglas['puntos_derrota'] ?? 1);
+
+    // Los encuentros de playoffs no cuentan para la tabla de la fase regular
     $partidos = array_filter($partidos, fn($p) => ($p['fase'] ?? 'grupos') === 'grupos');
 
     $stats = [];
@@ -18,6 +38,7 @@ function calcular_tabla(array $equipos, array $partidos): array
             'equipo' => $equipo,
             'pj' => 0,
             'pg' => 0,
+            'pe' => 0,
             'pp' => 0,
             'pf' => 0,
             'pc' => 0,
@@ -46,7 +67,12 @@ function calcular_tabla(array $equipos, array $partidos): array
         $stats[$visitId]['pf'] += $pv;
         $stats[$visitId]['pc'] += $pl;
 
-        if ($pl > $pv) {
+        if ($pl === $pv && $permiteEmpates) {
+            $stats[$localId]['pe']++;
+            $stats[$visitId]['pe']++;
+            $stats[$localId]['racha'][] = 'E';
+            $stats[$visitId]['racha'][] = 'E';
+        } elseif ($pl > $pv) {
             $stats[$localId]['pg']++;
             $stats[$visitId]['pp']++;
             $stats[$localId]['racha'][] = 'G';
@@ -62,7 +88,7 @@ function calcular_tabla(array $equipos, array $partidos): array
     $tabla = [];
     foreach ($stats as $fila) {
         $fila['dif'] = $fila['pf'] - $fila['pc'];
-        $fila['pts'] = $fila['pg'] * 2 + $fila['pp'] * 1;
+        $fila['pts'] = $fila['pg'] * $ptsVictoria + $fila['pe'] * $ptsEmpate + $fila['pp'] * $ptsDerrota;
         $fila['porcentaje'] = $fila['pj'] > 0 ? round(($fila['pg'] / $fila['pj']) * 100) : 0;
         $fila['racha'] = array_slice(array_reverse($fila['racha']), 0, 5);
         $tabla[] = $fila;
@@ -124,23 +150,16 @@ function partidos_por_jornada(array $partidos): array
     return $jornadas;
 }
 
-const FASES_PLAYOFF = ['cuartos', 'semifinal', 'final'];
-
-const FASES_LABEL = [
-    'grupos' => 'Fase de Grupos',
-    'cuartos' => 'Cuartos de Final',
-    'semifinal' => 'Semifinal',
-    'final' => 'Final',
-];
-
 /**
- * Agrupa los encuentros de eliminación directa por fase (cuartos, semifinal, final),
- * cada uno ordenado por fecha. Las fases sin encuentros cargados igual aparecen (lista vacía),
- * para que la web pueda mostrar el espacio reservado aunque el organizador no lo haya llenado aún.
+ * Agrupa los encuentros de eliminación directa por fase, cada uno ordenado por fecha.
+ * Las fases que la copa tiene habilitadas (aunque sin encuentros cargados) igual aparecen
+ * como lista vacía, para que la web pueda mostrar el espacio reservado.
+ *
+ * @param array $fasesHabilitadas Las fases que esta copa usa, ej. ['cuartos','semifinal','final']
  */
-function partidos_playoffs_por_fase(array $partidos): array
+function partidos_playoffs_por_fase(array $partidos, array $fasesHabilitadas): array
 {
-    $porFase = array_fill_keys(FASES_PLAYOFF, []);
+    $porFase = array_fill_keys($fasesHabilitadas, []);
     foreach ($partidos as $p) {
         $fase = $p['fase'] ?? 'grupos';
         if (isset($porFase[$fase])) {

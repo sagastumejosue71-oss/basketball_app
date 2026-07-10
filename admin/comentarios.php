@@ -6,8 +6,9 @@ require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/helpers.php';
 
 auth_requerir();
+$torneo = admin_requerir_torneo_activo();
 
-$comentarios = db_leer('comentarios');
+$comentarios = db_leer('comentarios', $torneo['id']);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_validar();
@@ -21,13 +22,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
         unset($c);
-        db_guardar('comentarios', $comentarios);
+        db_guardar('comentarios', $comentarios, $torneo['id']);
         redirigir_con_mensaje(url('admin/comentarios.php'), 'success', 'Comentario marcado como leído.');
     }
 
     if (($_POST['accion'] ?? '') === 'eliminar') {
         $comentarios = array_values(array_filter($comentarios, fn($c) => $c['id'] !== $id));
-        db_guardar('comentarios', $comentarios);
+        db_guardar('comentarios', $comentarios, $torneo['id']);
         redirigir_con_mensaje(url('admin/comentarios.php'), 'success', 'Comentario eliminado.');
     }
 }

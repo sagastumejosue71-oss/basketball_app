@@ -4,40 +4,40 @@ require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/helpers.php';
 require_once __DIR__ . '/includes/filtro.php';
+require_once __DIR__ . '/includes/torneo_actual.php';
 
-$torneo = db_leer('torneo');
 $organizador = db_leer('organizador');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Honeypot: los bots suelen rellenar este campo oculto; los humanos lo dejan vacío
     if (!empty($_POST['sitio_web'])) {
-        redirigir_con_mensaje(url('organizador.php'), 'success', '¡Gracias por tu comentario!');
+        redirigir_con_mensaje(url_copa('organizador.php'), 'success', '¡Gracias por tu comentario!');
     }
 
     $ultimoEnvio = $_SESSION['ultimo_comentario'] ?? 0;
     if (time() - $ultimoEnvio < 20) {
-        redirigir_con_mensaje(url('organizador.php'), 'error', 'Espera unos segundos antes de enviar otro comentario.');
+        redirigir_con_mensaje(url_copa('organizador.php'), 'error', 'Espera unos segundos antes de enviar otro comentario.');
     }
 
     $mensaje = trim((string) ($_POST['mensaje'] ?? ''));
 
     if (mb_strlen($mensaje) < 5) {
-        redirigir_con_mensaje(url('organizador.php'), 'error', 'Tu comentario es muy corto. Cuéntanos un poco más.');
+        redirigir_con_mensaje(url_copa('organizador.php'), 'error', 'Tu comentario es muy corto. Cuéntanos un poco más.');
     } elseif (mb_strlen($mensaje) > 800) {
-        redirigir_con_mensaje(url('organizador.php'), 'error', 'Tu comentario es demasiado largo (máximo 800 caracteres).');
+        redirigir_con_mensaje(url_copa('organizador.php'), 'error', 'Tu comentario es demasiado largo (máximo 800 caracteres).');
     } elseif (contiene_lenguaje_inapropiado($mensaje)) {
-        redirigir_con_mensaje(url('organizador.php'), 'error', 'Tu comentario contiene lenguaje inapropiado. Por favor reformúlalo con respeto.');
+        redirigir_con_mensaje(url_copa('organizador.php'), 'error', 'Tu comentario contiene lenguaje inapropiado. Por favor reformúlalo con respeto.');
     } else {
-        $comentarios = db_leer('comentarios');
+        $comentarios = db_leer('comentarios', $torneo['id']);
         $comentarios[] = [
-            'id' => db_siguiente_id($comentarios),
+            'id' => db_siguiente_id_global('comentarios'),
             'mensaje' => $mensaje,
             'fecha' => date('Y-m-d H:i'),
             'leido' => false,
         ];
-        db_guardar('comentarios', $comentarios);
+        db_guardar('comentarios', $comentarios, $torneo['id']);
         $_SESSION['ultimo_comentario'] = time();
-        redirigir_con_mensaje(url('organizador.php'), 'success', '¡Gracias! Tu comentario anónimo fue enviado a la organización.');
+        redirigir_con_mensaje(url_copa('organizador.php'), 'success', '¡Gracias! Tu comentario anónimo fue enviado a la organización.');
     }
 }
 

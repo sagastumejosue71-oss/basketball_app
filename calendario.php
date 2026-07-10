@@ -4,18 +4,18 @@ require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/helpers.php';
 require_once __DIR__ . '/includes/tabla.php';
+require_once __DIR__ . '/includes/torneo_actual.php';
 
-$torneo = db_leer('torneo');
-$equipos = db_leer('equipos');
-$partidos = db_leer('partidos');
+$equipos = db_leer('equipos', $torneo['id']);
+$partidos = db_leer('partidos', $torneo['id']);
 $equiposPorId = [];
 foreach ($equipos as $eq) {
     $equiposPorId[$eq['id']] = $eq;
 }
 
 $jornadas = partidos_por_jornada($partidos);
-$playoffsPorFase = partidos_playoffs_por_fase($partidos);
-$fasesValidas = array_merge(['grupos'], FASES_PLAYOFF);
+$playoffsPorFase = partidos_playoffs_por_fase($partidos, $torneo['fases_playoff']);
+$fasesValidas = array_merge(['grupos'], $torneo['fases_playoff']);
 
 $faseSeleccionada = $_GET['fase'] ?? 'grupos';
 if (!in_array($faseSeleccionada, $fasesValidas, true)) {
@@ -62,7 +62,7 @@ function tarjeta_partido_publica(array $p, array $equiposPorId): void
                 <?php endif; ?>
             </div>
             <div class="d-flex align-items-center justify-content-between">
-                <a href="<?= url('equipo.php?id=' . $local['id']) ?>" class="equipo-col text-decoration-none text-dark">
+                <a href="<?= url_copa('equipo.php?id=' . $local['id']) ?>" class="equipo-col text-decoration-none text-dark">
                     <?= logo_equipo($local, 56) ?>
                     <span class="nombre <?= $jugado && $p['marcador_local'] > $p['marcador_visitante'] ? 'text-success' : '' ?>"><?= e($local['nombre']) ?></span>
                 </a>
@@ -73,7 +73,7 @@ function tarjeta_partido_publica(array $p, array $equiposPorId): void
                         <span class="text-muted fs-5">VS</span>
                     <?php endif; ?>
                 </div>
-                <a href="<?= url('equipo.php?id=' . $visit['id']) ?>" class="equipo-col text-decoration-none text-dark">
+                <a href="<?= url_copa('equipo.php?id=' . $visit['id']) ?>" class="equipo-col text-decoration-none text-dark">
                     <?= logo_equipo($visit, 56) ?>
                     <span class="nombre <?= $jugado && $p['marcador_visitante'] > $p['marcador_local'] ? 'text-success' : '' ?>"><?= e($visit['nombre']) ?></span>
                 </a>
@@ -89,7 +89,7 @@ function tarjeta_partido_publica(array $p, array $equiposPorId): void
     <div class="container">
         <p class="kicker mb-2"><i class="bi bi-calendar-week me-1"></i>Temporada <?= e($torneo['temporada']) ?></p>
         <h1 class="text-white mb-2">Calendario de <span class="text-degradado">Encuentros</span></h1>
-        <p style="color:rgba(255,255,255,.75);" class="mb-0">Fase de grupos y eliminación directa: cuartos, semifinal y la gran final.</p>
+        <p style="color:rgba(255,255,255,.75);" class="mb-0">Fase de grupos y eliminación directa.</p>
     </div>
 </header>
 
@@ -97,7 +97,7 @@ function tarjeta_partido_publica(array $p, array $equiposPorId): void
     <div class="container">
         <div class="d-flex flex-wrap gap-2 mb-4 justify-content-center">
             <?php foreach ($fasesValidas as $f): ?>
-            <a href="<?= url('calendario.php?fase=' . $f) ?>" class="btn btn-sm rounded-pill px-3 <?= $faseSeleccionada === $f ? 'btn-degradado' : 'btn-outline-secondary' ?>"><?= e(FASES_LABEL[$f]) ?></a>
+            <a href="<?= url_copa('calendario.php?fase=' . $f) ?>" class="btn btn-sm rounded-pill px-3 <?= $faseSeleccionada === $f ? 'btn-degradado' : 'btn-outline-secondary' ?>"><?= e(FASES_LABEL[$f]) ?></a>
             <?php endforeach; ?>
         </div>
 
@@ -108,7 +108,7 @@ function tarjeta_partido_publica(array $p, array $equiposPorId): void
             <?php else: ?>
                 <div class="d-flex flex-wrap gap-2 mb-4 justify-content-center">
                     <?php foreach (array_keys($jornadas) as $num): ?>
-                    <a href="<?= url('calendario.php?jornada=' . $num) ?>" class="btn btn-sm rounded-pill px-3 <?= $num === $jornadaSeleccionada ? 'btn-degradado' : 'btn-outline-secondary' ?>">Jornada <?= $num ?></a>
+                    <a href="<?= url_copa('calendario.php?jornada=' . $num) ?>" class="btn btn-sm rounded-pill px-3 <?= $num === $jornadaSeleccionada ? 'btn-degradado' : 'btn-outline-secondary' ?>">Jornada <?= $num ?></a>
                     <?php endforeach; ?>
                 </div>
                 <div class="row row-cols-1 row-cols-lg-2 g-3">

@@ -7,8 +7,9 @@ require_once __DIR__ . '/../includes/helpers.php';
 require_once __DIR__ . '/../includes/upload.php';
 
 auth_requerir();
+$torneo = admin_requerir_torneo_activo();
 
-$patrocinadores = db_leer('patrocinadores');
+$patrocinadores = db_leer('patrocinadores', $torneo['id']);
 usort($patrocinadores, fn($a, $b) => ($a['orden'] ?? 0) <=> ($b['orden'] ?? 0));
 
 $accion = $_GET['accion'] ?? 'lista';
@@ -22,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id = (int) $_POST['id'];
         $itemAEliminar = db_buscar_por_id($patrocinadores, $id);
         $patrocinadores = array_values(array_filter($patrocinadores, fn($p) => $p['id'] !== $id));
-        db_guardar('patrocinadores', $patrocinadores);
+        db_guardar('patrocinadores', $patrocinadores, $torneo['id']);
         if ($itemAEliminar) {
             eliminar_imagen($itemAEliminar['logo'] ?? null);
         }
@@ -63,13 +64,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             unset($p);
             $mensaje = 'Patrocinador actualizado.';
         } else {
-            $datos['id'] = db_siguiente_id($patrocinadores);
+            $datos['id'] = db_siguiente_id_global('patrocinadores');
             $datos['logo'] = $logoSubido ?? '';
             $patrocinadores[] = $datos;
             $mensaje = 'Patrocinador agregado.';
         }
 
-        db_guardar('patrocinadores', $patrocinadores);
+        db_guardar('patrocinadores', $patrocinadores, $torneo['id']);
         redirigir_con_mensaje(url('admin/patrocinadores.php'), 'success', $mensaje);
     }
 }

@@ -4,11 +4,11 @@ require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/helpers.php';
 require_once __DIR__ . '/includes/tabla.php';
+require_once __DIR__ . '/includes/torneo_actual.php';
 
-$torneo = db_leer('torneo');
-$equipos = db_leer('equipos');
-$partidos = db_leer('partidos');
-$tabla = calcular_tabla($equipos, $partidos);
+$equipos = db_leer('equipos', $torneo['id']);
+$partidos = db_leer('partidos', $torneo['id']);
+$tabla = calcular_tabla($equipos, $partidos, $torneo);
 $posicionPorEquipo = [];
 foreach ($tabla as $fila) {
     $posicionPorEquipo[$fila['equipo']['id']] = $fila['posicion'];
@@ -32,7 +32,7 @@ require __DIR__ . '/includes/layout_top.php';
         <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
             <?php foreach ($equipos as $eq): ?>
             <div class="col">
-                <a href="<?= url('equipo.php?id=' . $eq['id']) ?>" class="text-decoration-none text-dark">
+                <a href="<?= url_copa('equipo.php?id=' . $eq['id']) ?>" class="text-decoration-none text-dark">
                     <div class="card-suave p-4 h-100 text-center">
                         <div class="mx-auto mb-3"><?= logo_equipo($eq, 90) ?></div>
                         <h5 class="mb-1"><?= e($eq['nombre']) ?></h5>

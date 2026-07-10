@@ -7,12 +7,17 @@ require_once __DIR__ . '/../../includes/helpers.php';
 
 auth_requerir();
 
-$torneo = db_leer('torneo');
+// Copa activa, solo para mostrarla en el sidebar (las páginas que de verdad la necesitan
+// la exigen ellas mismas con admin_requerir_torneo_activo() antes de llegar aquí).
+$torneoActivoId = $_SESSION['torneo_activo_id'] ?? null;
+$torneoActivo = $torneoActivoId !== null ? torneos_obtener_por_id((int) $torneoActivoId) : null;
+
 $organizador = db_leer('organizador');
 $seccion_activa = $seccion_activa ?? '';
 $titulo_pagina = $titulo_pagina ?? 'Panel del Organizador';
 $flash = obtener_flash();
-$comentariosNoLeidos = count(array_filter(db_leer('comentarios'), fn($c) => empty($c['leido'])));
+$comentariosNoLeidos = $torneoActivo ? count(array_filter(db_leer('comentarios', $torneoActivo['id']), fn($c) => empty($c['leido']))) : 0;
+$nombreMarca = $torneoActivo['nombre'] ?? 'Panel Organizador';
 
 function admin_nav_activa(string $clave, string $activa): string
 {
@@ -22,6 +27,21 @@ function admin_nav_activa(string $clave, string $activa): string
 function admin_badge_no_leidos(int $cantidad): string
 {
     return $cantidad > 0 ? ' <span class="badge rounded-pill text-bg-danger ms-1">' . $cantidad . '</span>' : '';
+}
+
+function admin_nav_copa(string $seccion_activa, ?array $torneoActivo): string
+{
+    ob_start();
+    if ($torneoActivo) {
+        ?>
+        <a class="nav-link <?= admin_nav_activa('equipos', $seccion_activa) ?>" href="<?= url('admin/equipos.php') ?>"><i class="bi bi-people me-2"></i>Equipos</a>
+        <a class="nav-link <?= admin_nav_activa('partidos', $seccion_activa) ?>" href="<?= url('admin/partidos.php') ?>"><i class="bi bi-calendar2-week me-2"></i>Encuentros</a>
+        <a class="nav-link <?= admin_nav_activa('patrocinadores', $seccion_activa) ?>" href="<?= url('admin/patrocinadores.php') ?>"><i class="bi bi-award me-2"></i>Patrocinadores</a>
+        <a class="nav-link <?= admin_nav_activa('comentarios', $seccion_activa) ?>" href="<?= url('admin/comentarios.php') ?>"><i class="bi bi-chat-heart me-2"></i>Comentarios</a>
+        <a class="nav-link <?= admin_nav_activa('torneos', $seccion_activa) ?>" href="<?= url('admin/torneos.php?accion=editar&id=' . $torneoActivo['id']) ?>"><i class="bi bi-sliders me-2"></i>Configuración de la copa</a>
+        <?php
+    }
+    return (string) ob_get_clean();
 }
 ?>
 <!doctype html>
@@ -39,28 +59,31 @@ function admin_badge_no_leidos(int $cantidad): string
 <body style="background:#f7f5fb;">
 <div class="d-flex">
     <aside class="sidebar-admin d-none d-lg-flex flex-column p-3" style="width:270px;flex-shrink:0;">
-        <a href="<?= url('admin/index.php') ?>" class="d-flex align-items-center gap-2 text-decoration-none text-white mb-4 px-2 pt-2">
+        <a href="<?= url('admin/index.php') ?>" class="d-flex align-items-center gap-2 text-decoration-none text-white mb-3 px-2 pt-2">
             <span class="badge-pill-icon"><?= icono_balon(20) ?></span>
-            <span class="fw-heading fs-6"><?= e($torneo['nombre']) ?></span>
+            <span class="fw-heading fs-6"><?= e($nombreMarca) ?></span>
+        </a>
+        <a href="<?= url('admin/torneos.php') ?>" class="d-block small text-decoration-none px-2 mb-3" style="color:rgba(255,255,255,.6);">
+            <i class="bi bi-arrow-left-right me-1"></i>Cambiar de copa
         </a>
         <nav class="nav flex-column flex-grow-1">
             <a class="nav-link <?= admin_nav_activa('dashboard', $seccion_activa) ?>" href="<?= url('admin/index.php') ?>"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a>
-            <a class="nav-link <?= admin_nav_activa('equipos', $seccion_activa) ?>" href="<?= url('admin/equipos.php') ?>"><i class="bi bi-people me-2"></i>Equipos</a>
-            <a class="nav-link <?= admin_nav_activa('partidos', $seccion_activa) ?>" href="<?= url('admin/partidos.php') ?>"><i class="bi bi-calendar2-week me-2"></i>Encuentros</a>
-            <a class="nav-link <?= admin_nav_activa('patrocinadores', $seccion_activa) ?>" href="<?= url('admin/patrocinadores.php') ?>"><i class="bi bi-award me-2"></i>Patrocinadores</a>
-            <a class="nav-link <?= admin_nav_activa('comentarios', $seccion_activa) ?>" href="<?= url('admin/comentarios.php') ?>"><i class="bi bi-chat-heart me-2"></i>Comentarios<?= admin_badge_no_leidos($comentariosNoLeidos) ?></a>
-            <a class="nav-link <?= admin_nav_activa('torneo', $seccion_activa) ?>" href="<?= url('admin/torneo.php') ?>"><i class="bi bi-trophy me-2"></i>Torneo</a>
+            <?= admin_nav_copa($seccion_activa, $torneoActivo) ?>
+            <hr class="border-secondary opacity-25 my-2">
+            <a class="nav-link <?= admin_nav_activa('torneos-lista', $seccion_activa) ?>" href="<?= url('admin/torneos.php') ?>"><i class="bi bi-trophy me-2"></i>Mis Copas</a>
             <a class="nav-link <?= admin_nav_activa('perfil', $seccion_activa) ?>" href="<?= url('admin/perfil.php') ?>"><i class="bi bi-person-badge me-2"></i>Mi Perfil</a>
         </nav>
         <hr class="border-secondary opacity-25">
-        <a href="<?= url('index.php') ?>" class="nav-link" target="_blank"><i class="bi bi-box-arrow-up-right me-2"></i>Ver sitio público</a>
+        <?php if ($torneoActivo): ?>
+        <a href="<?= url(($torneoActivo['es_predeterminado'] ? '' : $torneoActivo['slug'] . '/') . 'index.php') ?>" class="nav-link" target="_blank"><i class="bi bi-box-arrow-up-right me-2"></i>Ver sitio público</a>
+        <?php endif; ?>
         <a href="<?= url('logout.php') ?>" class="nav-link text-danger-emphasis"><i class="bi bi-box-arrow-right me-2"></i>Cerrar sesión</a>
     </aside>
 
     <main class="flex-grow-1 min-vh-100">
         <nav class="navbar navbar-light bg-white border-bottom d-lg-none px-3">
             <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMovil"><i class="bi bi-list fs-5"></i></button>
-            <span class="fw-heading"><?= e($torneo['nombre']) ?></span>
+            <span class="fw-heading"><?= e($nombreMarca) ?></span>
             <a href="<?= url('logout.php') ?>" class="btn btn-sm btn-outline-danger"><i class="bi bi-box-arrow-right"></i></a>
         </nav>
 
@@ -70,13 +93,14 @@ function admin_badge_no_leidos(int $cantidad): string
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
             </div>
             <div class="offcanvas-body">
+                <a href="<?= url('admin/torneos.php') ?>" class="d-block small text-decoration-none mb-3" style="color:rgba(255,255,255,.6);">
+                    <i class="bi bi-arrow-left-right me-1"></i>Cambiar de copa
+                </a>
                 <nav class="nav flex-column">
                     <a class="nav-link <?= admin_nav_activa('dashboard', $seccion_activa) ?>" href="<?= url('admin/index.php') ?>"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a>
-                    <a class="nav-link <?= admin_nav_activa('equipos', $seccion_activa) ?>" href="<?= url('admin/equipos.php') ?>"><i class="bi bi-people me-2"></i>Equipos</a>
-                    <a class="nav-link <?= admin_nav_activa('partidos', $seccion_activa) ?>" href="<?= url('admin/partidos.php') ?>"><i class="bi bi-calendar2-week me-2"></i>Encuentros</a>
-                    <a class="nav-link <?= admin_nav_activa('patrocinadores', $seccion_activa) ?>" href="<?= url('admin/patrocinadores.php') ?>"><i class="bi bi-award me-2"></i>Patrocinadores</a>
-                    <a class="nav-link <?= admin_nav_activa('comentarios', $seccion_activa) ?>" href="<?= url('admin/comentarios.php') ?>"><i class="bi bi-chat-heart me-2"></i>Comentarios<?= admin_badge_no_leidos($comentariosNoLeidos) ?></a>
-                    <a class="nav-link <?= admin_nav_activa('torneo', $seccion_activa) ?>" href="<?= url('admin/torneo.php') ?>"><i class="bi bi-trophy me-2"></i>Torneo</a>
+                    <?= admin_nav_copa($seccion_activa, $torneoActivo) ?>
+                    <hr class="border-secondary opacity-25 my-2">
+                    <a class="nav-link <?= admin_nav_activa('torneos-lista', $seccion_activa) ?>" href="<?= url('admin/torneos.php') ?>"><i class="bi bi-trophy me-2"></i>Mis Copas</a>
                     <a class="nav-link <?= admin_nav_activa('perfil', $seccion_activa) ?>" href="<?= url('admin/perfil.php') ?>"><i class="bi bi-person-badge me-2"></i>Mi Perfil</a>
                 </nav>
             </div>

@@ -29,6 +29,43 @@ document.addEventListener('DOMContentLoaded', function () {
         selectFase.addEventListener('change', actualizarVisibilidadJornada);
     }
 
+    // Formulario de copas: sugiere la URL (slug) a partir del nombre, mientras el usuario no la edite a mano
+    var campoNombre = document.getElementById('campoNombre');
+    var campoSlug = document.getElementById('campoSlug');
+    if (campoNombre && campoSlug) {
+        var slugTocadoAMano = campoSlug.value.trim() !== '';
+        campoSlug.addEventListener('input', function () { slugTocadoAMano = true; });
+        campoNombre.addEventListener('input', function () {
+            if (slugTocadoAMano) {
+                return;
+            }
+            var mapa = { 'á': 'a', 'é': 'e', 'í': 'i', 'ó': 'o', 'ú': 'u', 'ñ': 'n', 'ü': 'u' };
+            var texto = campoNombre.value.toLowerCase().replace(/[áéíóúñü]/g, function (c) { return mapa[c]; });
+            campoSlug.value = texto.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+        });
+    }
+
+    // Formulario de copas: al elegir el deporte, sugiere si hay empates y cuántos puntos vale cada resultado
+    var selectDeporte = document.getElementById('selectDeporte');
+    if (selectDeporte) {
+        var checkEmpates = document.getElementById('checkEmpates');
+        var campoPtsVictoria = document.getElementById('campoPtsVictoria');
+        var campoPtsEmpate = document.getElementById('campoPtsEmpate');
+        var campoPtsDerrota = document.getElementById('campoPtsDerrota');
+        var presets = {
+            basketball: { empates: false, victoria: 2, empate: 0, derrota: 1 },
+            futbol: { empates: true, victoria: 3, empate: 1, derrota: 0 },
+        };
+        selectDeporte.addEventListener('change', function () {
+            var preset = presets[selectDeporte.value];
+            if (!preset) { return; }
+            checkEmpates.checked = preset.empates;
+            campoPtsVictoria.value = preset.victoria;
+            campoPtsEmpate.value = preset.empate;
+            campoPtsDerrota.value = preset.derrota;
+        });
+    }
+
     // Auto-cierre de alertas flash
     document.querySelectorAll('.alert[data-autoclose]').forEach(function (alerta) {
         setTimeout(function () {

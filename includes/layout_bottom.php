@@ -14,16 +14,17 @@
             <div class="col-lg-2 col-6">
                 <h6 class="text-white mb-3">Torneo</h6>
                 <ul class="list-unstyled small d-flex flex-column gap-2">
-                    <li><a href="<?= url('tabla.php') ?>">Tabla de posiciones</a></li>
-                    <li><a href="<?= url('calendario.php') ?>">Calendario</a></li>
-                    <li><a href="<?= url('equipos.php') ?>">Equipos</a></li>
+                    <li><a href="<?= url_copa('tabla.php') ?>">Tabla de posiciones</a></li>
+                    <li><a href="<?= url_copa('calendario.php') ?>">Calendario</a></li>
+                    <li><a href="<?= url_copa('equipos.php') ?>">Equipos</a></li>
                 </ul>
             </div>
             <div class="col-lg-2 col-6">
                 <h6 class="text-white mb-3">Sitio</h6>
                 <ul class="list-unstyled small d-flex flex-column gap-2">
-                    <li><a href="<?= url('patrocinadores.php') ?>">Patrocinadores</a></li>
-                    <li><a href="<?= url('organizador.php') ?>">Organizador</a></li>
+                    <li><a href="<?= url_copa('patrocinadores.php') ?>">Patrocinadores</a></li>
+                    <li><a href="<?= url_copa('organizador.php') ?>">Organizador</a></li>
+                    <li><a href="<?= url('torneos.php') ?>">Todas las copas</a></li>
                     <li><a href="#" data-bs-toggle="modal" data-bs-target="#modalCompartir">Compartir sitio</a></li>
                     <li><a href="<?= url('login.php') ?>">Panel Organizador</a></li>
                 </ul>

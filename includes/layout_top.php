@@ -2,14 +2,15 @@
 declare(strict_types=1);
 /**
  * Requiere que la página que lo incluye ya haya definido (opcional):
- * $titulo_pagina, $pagina_activa, $torneo
+ * $titulo_pagina, $pagina_activa
+ * $torneo lo resuelve torneo_actual.php según la URL (/slug/... o sin prefijo = predeterminado).
  */
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/helpers.php';
+require_once __DIR__ . '/torneo_actual.php';
 
-$torneo = $torneo ?? db_leer('torneo');
 $pagina_activa = $pagina_activa ?? '';
 $titulo_pagina = $titulo_pagina ?? ($torneo['nombre'] . ' — ' . $torneo['subtitulo']);
 $flash = obtener_flash();
@@ -36,7 +37,7 @@ function nav_activa(string $clave, string $activa): string
 
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top navbar-copa">
     <div class="container">
-        <a class="navbar-brand d-flex align-items-center gap-2" href="<?= url('index.php') ?>">
+        <a class="navbar-brand d-flex align-items-center gap-2" href="<?= url_copa('index.php') ?>">
             <span class="badge-pill-icon"><?= icono_balon(22) ?></span>
             <span><?= e($torneo['nombre']) ?></span>
         </a>
@@ -45,12 +46,13 @@ function nav_activa(string $clave, string $activa): string
         </button>
         <div class="collapse navbar-collapse" id="navPrincipal">
             <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
-                <li class="nav-item"><a class="nav-link <?= nav_activa('inicio', $pagina_activa) ?>" href="<?= url('index.php') ?>">Inicio</a></li>
-                <li class="nav-item"><a class="nav-link <?= nav_activa('tabla', $pagina_activa) ?>" href="<?= url('tabla.php') ?>">Tabla de Posiciones</a></li>
-                <li class="nav-item"><a class="nav-link <?= nav_activa('calendario', $pagina_activa) ?>" href="<?= url('calendario.php') ?>">Calendario</a></li>
-                <li class="nav-item"><a class="nav-link <?= nav_activa('equipos', $pagina_activa) ?>" href="<?= url('equipos.php') ?>">Equipos</a></li>
-                <li class="nav-item"><a class="nav-link <?= nav_activa('patrocinadores', $pagina_activa) ?>" href="<?= url('patrocinadores.php') ?>">Patrocinadores</a></li>
-                <li class="nav-item"><a class="nav-link <?= nav_activa('organizador', $pagina_activa) ?>" href="<?= url('organizador.php') ?>">Organizador</a></li>
+                <li class="nav-item"><a class="nav-link <?= nav_activa('inicio', $pagina_activa) ?>" href="<?= url_copa('index.php') ?>">Inicio</a></li>
+                <li class="nav-item"><a class="nav-link <?= nav_activa('tabla', $pagina_activa) ?>" href="<?= url_copa('tabla.php') ?>">Tabla de Posiciones</a></li>
+                <li class="nav-item"><a class="nav-link <?= nav_activa('calendario', $pagina_activa) ?>" href="<?= url_copa('calendario.php') ?>">Calendario</a></li>
+                <li class="nav-item"><a class="nav-link <?= nav_activa('equipos', $pagina_activa) ?>" href="<?= url_copa('equipos.php') ?>">Equipos</a></li>
+                <li class="nav-item"><a class="nav-link <?= nav_activa('patrocinadores', $pagina_activa) ?>" href="<?= url_copa('patrocinadores.php') ?>">Patrocinadores</a></li>
+                <li class="nav-item"><a class="nav-link <?= nav_activa('organizador', $pagina_activa) ?>" href="<?= url_copa('organizador.php') ?>">Organizador</a></li>
+                <li class="nav-item"><a class="nav-link <?= nav_activa('copas', $pagina_activa) ?>" href="<?= url('torneos.php') ?>" title="Ver todas las copas"><i class="bi bi-grid-3x3-gap"></i></a></li>
                 <li class="nav-item ms-lg-2">
                     <button type="button" class="btn btn-outline-luz btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalCompartir">
                         <i class="bi bi-share-fill me-1"></i>Compartir

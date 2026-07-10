@@ -33,7 +33,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$torneo = db_leer('torneo');
+// El login es global (un solo admin para todas las copas); se usa la copa predeterminada
+// solo para mostrar algo de marca en la pantalla, no porque el login "pertenezca" a ella.
+$torneo = torneos_obtener_predeterminado() ?? ['nombre' => 'Panel Organizador', 'subtitulo' => ''];
 $titulo_pagina = 'Acceso Organizador — ' . $torneo['nombre'];
 ?>
 <!doctype html>

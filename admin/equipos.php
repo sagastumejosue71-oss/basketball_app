@@ -7,8 +7,9 @@ require_once __DIR__ . '/../includes/helpers.php';
 require_once __DIR__ . '/../includes/upload.php';
 
 auth_requerir();
+$torneo = admin_requerir_torneo_activo();
 
-$equipos = db_leer('equipos');
+$equipos = db_leer('equipos', $torneo['id']);
 $accion = $_GET['accion'] ?? 'lista';
 $idEditar = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 $equipoEditar = $idEditar ? db_buscar_por_id($equipos, $idEditar) : null;
@@ -20,12 +21,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id = (int) $_POST['id'];
         $equipoAEliminar = db_buscar_por_id($equipos, $id);
         $equipos = array_values(array_filter($equipos, fn($e) => $e['id'] !== $id));
-        db_guardar('equipos', $equipos);
+        db_guardar('equipos', $equipos, $torneo['id']);
 
         // Elimina también los encuentros que involucraban a este equipo, para no dejar referencias huérfanas
-        $partidos = db_leer('partidos');
+        $partidos = db_leer('partidos', $torneo['id']);
         $partidos = array_values(array_filter($partidos, fn($p) => (int) $p['equipo_local'] !== $id && (int) $p['equipo_visitante'] !== $id));
-        db_guardar('partidos', $partidos);
+        db_guardar('partidos', $partidos, $torneo['id']);
 
         if ($equipoAEliminar) {
             eliminar_imagen($equipoAEliminar['logo'] ?? null);
@@ -71,13 +72,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             unset($e);
             $mensaje = 'Equipo actualizado correctamente.';
         } else {
-            $datos['id'] = db_siguiente_id($equipos);
+            $datos['id'] = db_siguiente_id_global('equipos');
             $datos['logo'] = $logoSubido ?? '';
             $equipos[] = $datos;
             $mensaje = 'Equipo creado correctamente.';
         }
 
-        db_guardar('equipos', $equipos);
+        db_guardar('equipos', $equipos, $torneo['id']);
         redirigir_con_mensaje(url('admin/equipos.php'), 'success', $mensaje);
     }
 }

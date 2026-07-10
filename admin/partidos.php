@@ -7,9 +7,10 @@ require_once __DIR__ . '/../includes/helpers.php';
 require_once __DIR__ . '/../includes/tabla.php';
 
 auth_requerir();
+$torneo = admin_requerir_torneo_activo();
 
-$equipos = db_leer('equipos');
-$partidos = db_leer('partidos');
+$equipos = db_leer('equipos', $torneo['id']);
+$partidos = db_leer('partidos', $torneo['id']);
 $equiposPorId = [];
 foreach ($equipos as $eq) { $equiposPorId[$eq['id']] = $eq; }
 
@@ -18,7 +19,7 @@ $idEditar = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 $partidoEditar = $idEditar ? db_buscar_por_id($partidos, $idEditar) : null;
 $errores = [];
 
-$fasesValidas = array_merge(['grupos'], FASES_PLAYOFF);
+$fasesValidas = array_merge(['grupos'], $torneo['fases_playoff']);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_validar();
@@ -26,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (($_POST['accion'] ?? '') === 'eliminar') {
         $id = (int) $_POST['id'];
         $partidos = array_values(array_filter($partidos, fn($p) => $p['id'] !== $id));
-        db_guardar('partidos', $partidos);
+        db_guardar('partidos', $partidos, $torneo['id']);
         redirigir_con_mensaje(url('admin/partidos.php'), 'success', 'Encuentro eliminado correctamente.');
     }
 
@@ -54,8 +55,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($estado === 'jugado') {
             if ($marcadorLocal === null || $marcadorVisitante === null) {
                 $errores[] = 'Debes capturar el marcador de ambos equipos para marcar el encuentro como jugado.';
-            } elseif ($marcadorLocal === $marcadorVisitante) {
-                $errores[] = 'En basketball no existen empates: los marcadores no pueden ser iguales.';
+            } elseif ($marcadorLocal === $marcadorVisitante && !$torneo['permite_empates']) {
+                $errores[] = 'Esta copa no permite empates: los marcadores no pueden ser iguales.';
             }
         }
 
@@ -82,12 +83,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 unset($p);
                 $mensaje = 'Encuentro actualizado correctamente.';
             } else {
-                $datos['id'] = db_siguiente_id($partidos);
+                $datos['id'] = db_siguiente_id_global('partidos');
                 $partidos[] = $datos;
                 $mensaje = 'Encuentro programado correctamente.';
             }
 
-            db_guardar('partidos', $partidos);
+            db_guardar('partidos', $partidos, $torneo['id']);
             redirigir_con_mensaje(url('admin/partidos.php'), 'success', $mensaje);
         } else {
             $partidoEditar = array_merge($_POST, ['id' => $id]);
@@ -97,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $jornadas = partidos_por_jornada($partidos);
-$playoffsPorFase = partidos_playoffs_por_fase($partidos);
+$playoffsPorFase = partidos_playoffs_por_fase($partidos, $torneo['fases_playoff']);
 $siguienteJornada = empty($jornadas) ? 1 : max(array_keys($jornadas));
 $faseSeleccionada = $partidoEditar['fase'] ?? ($_GET['fase'] ?? 'grupos');
 if (!in_array($faseSeleccionada, $fasesValidas, true)) {
@@ -136,7 +137,7 @@ require __DIR__ . '/includes/admin_layout_top.php';
                     <option value="<?= e($f) ?>" <?= $faseSeleccionada === $f ? 'selected' : '' ?>><?= e(FASES_LABEL[$f]) ?></option>
                     <?php endforeach; ?>
                 </select>
-                <div class="form-text">Cuartos, Semifinal y Final no cuentan para la tabla de posiciones.</div>
+                <div class="form-text">Las fases de eliminación directa no cuentan para la tabla de posiciones.</div>
             </div>
             <div class="col-md-6" id="grupoJornada">
                 <label class="form-label small fw-semibold">Jornada</label>
@@ -207,7 +208,7 @@ require __DIR__ . '/includes/admin_layout_top.php';
 
     <ul class="nav nav-pills mb-4" role="tablist">
         <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#panelGrupos" type="button">Fase de Grupos</button></li>
-        <?php foreach (FASES_PLAYOFF as $f): ?>
+        <?php foreach ($torneo['fases_playoff'] as $f): ?>
         <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#panel-<?= $f ?>" type="button"><?= e(FASES_LABEL[$f]) ?> <?= count($playoffsPorFase[$f]) > 0 ? '<span class="badge rounded-pill text-bg-secondary ms-1">' . count($playoffsPorFase[$f]) . '</span>' : '' ?></button></li>
         <?php endforeach; ?>
     </ul>
@@ -228,7 +229,7 @@ require __DIR__ . '/includes/admin_layout_top.php';
             <?php endif; ?>
         </div>
 
-        <?php foreach (FASES_PLAYOFF as $f): ?>
+        <?php foreach ($torneo['fases_playoff'] as $f): ?>
         <div class="tab-pane fade" id="panel-<?= $f ?>">
             <?php if (empty($playoffsPorFase[$f])): ?>
                 <div class="card-suave p-4 text-center text-muted">
