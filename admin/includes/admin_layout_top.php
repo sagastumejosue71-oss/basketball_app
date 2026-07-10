@@ -45,6 +45,29 @@ function admin_nav_copa(string $seccion_activa, ?array $torneoActivo): string
     }
     return (string) ob_get_clean();
 }
+
+/**
+ * Foto (o iniciales) + nombre del usuario logueado, enlazando a Mi Perfil donde
+ * puede cambiar la foto. Se usa igual en el sidebar de escritorio y el de móvil.
+ */
+function admin_tarjeta_usuario(array $usuario): string
+{
+    ob_start();
+    ?>
+    <a href="<?= url('admin/perfil.php') ?>" class="d-flex align-items-center gap-2 text-decoration-none px-2 py-2 mb-1" style="color:rgba(255,255,255,.85);">
+        <?php if (!empty($usuario['foto'])): ?>
+            <img src="<?= e(url_imagen($usuario['foto'])) ?>" width="34" height="34" class="rounded-circle" style="object-fit:cover;" alt="">
+        <?php else: ?>
+            <span class="avatar-organizador" style="width:34px;height:34px;font-size:.85rem;"><?= e(iniciales_de($usuario['nombre'] ?: $usuario['usuario'])) ?></span>
+        <?php endif; ?>
+        <span class="small">
+            <span class="d-block fw-semibold text-white"><?= e($usuario['nombre'] !== '' ? $usuario['nombre'] : $usuario['usuario']) ?></span>
+            <span class="d-block" style="color:rgba(255,255,255,.55);font-size:.72rem;">Ver mi perfil</span>
+        </span>
+    </a>
+    <?php
+    return (string) ob_get_clean();
+}
 ?>
 <!doctype html>
 <html lang="es">
@@ -77,6 +100,7 @@ function admin_nav_copa(string $seccion_activa, ?array $torneoActivo): string
             <a class="nav-link <?= admin_nav_activa('perfil', $seccion_activa) ?>" href="<?= url('admin/perfil.php') ?>"><i class="bi bi-person-badge me-2"></i>Mi Perfil</a>
         </nav>
         <hr class="border-secondary opacity-25">
+        <?= admin_tarjeta_usuario($organizador) ?>
         <?php if ($torneoActivo): ?>
         <a href="<?= url(($torneoActivo['es_predeterminado'] ? '' : $torneoActivo['slug'] . '/') . 'index.php') ?>" class="nav-link" target="_blank"><i class="bi bi-box-arrow-up-right me-2"></i>Ver sitio público</a>
         <?php endif; ?>
@@ -106,6 +130,8 @@ function admin_nav_copa(string $seccion_activa, ?array $torneoActivo): string
                     <a class="nav-link <?= admin_nav_activa('torneos-lista', $seccion_activa) ?>" href="<?= url('admin/torneos.php') ?>"><i class="bi bi-trophy me-2"></i>Mis Copas</a>
                     <a class="nav-link <?= admin_nav_activa('perfil', $seccion_activa) ?>" href="<?= url('admin/perfil.php') ?>"><i class="bi bi-person-badge me-2"></i>Mi Perfil</a>
                 </nav>
+                <hr class="border-secondary opacity-25">
+                <?= admin_tarjeta_usuario($organizador) ?>
             </div>
         </div>
 
