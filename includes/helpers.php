@@ -218,11 +218,39 @@ SVG;
 }
 
 /**
+ * Círculo con cuatro balones distintos (basketball, fútbol, vóley/tenis, americano) en
+ * sus cuadrantes, centrados hacia el medio. Es el ícono de "la plataforma" en sí (navbar,
+ * footer, login, registro) cuando no hay una copa concreta detrás — no tendría sentido
+ * mostrar un balón de basketball como si fuera el ícono genérico del sitio.
+ */
+function icono_multideporte(int $size = 24): string
+{
+    return <<<SVG
+<svg width="{$size}" height="{$size}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="12" cy="12" r="10.5" stroke="currentColor" stroke-width="1.3"/>
+    <path d="M12 2.3v19.4M2.3 12h19.4" stroke="currentColor" stroke-width=".6" opacity=".45"/>
+    <circle cx="8.4" cy="8.4" r="3.35" stroke="currentColor" stroke-width=".9"/>
+    <path d="M8.4 5.3v6.2M5.3 8.4h6.2M6.15 6.15c1.5 1.5 1.5 3.9 0 5.4M10.65 6.15c-1.5 1.5-1.5 3.9 0 5.4" stroke="currentColor" stroke-width=".5"/>
+    <circle cx="15.6" cy="8.4" r="3.35" stroke="currentColor" stroke-width=".9"/>
+    <path d="M15.6 6.2l1.75 1.25-.65 2.05h-2.2l-.65-2.05z" stroke="currentColor" stroke-width=".5" stroke-linejoin="round"/>
+    <circle cx="8.4" cy="15.6" r="3.35" stroke="currentColor" stroke-width=".9"/>
+    <path d="M6.3 13.5c1.4 1.4 1.4 3.3 0 4.7M10.5 13.5c-1.4 1.4-1.4 3.3 0 4.7" stroke="currentColor" stroke-width=".5"/>
+    <ellipse cx="15.6" cy="15.6" rx="3.5" ry="2.25" transform="rotate(45 15.6 15.6)" stroke="currentColor" stroke-width=".9"/>
+    <path d="M14 14l3.2 3.2M14.85 13.55l.45.45M16.7 15.4l.45.45" stroke="currentColor" stroke-width=".5" stroke-linecap="round"/>
+</svg>
+SVG;
+}
+
+/**
  * Icono según el deporte de la copa, para que basketball y fútbol se vean distintos
- * en el navbar, footer y panel admin (no solo en el nombre).
+ * en el navbar, footer y panel admin (no solo en el nombre). Sin deporte (contexto
+ * genérico, sin copa activa) usa el ícono multideporte en vez de asumir basketball.
  */
 function icono_deporte(?string $deporte, int $size = 24): string
 {
+    if ($deporte === null) {
+        return icono_multideporte($size);
+    }
     return $deporte === 'futbol' ? icono_futbol($size) : icono_balon($size);
 }
 
