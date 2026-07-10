@@ -18,6 +18,17 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    // Formulario de encuentros: el campo "Jornada" solo aplica a la fase de grupos
+    var selectFase = document.getElementById('selectFase');
+    var grupoJornada = document.getElementById('grupoJornada');
+    if (selectFase && grupoJornada) {
+        var actualizarVisibilidadJornada = function () {
+            grupoJornada.style.display = selectFase.value === 'grupos' ? '' : 'none';
+        };
+        actualizarVisibilidadJornada();
+        selectFase.addEventListener('change', actualizarVisibilidadJornada);
+    }
+
     // Auto-cierre de alertas flash
     document.querySelectorAll('.alert[data-autoclose]').forEach(function (alerta) {
         setTimeout(function () {

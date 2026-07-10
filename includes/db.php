@@ -7,7 +7,7 @@ const TABLAS_SINGLETON = ['torneo', 'organizador'];
 
 const COLUMNAS_POR_TABLA = [
     'equipos' => ['id', 'nombre', 'ciudad', 'sede', 'entrenador', 'fundacion', 'color_primario', 'color_secundario', 'logo', 'descripcion'],
-    'partidos' => ['id', 'jornada', 'equipo_local', 'equipo_visitante', 'fecha', 'hora', 'cancha', 'estado', 'marcador_local', 'marcador_visitante'],
+    'partidos' => ['id', 'jornada', 'equipo_local', 'equipo_visitante', 'fecha', 'hora', 'cancha', 'estado', 'marcador_local', 'marcador_visitante', 'fase'],
     'patrocinadores' => ['id', 'nombre', 'nivel', 'url', 'logo', 'orden'],
     'comentarios' => ['id', 'mensaje', 'fecha', 'leido'],
 ];

@@ -9,6 +9,9 @@ declare(strict_types=1);
  */
 function calcular_tabla(array $equipos, array $partidos): array
 {
+    // Los encuentros de playoffs (cuartos/semifinal/final) no cuentan para la tabla de la fase regular
+    $partidos = array_filter($partidos, fn($p) => ($p['fase'] ?? 'grupos') === 'grupos');
+
     $stats = [];
     foreach ($equipos as $equipo) {
         $stats[$equipo['id']] = [
@@ -107,6 +110,9 @@ function partidos_por_jornada(array $partidos): array
 {
     $jornadas = [];
     foreach ($partidos as $p) {
+        if (($p['fase'] ?? 'grupos') !== 'grupos') {
+            continue;
+        }
         $j = (int) $p['jornada'];
         $jornadas[$j][] = $p;
     }
@@ -116,4 +122,34 @@ function partidos_por_jornada(array $partidos): array
     }
     unset($lista);
     return $jornadas;
+}
+
+const FASES_PLAYOFF = ['cuartos', 'semifinal', 'final'];
+
+const FASES_LABEL = [
+    'grupos' => 'Fase de Grupos',
+    'cuartos' => 'Cuartos de Final',
+    'semifinal' => 'Semifinal',
+    'final' => 'Final',
+];
+
+/**
+ * Agrupa los encuentros de eliminación directa por fase (cuartos, semifinal, final),
+ * cada uno ordenado por fecha. Las fases sin encuentros cargados igual aparecen (lista vacía),
+ * para que la web pueda mostrar el espacio reservado aunque el organizador no lo haya llenado aún.
+ */
+function partidos_playoffs_por_fase(array $partidos): array
+{
+    $porFase = array_fill_keys(FASES_PLAYOFF, []);
+    foreach ($partidos as $p) {
+        $fase = $p['fase'] ?? 'grupos';
+        if (isset($porFase[$fase])) {
+            $porFase[$fase][] = $p;
+        }
+    }
+    foreach ($porFase as &$lista) {
+        usort($lista, fn($a, $b) => strcmp($a['fecha'] . $a['hora'], $b['fecha'] . $b['hora']));
+    }
+    unset($lista);
+    return $porFase;
 }

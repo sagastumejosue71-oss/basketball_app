@@ -24,8 +24,12 @@ CREATE TABLE IF NOT EXISTS partidos (
     cancha TEXT NOT NULL DEFAULT '',
     estado TEXT NOT NULL DEFAULT 'programado',
     marcador_local INTEGER,
-    marcador_visitante INTEGER
+    marcador_visitante INTEGER,
+    -- 'grupos' = fase regular (tabla de posiciones); 'cuartos'/'semifinal'/'final' = eliminación directa
+    fase TEXT NOT NULL DEFAULT 'grupos'
 );
+-- Por si la tabla ya existía de antes (base en producción) sin esta columna
+ALTER TABLE partidos ADD COLUMN IF NOT EXISTS fase TEXT NOT NULL DEFAULT 'grupos';
 
 CREATE TABLE IF NOT EXISTS patrocinadores (
     id INTEGER PRIMARY KEY,

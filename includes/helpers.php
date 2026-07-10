@@ -102,6 +102,66 @@ function badge_patrocinador(array $patrocinador): string
     return "<span class=\"sponsor-wordmark\">{$nombre}</span>";
 }
 
+/**
+ * Tarjeta de un encuentro para las listas del panel admin (fase de grupos y playoffs comparten el mismo diseño).
+ * Requiere sesión con csrf_token() disponible.
+ */
+function admin_tarjeta_partido(array $p, array $equiposPorId): string
+{
+    $local = $equiposPorId[$p['equipo_local']] ?? null;
+    $visit = $equiposPorId[$p['equipo_visitante']] ?? null;
+    if (!$local || !$visit) {
+        return '';
+    }
+
+    $jugado = $p['estado'] === 'jugado';
+    $fecha = e(formatear_fecha_larga($p['fecha']));
+    $hora = e($p['hora']);
+    $cancha = e($p['cancha']);
+    $logoLocal = logo_equipo($local, 40);
+    $logoVisit = logo_equipo($visit, 40);
+    $nombreLocal = e($local['nombre']);
+    $nombreVisit = e($visit['nombre']);
+    $marcador = $jugado ? e((string) $p['marcador_local']) . ' - ' . e((string) $p['marcador_visitante']) : 'VS';
+    $badgeEstado = $jugado
+        ? '<span class="badge badge-estado-jugado rounded-pill px-2 py-1 small">Finalizado</span>'
+        : '<span class="badge badge-estado-programado rounded-pill px-2 py-1 small">Programado</span>';
+    $botonEditar = $jugado
+        ? '<i class="bi bi-pencil"></i>'
+        : '<i class="bi bi-clipboard-check"></i> Capturar';
+    $urlEditar = e(url('admin/partidos.php?accion=editar&id=' . $p['id']));
+    $csrf = e(csrf_token());
+    $id = (int) $p['id'];
+
+    return <<<HTML
+<div class="col">
+    <div class="card-suave p-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="small text-muted">{$fecha} · {$hora}</span>
+            {$badgeEstado}
+        </div>
+        <div class="d-flex align-items-center justify-content-between mb-2">
+            <div class="equipo-col">{$logoLocal}<span class="nombre">{$nombreLocal}</span></div>
+            <div class="marcador fs-5">{$marcador}</div>
+            <div class="equipo-col">{$logoVisit}<span class="nombre">{$nombreVisit}</span></div>
+        </div>
+        <div class="d-flex justify-content-between align-items-center">
+            <span class="small text-muted"><i class="bi bi-geo-alt me-1"></i>{$cancha}</span>
+            <div class="d-flex gap-1">
+                <a href="{$urlEditar}" class="btn btn-sm btn-outline-secondary">{$botonEditar}</a>
+                <form method="post" data-confirm="¿Eliminar este encuentro?">
+                    <input type="hidden" name="csrf_token" value="{$csrf}">
+                    <input type="hidden" name="accion" value="eliminar">
+                    <input type="hidden" name="id" value="{$id}">
+                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+HTML;
+}
+
 function formatear_fecha_larga(string $fecha): string
 {
     $dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
