@@ -35,6 +35,11 @@ CREATE TABLE IF NOT EXISTS torneos (
     activo BOOLEAN NOT NULL DEFAULT TRUE,
     creado_en TIMESTAMP NOT NULL DEFAULT now()
 );
+-- Dueño de la copa (multi-usuario) y código corto para compartirla, aparte de la URL y el QR.
+-- Aditivo/nullable aquí porque ya hay copas en producción; scripts/migrar_usuarios.php las
+-- respalda con un usuario_id/codigo y luego pone estas columnas NOT NULL.
+ALTER TABLE torneos ADD COLUMN IF NOT EXISTS usuario_id INTEGER;
+ALTER TABLE torneos ADD COLUMN IF NOT EXISTS codigo TEXT UNIQUE;
 
 CREATE TABLE IF NOT EXISTS equipos (
     id INTEGER PRIMARY KEY,
@@ -110,7 +115,8 @@ CREATE TABLE IF NOT EXISTS intentos_login (
 );
 CREATE INDEX IF NOT EXISTS idx_intentos_login_ip_fecha ON intentos_login (ip, intentado_en);
 
--- Singleton: un solo organizador para todas las copas.
+-- Singleton: un solo organizador para todas las copas. Reemplazada por 'usuarios' (multi-usuario);
+-- se deja intacta como red de seguridad, sin usarse ya en el código.
 CREATE TABLE IF NOT EXISTS organizador (
     id INTEGER PRIMARY KEY DEFAULT 1,
     usuario TEXT NOT NULL,
@@ -123,3 +129,34 @@ CREATE TABLE IF NOT EXISTS organizador (
     bio TEXT NOT NULL DEFAULT '',
     CONSTRAINT organizador_singleton CHECK (id = 1)
 );
+
+-- Cada organizador registrado tiene su propia cuenta y sus propias copas (torneos.usuario_id).
+CREATE TABLE IF NOT EXISTS usuarios (
+    id SERIAL PRIMARY KEY,
+    usuario TEXT UNIQUE NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    nombre TEXT NOT NULL DEFAULT '',
+    cargo TEXT NOT NULL DEFAULT '',
+    telefono TEXT NOT NULL DEFAULT '',
+    foto TEXT NOT NULL DEFAULT '',
+    bio TEXT NOT NULL DEFAULT '',
+    creado_en TIMESTAMP NOT NULL DEFAULT now()
+);
+
+-- Rate-limit de registro de cuentas nuevas, mismo patrón que intentos_login pero en su propia
+-- tabla para no arriesgar el límite de login que ya funciona en producción.
+CREATE TABLE IF NOT EXISTS intentos_registro (
+    id SERIAL PRIMARY KEY,
+    ip TEXT NOT NULL,
+    intentado_en TIMESTAMP NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_intentos_registro_ip_fecha ON intentos_registro (ip, intentado_en);
+
+-- Rate-limit de búsquedas por código de copa (evita fuerza bruta/scraping del formulario).
+CREATE TABLE IF NOT EXISTS intentos_codigo (
+    id SERIAL PRIMARY KEY,
+    ip TEXT NOT NULL,
+    intentado_en TIMESTAMP NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_intentos_codigo_ip_fecha ON intentos_codigo (ip, intentado_en);

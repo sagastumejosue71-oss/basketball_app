@@ -3,12 +3,13 @@ declare(strict_types=1);
 require_once __DIR__ . '/../includes/config.php';
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/usuarios.php';
 require_once __DIR__ . '/../includes/helpers.php';
 require_once __DIR__ . '/../includes/upload.php';
 
 auth_requerir();
 
-$organizador = db_leer('organizador');
+$organizador = usuarios_obtener_por_id((int) $_SESSION['usuario_id']);
 $errores = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -34,7 +35,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             redirigir_con_mensaje(url('admin/perfil.php'), 'error', 'Nombre y correo son obligatorios.');
         }
 
-        db_guardar('organizador', $organizador);
+        $otroConEseCorreo = usuarios_obtener_por_email($organizador['email']);
+        if ($otroConEseCorreo && $otroConEseCorreo['id'] !== $organizador['id']) {
+            redirigir_con_mensaje(url('admin/perfil.php'), 'error', 'Ese correo ya está en uso por otra cuenta.');
+        }
+
+        usuarios_guardar($organizador);
         redirigir_con_mensaje(url('admin/perfil.php'), 'success', 'Perfil actualizado correctamente.');
     }
 
@@ -51,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             redirigir_con_mensaje(url('admin/perfil.php'), 'error', 'La confirmación no coincide con la nueva contraseña.');
         } else {
             $organizador['password_hash'] = password_hash($nueva, PASSWORD_DEFAULT);
-            db_guardar('organizador', $organizador);
+            usuarios_guardar($organizador);
             redirigir_con_mensaje(url('admin/perfil.php'), 'success', 'Contraseña actualizada correctamente.');
         }
     }

@@ -1,21 +1,28 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/db.php';
 
 /**
  * Resuelve qué copa corresponde a esta petición.
  * - Si la URL trae ?copa=slug (via la reescritura de /slug/...), se busca esa copa.
- * - Si no, se usa la copa marcada como predeterminada (Copa Estrellas), para que las
- *   URLs sin prefijo sigan funcionando exactamente igual que antes de existir varias copas.
+ * - Si no hay slug (acceso a la raíz del sitio o a un archivo sin prefijo), no hay
+ *   ninguna copa "por defecto": se manda al visitante al listado de todas las copas
+ *   para que elija una. Cada copa, incluida Copa Estrellas, vive solo bajo su propio
+ *   /slug/ — ninguna es especial.
  *
  * Deja la copa resuelta en $torneo (mismo nombre de variable que ya usaban todas las
  * plantillas existentes), para no tener que renombrar cada referencia a $torneo['...'].
  */
 $slugSolicitado = $_GET['copa'] ?? null;
-$torneo = $slugSolicitado !== null
-    ? torneos_obtener_por_slug($slugSolicitado)
-    : torneos_obtener_predeterminado();
+
+if ($slugSolicitado === null) {
+    header('Location: ' . url('torneos.php'));
+    exit;
+}
+
+$torneo = torneos_obtener_por_slug($slugSolicitado);
 
 if ($torneo === null) {
     http_response_code(404);

@@ -2,13 +2,20 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/usuarios.php';
 
 const LOGIN_MAX_INTENTOS = 5;
 const LOGIN_VENTANA_SEGUNDOS = 60;
 
+const REGISTRO_MAX_INTENTOS = 5;
+const REGISTRO_VENTANA_SEGUNDOS = 300;
+
+const CODIGO_MAX_INTENTOS = 20;
+const CODIGO_VENTANA_SEGUNDOS = 300;
+
 function auth_check(): bool
 {
-    return !empty($_SESSION['organizador_autenticado']);
+    return !empty($_SESSION['usuario_autenticado']);
 }
 
 /**
@@ -64,22 +71,29 @@ function auth_registrar_intento(string $ip): void
 
 function auth_intentar_login(string $usuario, string $password): bool
 {
-    $organizador = db_leer('organizador');
-    if (empty($organizador)) {
+    $cuenta = usuarios_obtener_por_usuario($usuario);
+    if ($cuenta === null) {
         return false;
     }
 
-    $usuarioValido = hash_equals((string) $organizador['usuario'], $usuario);
-    $passwordValido = password_verify($password, (string) $organizador['password_hash']);
-
-    if ($usuarioValido && $passwordValido) {
-        session_regenerate_id(true);
-        $_SESSION['organizador_autenticado'] = true;
-        $_SESSION['organizador_usuario'] = $organizador['usuario'];
-        return true;
+    if (!password_verify($password, (string) $cuenta['password_hash'])) {
+        return false;
     }
 
-    return false;
+    auth_iniciar_sesion_usuario($cuenta);
+    return true;
+}
+
+/**
+ * Marca la sesión como autenticada para la cuenta dada. La usan tanto el login normal
+ * como el registro (para dejar al usuario logueado apenas crea su cuenta).
+ */
+function auth_iniciar_sesion_usuario(array $usuario): void
+{
+    session_regenerate_id(true);
+    $_SESSION['usuario_autenticado'] = true;
+    $_SESSION['usuario_id'] = (int) $usuario['id'];
+    $_SESSION['organizador_usuario'] = $usuario['usuario'];
 }
 
 function auth_logout(): void
@@ -102,13 +116,15 @@ function auth_requerir(): void
 
 /**
  * Exige que haya una copa activa elegida en la sesión del admin (equipos, partidos,
- * patrocinadores y comentarios viven "dentro" de una copa). Si no hay ninguna, manda
- * a elegir/crear una. Devuelve la copa activa ya resuelta desde la base de datos.
+ * patrocinadores y comentarios viven "dentro" de una copa). Si no hay ninguna, o si la
+ * copa activa no pertenece al usuario logueado (alguien manipuló torneo_activo_id, o
+ * es de otro usuario), manda a elegir/crear una. Devuelve la copa ya resuelta.
  */
 function admin_requerir_torneo_activo(): array
 {
     $torneoId = $_SESSION['torneo_activo_id'] ?? null;
-    $torneo = $torneoId !== null ? torneos_obtener_por_id((int) $torneoId) : null;
+    $usuarioId = (int) ($_SESSION['usuario_id'] ?? 0);
+    $torneo = $torneoId !== null ? torneos_obtener_por_id((int) $torneoId, $usuarioId) : null;
 
     if ($torneo === null) {
         unset($_SESSION['torneo_activo_id']);
@@ -117,6 +133,50 @@ function admin_requerir_torneo_activo(): array
     }
 
     return $torneo;
+}
+
+function registro_ip_bloqueada(string $ip): bool
+{
+    $pdo = db_conexion();
+    $stmt = $pdo->prepare(
+        'SELECT COUNT(*) FROM intentos_registro WHERE ip = :ip AND intentado_en > now() - make_interval(secs => :segundos)'
+    );
+    $stmt->bindValue(':ip', $ip, PDO::PARAM_STR);
+    $stmt->bindValue(':segundos', REGISTRO_VENTANA_SEGUNDOS, PDO::PARAM_INT);
+    $stmt->execute();
+    return (int) $stmt->fetchColumn() >= REGISTRO_MAX_INTENTOS;
+}
+
+function registro_registrar_intento(string $ip): void
+{
+    $pdo = db_conexion();
+    $stmt = $pdo->prepare('INSERT INTO intentos_registro (ip) VALUES (:ip)');
+    $stmt->bindValue(':ip', $ip, PDO::PARAM_STR);
+    $stmt->execute();
+
+    $pdo->exec("DELETE FROM intentos_registro WHERE intentado_en < now() - interval '1 hour'");
+}
+
+function codigo_ip_bloqueada(string $ip): bool
+{
+    $pdo = db_conexion();
+    $stmt = $pdo->prepare(
+        'SELECT COUNT(*) FROM intentos_codigo WHERE ip = :ip AND intentado_en > now() - make_interval(secs => :segundos)'
+    );
+    $stmt->bindValue(':ip', $ip, PDO::PARAM_STR);
+    $stmt->bindValue(':segundos', CODIGO_VENTANA_SEGUNDOS, PDO::PARAM_INT);
+    $stmt->execute();
+    return (int) $stmt->fetchColumn() >= CODIGO_MAX_INTENTOS;
+}
+
+function codigo_registrar_intento(string $ip): void
+{
+    $pdo = db_conexion();
+    $stmt = $pdo->prepare('INSERT INTO intentos_codigo (ip) VALUES (:ip)');
+    $stmt->bindValue(':ip', $ip, PDO::PARAM_STR);
+    $stmt->execute();
+
+    $pdo->exec("DELETE FROM intentos_codigo WHERE intentado_en < now() - interval '1 hour'");
 }
 
 /**

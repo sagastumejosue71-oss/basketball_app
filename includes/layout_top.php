@@ -2,17 +2,19 @@
 declare(strict_types=1);
 /**
  * Requiere que la página que lo incluye ya haya definido (opcional):
- * $titulo_pagina, $pagina_activa
- * $torneo lo resuelve torneo_actual.php según la URL (/slug/... o sin prefijo = predeterminado).
+ * $titulo_pagina, $pagina_activa, $torneo (resuelto por torneo_actual.php).
+ * $torneo puede venir null/sin definir SOLO en torneos.php (el listado de todas
+ * las copas no pertenece a ninguna copa en particular), así que el navbar y el
+ * footer deben poder mostrarse también sin una copa activa.
  */
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/helpers.php';
-require_once __DIR__ . '/torneo_actual.php';
 
+$torneo = $torneo ?? null;
 $pagina_activa = $pagina_activa ?? '';
-$titulo_pagina = $titulo_pagina ?? ($torneo['nombre'] . ' — ' . $torneo['subtitulo']);
+$titulo_pagina = $titulo_pagina ?? ($torneo ? $torneo['nombre'] . ' — ' . $torneo['subtitulo'] : 'Plataforma de Copas');
 $flash = obtener_flash();
 
 function nav_activa(string $clave, string $activa): string
@@ -38,25 +40,32 @@ function nav_activa(string $clave, string $activa): string
 
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top navbar-copa">
     <div class="container">
-        <a class="navbar-brand d-flex align-items-center gap-2" href="<?= url_copa('index.php') ?>">
+        <a class="navbar-brand d-flex align-items-center gap-2" href="<?= $torneo ? url_copa('index.php') : url('torneos.php') ?>">
             <span class="badge-pill-icon"><?= icono_deporte($torneo['deporte'] ?? null, 22) ?></span>
-            <span><?= e($torneo['nombre']) ?></span>
+            <span><?= e($torneo['nombre'] ?? 'Plataforma de Copas') ?></span>
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navPrincipal">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navPrincipal">
             <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
+                <?php if ($torneo): ?>
                 <li class="nav-item"><a class="nav-link <?= nav_activa('inicio', $pagina_activa) ?>" href="<?= url_copa('index.php') ?>">Inicio</a></li>
                 <li class="nav-item"><a class="nav-link <?= nav_activa('tabla', $pagina_activa) ?>" href="<?= url_copa('tabla.php') ?>">Tabla de Posiciones</a></li>
                 <li class="nav-item"><a class="nav-link <?= nav_activa('calendario', $pagina_activa) ?>" href="<?= url_copa('calendario.php') ?>">Calendario</a></li>
                 <li class="nav-item"><a class="nav-link <?= nav_activa('equipos', $pagina_activa) ?>" href="<?= url_copa('equipos.php') ?>">Equipos</a></li>
                 <li class="nav-item"><a class="nav-link <?= nav_activa('patrocinadores', $pagina_activa) ?>" href="<?= url_copa('patrocinadores.php') ?>">Patrocinadores</a></li>
                 <li class="nav-item"><a class="nav-link <?= nav_activa('organizador', $pagina_activa) ?>" href="<?= url_copa('organizador.php') ?>">Organizador</a></li>
+                <?php endif; ?>
                 <li class="nav-item"><a class="nav-link <?= nav_activa('copas', $pagina_activa) ?>" href="<?= url('torneos.php') ?>" title="Ver todas las copas"><i class="bi bi-grid-3x3-gap"></i></a></li>
                 <li class="nav-item ms-lg-2">
                     <button type="button" class="btn btn-outline-luz btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalCompartir">
                         <i class="bi bi-share-fill me-1"></i>Compartir
+                    </button>
+                </li>
+                <li class="nav-item ms-lg-2">
+                    <button type="button" class="btn btn-outline-luz btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalCodigo">
+                        <i class="bi bi-key-fill me-1"></i>Tengo un código
                     </button>
                 </li>
                 <li class="nav-item ms-lg-2">

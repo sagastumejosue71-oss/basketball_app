@@ -61,6 +61,11 @@ function db_conexion(): PDO
     $pdo = new PDO($dsn, $partes['user'] ?? '', $partes['pass'] ?? '', [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        // Neon usa un pooler (PgBouncer) en modo "transaction": los prepared statements
+        // nativos de Postgres no sobreviven bien ahí, sobre todo si el PDOStatement se
+        // destruye a medio camino de una transacción abierta (ej. una consulta dentro de
+        // una función anidada). Emular los prepares del lado del cliente evita ese problema.
+        PDO::ATTR_EMULATE_PREPARES => true,
     ]);
 
     return $pdo;
@@ -240,7 +245,7 @@ function db_parsear_array_pg(?string $valor): array
 
 function db_normalizar_torneo(array $fila): array
 {
-    foreach (['id', 'num_equipos', 'puntos_victoria', 'puntos_empate', 'puntos_derrota'] as $col) {
+    foreach (['id', 'usuario_id', 'num_equipos', 'puntos_victoria', 'puntos_empate', 'puntos_derrota'] as $col) {
         if (array_key_exists($col, $fila) && $fila[$col] !== null) {
             $fila[$col] = (int) $fila[$col];
         }
@@ -258,12 +263,27 @@ function db_normalizar_torneo(array $fila): array
     return $fila;
 }
 
-function torneos_listar(bool $soloActivos = true): array
+/**
+ * Lista copas. Si se pasa $usuarioId, solo devuelve las copas de ese usuario (uso normal
+ * del panel admin, "Mis Copas"); sin él, lista todas (páginas públicas).
+ */
+function torneos_listar(bool $soloActivos = true, ?int $usuarioId = null): array
 {
     $pdo = db_conexion();
-    $sql = 'SELECT * FROM torneos' . ($soloActivos ? ' WHERE activo = true' : '') . ' ORDER BY es_predeterminado DESC, creado_en ASC';
-    $filas = $pdo->query($sql)->fetchAll();
-    return array_map('db_normalizar_torneo', $filas);
+    $condiciones = [];
+    if ($soloActivos) {
+        $condiciones[] = 'activo = true';
+    }
+    if ($usuarioId !== null) {
+        $condiciones[] = 'usuario_id = :usuario_id';
+    }
+    $sql = 'SELECT * FROM torneos' . ($condiciones ? ' WHERE ' . implode(' AND ', $condiciones) : '') . ' ORDER BY es_predeterminado DESC, creado_en ASC';
+    $stmt = $pdo->prepare($sql);
+    if ($usuarioId !== null) {
+        $stmt->bindValue(':usuario_id', $usuarioId, PDO::PARAM_INT);
+    }
+    $stmt->execute();
+    return array_map('db_normalizar_torneo', $stmt->fetchAll());
 }
 
 function torneos_obtener_por_slug(string $slug): ?array
@@ -283,30 +303,91 @@ function torneos_obtener_predeterminado(): ?array
     return $fila ? db_normalizar_torneo($fila) : null;
 }
 
-function torneos_obtener_por_id(int $id): ?array
+/**
+ * Si se pasa $usuarioId, solo devuelve la copa si además pertenece a ese usuario —
+ * es el filtro que evita que un usuario entre/edite/borre la copa de otro adivinando su id.
+ * Sin él (páginas públicas, resolución por slug/código), devuelve cualquier copa por id.
+ */
+function torneos_obtener_por_id(int $id, ?int $usuarioId = null): ?array
 {
     $pdo = db_conexion();
-    $stmt = $pdo->prepare('SELECT * FROM torneos WHERE id = :id');
+    $sql = 'SELECT * FROM torneos WHERE id = :id' . ($usuarioId !== null ? ' AND usuario_id = :usuario_id' : '');
+    $stmt = $pdo->prepare($sql);
     $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+    if ($usuarioId !== null) {
+        $stmt->bindValue(':usuario_id', $usuarioId, PDO::PARAM_INT);
+    }
     $stmt->execute();
     $fila = $stmt->fetch();
     return $fila ? db_normalizar_torneo($fila) : null;
 }
 
 /**
+ * Alfabeto sin caracteres ambiguos (sin 0/O, 1/I/L) para que el código sea fácil de
+ * leer/dictar en voz alta, tipo código de sala de juego.
+ */
+const TORNEO_CODIGO_ALFABETO = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
+
+function torneos_generar_codigo_unico(int $largo = 6): string
+{
+    do {
+        $codigo = '';
+        for ($i = 0; $i < $largo; $i++) {
+            $codigo .= TORNEO_CODIGO_ALFABETO[random_int(0, strlen(TORNEO_CODIGO_ALFABETO) - 1)];
+        }
+    } while (torneos_obtener_por_codigo($codigo) !== null);
+    return $codigo;
+}
+
+function torneos_obtener_por_codigo(string $codigo): ?array
+{
+    $pdo = db_conexion();
+    $stmt = $pdo->prepare('SELECT * FROM torneos WHERE codigo = :codigo AND activo = true');
+    $stmt->bindValue(':codigo', $codigo, PDO::PARAM_STR);
+    $stmt->execute();
+    $fila = $stmt->fetch();
+    return $fila ? db_normalizar_torneo($fila) : null;
+}
+
+function torneos_regenerar_codigo(int $id, int $usuarioId): string
+{
+    if (torneos_obtener_por_id($id, $usuarioId) === null) {
+        throw new RuntimeException('Copa no encontrada.');
+    }
+    $nuevo = torneos_generar_codigo_unico();
+    $pdo = db_conexion();
+    $stmt = $pdo->prepare('UPDATE torneos SET codigo = :codigo WHERE id = :id');
+    $stmt->bindValue(':codigo', $nuevo, PDO::PARAM_STR);
+    $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+    $stmt->execute();
+    return $nuevo;
+}
+
+/**
  * Crea o actualiza una copa (según traiga o no 'id'). Devuelve el id.
  * Si se marca es_predeterminado, se le quita esa marca a cualquier otra copa
  * (solo una puede responder en las URLs sin prefijo).
+ *
+ * $usuarioIdCreador se usa SOLO al crear (nunca al actualizar): 'usuario_id' y 'codigo'
+ * no forman parte de COLUMNAS_TORNEO a propósito, así que editar una copa jamás los toca
+ * — es imposible "robar" una copa ajena o cambiarle el código manipulando el formulario.
  */
-function torneos_guardar(array $datos): int
+function torneos_guardar(array $datos, ?int $usuarioIdCreador = null): int
 {
     $pdo = db_conexion();
+
+    // Con prepared statements emulados (necesario por el pooler de Neon, ver db_conexion()),
+    // Postgres ya no acepta 0/1 como boolean de forma implícita como sí hacía con prepares
+    // nativos: hay que mandar el texto 'true'/'false' para estas 3 columnas.
+    $columnasBooleanas = ['permite_empates', 'es_predeterminado', 'activo'];
 
     $valores = [];
     foreach (COLUMNAS_TORNEO as $c) {
         $v = $datos[$c] ?? null;
         if ($c === 'fases_playoff') {
             $v = '{' . implode(',', (array) $v) . '}';
+        } elseif (in_array($c, $columnasBooleanas, true)) {
+            $v = !empty($v) ? 'true' : 'false';
         }
         $valores[$c] = $v;
     }
@@ -327,9 +408,11 @@ function torneos_guardar(array $datos): int
             $stmt->bindValue(':id', $id, PDO::PARAM_INT);
             $stmt->execute();
         } else {
-            $cols = implode(', ', COLUMNAS_TORNEO);
-            $marcadores = implode(', ', array_map(fn($c) => ":{$c}", COLUMNAS_TORNEO));
-            $stmt = $pdo->prepare("INSERT INTO torneos ({$cols}) VALUES ({$marcadores}) RETURNING id");
+            $valores['usuario_id'] = $usuarioIdCreador;
+            $valores['codigo'] = torneos_generar_codigo_unico();
+            $cols = array_merge(COLUMNAS_TORNEO, ['usuario_id', 'codigo']);
+            $marcadores = implode(', ', array_map(fn($c) => ":{$c}", $cols));
+            $stmt = $pdo->prepare('INSERT INTO torneos (' . implode(', ', $cols) . ") VALUES ({$marcadores}) RETURNING id");
             foreach ($valores as $c => $v) {
                 db_bind($stmt, ":{$c}", $v);
             }
@@ -348,11 +431,15 @@ function torneos_guardar(array $datos): int
 /**
  * Elimina una copa y (por ON DELETE CASCADE) todos sus equipos, partidos,
  * patrocinadores y comentarios. No se permite borrar la copa predeterminada.
+ * $usuarioId exige además que la copa pertenezca a ese usuario.
  */
-function torneos_eliminar(int $id): void
+function torneos_eliminar(int $id, ?int $usuarioId = null): void
 {
-    $torneo = torneos_obtener_por_id($id);
-    if ($torneo && $torneo['es_predeterminado']) {
+    $torneo = torneos_obtener_por_id($id, $usuarioId);
+    if ($torneo === null) {
+        throw new RuntimeException('Copa no encontrada.');
+    }
+    if ($torneo['es_predeterminado']) {
         throw new RuntimeException('No se puede eliminar la copa predeterminada.');
     }
     $pdo = db_conexion();

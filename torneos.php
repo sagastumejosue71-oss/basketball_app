@@ -3,8 +3,9 @@ declare(strict_types=1);
 require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/helpers.php';
-require_once __DIR__ . '/includes/torneo_actual.php';
 
+// Esta página no pertenece a ninguna copa: es el punto de entrada para elegir una.
+$torneo = null;
 $todasLasCopas = torneos_listar(true);
 
 $titulo_pagina = 'Todas las copas';
@@ -25,7 +26,7 @@ require __DIR__ . '/includes/layout_top.php';
         <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
             <?php foreach ($todasLasCopas as $t): ?>
             <div class="col">
-                <a href="<?= url($t['es_predeterminado'] ? '' : $t['slug'] . '/') ?>" class="text-decoration-none text-dark">
+                <a href="<?= e(url_copa_de($t)) ?>" class="text-decoration-none text-dark">
                     <div class="card-suave p-4 h-100 text-center">
                         <div class="mx-auto mb-3">
                             <?php if (!empty($t['logo'])): ?>

@@ -2,11 +2,12 @@
 declare(strict_types=1);
 require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/db.php';
+require_once __DIR__ . '/includes/usuarios.php';
 require_once __DIR__ . '/includes/helpers.php';
 require_once __DIR__ . '/includes/filtro.php';
 require_once __DIR__ . '/includes/torneo_actual.php';
 
-$organizador = db_leer('organizador');
+$organizador = torneo_organizador($torneo) ?? ['nombre' => 'Organizador', 'cargo' => '', 'email' => '', 'telefono' => '', 'bio' => '', 'foto' => ''];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Honeypot: los bots suelen rellenar este campo oculto; los humanos lo dejan vacío

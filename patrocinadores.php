@@ -2,6 +2,7 @@
 declare(strict_types=1);
 require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/db.php';
+require_once __DIR__ . '/includes/usuarios.php';
 require_once __DIR__ . '/includes/helpers.php';
 require_once __DIR__ . '/includes/torneo_actual.php';
 
@@ -33,7 +34,7 @@ require __DIR__ . '/includes/layout_top.php';
         <div class="card-suave p-4 p-md-5 text-center">
             <h4 class="mb-2">¿Quieres patrocinar la próxima temporada?</h4>
             <p class="text-muted mb-3">Contáctanos y forma parte de <?= e($torneo['nombre']) ?>.</p>
-            <a href="mailto:<?= e(db_leer('organizador')['email'] ?? '') ?>" class="btn btn-degradado rounded-pill px-4">Escribir al organizador</a>
+            <a href="mailto:<?= e(torneo_organizador($torneo)['email'] ?? '') ?>" class="btn btn-degradado rounded-pill px-4">Escribir al organizador</a>
         </div>
     </div>
 </section>

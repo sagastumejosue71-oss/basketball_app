@@ -3,16 +3,18 @@ declare(strict_types=1);
 require_once __DIR__ . '/../../includes/config.php';
 require_once __DIR__ . '/../../includes/db.php';
 require_once __DIR__ . '/../../includes/auth.php';
+require_once __DIR__ . '/../../includes/usuarios.php';
 require_once __DIR__ . '/../../includes/helpers.php';
 
 auth_requerir();
+$usuarioIdSesion = (int) $_SESSION['usuario_id'];
 
 // Copa activa, solo para mostrarla en el sidebar (las páginas que de verdad la necesitan
 // la exigen ellas mismas con admin_requerir_torneo_activo() antes de llegar aquí).
 $torneoActivoId = $_SESSION['torneo_activo_id'] ?? null;
-$torneoActivo = $torneoActivoId !== null ? torneos_obtener_por_id((int) $torneoActivoId) : null;
+$torneoActivo = $torneoActivoId !== null ? torneos_obtener_por_id((int) $torneoActivoId, $usuarioIdSesion) : null;
 
-$organizador = db_leer('organizador');
+$organizador = usuarios_obtener_por_id($usuarioIdSesion) ?? [];
 $seccion_activa = $seccion_activa ?? '';
 $titulo_pagina = $titulo_pagina ?? 'Panel del Organizador';
 $flash = obtener_flash();

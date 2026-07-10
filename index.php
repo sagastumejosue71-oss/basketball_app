@@ -3,6 +3,15 @@ declare(strict_types=1);
 require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/helpers.php';
+
+// La raíz del sitio (sin /slug/) no pertenece a ninguna copa: es la portada de la
+// plataforma. Se resuelve aquí (en vez de dejar que torneo_actual.php redirija) para
+// que "/" sea una URL real y directa, no un salto a otra página.
+if (($_GET['copa'] ?? null) === null) {
+    require __DIR__ . '/portada.php';
+    exit;
+}
+
 require_once __DIR__ . '/includes/tabla.php';
 require_once __DIR__ . '/includes/torneo_actual.php';
 

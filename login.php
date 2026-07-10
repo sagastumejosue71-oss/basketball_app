@@ -74,7 +74,8 @@ $titulo_pagina = 'Acceso Organizador — ' . $torneo['nombre'];
             </div>
             <button type="submit" class="btn btn-degradado btn-lg w-100 rounded-pill">Ingresar</button>
         </form>
-        <div class="text-center mt-4">
+        <div class="text-center mt-4 d-flex flex-column gap-1">
+            <a href="<?= url('registro.php') ?>" class="small text-muted text-decoration-none">¿No tienes cuenta? Regístrate</a>
             <a href="<?= url('index.php') ?>" class="small text-muted text-decoration-none"><i class="bi bi-arrow-left me-1"></i>Volver al sitio público</a>
         </div>
     </div>

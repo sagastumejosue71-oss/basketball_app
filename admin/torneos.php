@@ -8,13 +8,14 @@ require_once __DIR__ . '/../includes/upload.php';
 require_once __DIR__ . '/../includes/tabla.php';
 
 auth_requerir();
+$usuarioId = (int) $_SESSION['usuario_id'];
 
 $accion = $_GET['accion'] ?? 'lista';
 
 // Cambiar de copa activa (no necesita CSRF: es solo un cambio de contexto, no una escritura de datos)
 if ($accion === 'entrar' && isset($_GET['id'])) {
     $id = (int) $_GET['id'];
-    if (torneos_obtener_por_id($id) !== null) {
+    if (torneos_obtener_por_id($id, $usuarioId) !== null) {
         $_SESSION['torneo_activo_id'] = $id;
     }
     header('Location: ' . url('admin/index.php'));
@@ -22,7 +23,7 @@ if ($accion === 'entrar' && isset($_GET['id'])) {
 }
 
 $idEditar = isset($_GET['id']) ? (int) $_GET['id'] : 0;
-$torneoEditar = $idEditar ? torneos_obtener_por_id($idEditar) : null;
+$torneoEditar = $idEditar ? torneos_obtener_por_id($idEditar, $usuarioId) : null;
 $errores = [];
 
 function torneos_slugificar(string $texto): string
@@ -38,6 +39,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'guard
     csrf_validar();
 
     $id = (int) ($_POST['id'] ?? 0);
+    // Si el id no es 0 debe pertenecer a este usuario, si no cualquiera podría guardar
+    // cambios sobre una copa ajena con solo adivinar/probar su id.
+    if ($id > 0 && torneos_obtener_por_id($id, $usuarioId) === null) {
+        http_response_code(403);
+        exit('No tienes permiso para editar esta copa.');
+    }
     $nombre = trim((string) $_POST['nombre']);
     $slug = torneos_slugificar((string) ($_POST['slug'] ?: $nombre));
     $deporte = (string) $_POST['deporte'] === 'futbol' ? 'futbol' : 'basketball';
@@ -91,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'guard
             'activo' => true,
         ];
 
-        $idGuardado = torneos_guardar($datos);
+        $idGuardado = torneos_guardar($datos, $usuarioId);
 
         if (empty($_SESSION['torneo_activo_id'])) {
             $_SESSION['torneo_activo_id'] = $idGuardado;
@@ -108,7 +115,7 @@ if (($_SERVER['REQUEST_METHOD'] === 'POST') && ($_POST['accion'] ?? '') === 'eli
     csrf_validar();
     $id = (int) $_POST['id'];
     try {
-        torneos_eliminar($id);
+        torneos_eliminar($id, $usuarioId);
         if (($_SESSION['torneo_activo_id'] ?? null) === $id) {
             unset($_SESSION['torneo_activo_id']);
         }
@@ -118,8 +125,19 @@ if (($_SERVER['REQUEST_METHOD'] === 'POST') && ($_POST['accion'] ?? '') === 'eli
     }
 }
 
+if (($_SERVER['REQUEST_METHOD'] === 'POST') && ($_POST['accion'] ?? '') === 'regenerar_codigo') {
+    csrf_validar();
+    $id = (int) $_POST['id'];
+    try {
+        torneos_regenerar_codigo($id, $usuarioId);
+        redirigir_con_mensaje(url('admin/torneos.php'), 'success', 'Código regenerado.');
+    } catch (RuntimeException $e) {
+        redirigir_con_mensaje(url('admin/torneos.php'), 'error', $e->getMessage());
+    }
+}
+
 $deportePorDefecto = $torneoEditar['deporte'] ?? 'basketball';
-$torneos = torneos_listar(false);
+$torneos = torneos_listar(false, $usuarioId);
 
 $seccion_activa = 'torneos';
 $titulo_pagina = 'Mis Copas';
@@ -297,9 +315,20 @@ require __DIR__ . '/includes/admin_layout_top.php';
                     <?php if ($t['es_predeterminado']): ?><span class="badge rounded-pill text-bg-warning small">Predeterminada</span><?php endif; ?>
                 </div>
                 <div class="fw-semibold mb-1"><?= e($t['nombre']) ?></div>
-                <div class="d-flex align-items-center gap-1 mb-3">
+                <div class="d-flex align-items-center gap-1 mb-1">
                     <code class="small text-truncate" style="max-width:100%;"><?= e(url_copa_de($t)) ?></code>
                     <button type="button" class="btn btn-sm btn-link p-0 ms-1 btn-copiar-url" data-url="<?= e(url_copa_de($t)) ?>" title="Copiar enlace"><i class="bi bi-clipboard"></i></button>
+                </div>
+                <div class="d-flex align-items-center gap-1 mb-3">
+                    <span class="small text-muted">Código:</span>
+                    <code class="small fw-bold"><?= e($t['codigo']) ?></code>
+                    <button type="button" class="btn btn-sm btn-link p-0 ms-1 btn-copiar-url" data-url="<?= e($t['codigo']) ?>" title="Copiar código"><i class="bi bi-clipboard"></i></button>
+                    <form method="post" data-confirm="¿Generar un código nuevo para \"<?= e($t['nombre']) ?>\"? El código anterior dejará de funcionar." class="d-inline">
+                        <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+                        <input type="hidden" name="accion" value="regenerar_codigo">
+                        <input type="hidden" name="id" value="<?= $t['id'] ?>">
+                        <button type="submit" class="btn btn-sm btn-link p-0 ms-1 text-muted" title="Generar código nuevo"><i class="bi bi-arrow-repeat"></i></button>
+                    </form>
                 </div>
                 <div class="d-flex gap-2 mt-auto flex-wrap">
                     <a href="<?= url('admin/torneos.php?accion=entrar&id=' . $t['id']) ?>" class="btn btn-sm btn-degradado rounded-pill flex-grow-1">Entrar</a>
