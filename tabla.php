@@ -49,11 +49,11 @@ require __DIR__ . '/includes/layout_top.php';
                 </thead>
                 <tbody>
                     <?php foreach ($tabla as $fila): ?>
-                    <tr class="<?= $fila['posicion'] <= 4 ? 'zona-playoff' : '' ?>">
-                        <td>
+                    <tr class="fila-clicable <?= $fila['posicion'] <= 4 ? 'zona-playoff' : '' ?>" data-href="<?= e(url_copa('equipo.php?id=' . $fila['equipo']['id'])) ?>">
+                        <td data-label="#">
                             <span class="pos-num <?= $fila['posicion'] === 1 ? 'oro' : ($fila['posicion'] === 2 ? 'plata' : ($fila['posicion'] === 3 ? 'bronce' : '')) ?>"><?= $fila['posicion'] ?></span>
                         </td>
-                        <td>
+                        <td class="td-equipo">
                             <a href="<?= url_copa('equipo.php?id=' . $fila['equipo']['id']) ?>" class="d-flex align-items-center gap-2 text-decoration-none text-dark">
                                 <?= logo_equipo($fila['equipo'], 38) ?>
                                 <div>
@@ -62,16 +62,16 @@ require __DIR__ . '/includes/layout_top.php';
                                 </div>
                             </a>
                         </td>
-                        <td class="text-center"><?= $fila['pj'] ?></td>
-                        <td class="text-center"><?= $fila['pg'] ?></td>
-                        <?php if ($torneo['permite_empates']): ?><td class="text-center"><?= $fila['pe'] ?></td><?php endif; ?>
-                        <td class="text-center"><?= $fila['pp'] ?></td>
-                        <td class="text-center"><?= $fila['porcentaje'] ?>%</td>
-                        <td class="text-center"><?= $fila['pf'] ?></td>
-                        <td class="text-center"><?= $fila['pc'] ?></td>
-                        <td class="text-center fw-semibold <?= $fila['dif'] >= 0 ? 'text-success' : 'text-danger' ?>"><?= $fila['dif'] >= 0 ? '+' : '' ?><?= $fila['dif'] ?></td>
-                        <td class="text-center fw-bold"><?= $fila['pts'] ?></td>
-                        <td>
+                        <td class="text-center" data-label="PJ"><?= $fila['pj'] ?></td>
+                        <td class="text-center" data-label="PG"><?= $fila['pg'] ?></td>
+                        <?php if ($torneo['permite_empates']): ?><td class="text-center" data-label="PE"><?= $fila['pe'] ?></td><?php endif; ?>
+                        <td class="text-center" data-label="PP"><?= $fila['pp'] ?></td>
+                        <td class="text-center" data-label="%G"><?= $fila['porcentaje'] ?>%</td>
+                        <td class="text-center" data-label="PF"><?= $fila['pf'] ?></td>
+                        <td class="text-center" data-label="PC"><?= $fila['pc'] ?></td>
+                        <td class="text-center fw-semibold <?= $fila['dif'] >= 0 ? 'text-success' : 'text-danger' ?>" data-label="DIF"><?= $fila['dif'] >= 0 ? '+' : '' ?><?= $fila['dif'] ?></td>
+                        <td class="text-center fw-bold" data-label="PTS"><?= $fila['pts'] ?></td>
+                        <td data-label="Racha">
                             <?php if (empty($fila['racha'])): ?>
                                 <span class="small text-muted">—</span>
                             <?php else: ?>

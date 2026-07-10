@@ -65,9 +65,25 @@ if (!defined('BASE_URL')) {
     define('BASE_URL', rtrim($raiz, '/'));
 }
 
+// Dominio + esquema completos, para mostrar/copiar enlaces absolutos (ej. la URL de una
+// copa en el panel admin) sin depender de la página desde la que se generan.
+if (!defined('SITE_ORIGIN')) {
+    define('SITE_ORIGIN', ($esHttps ? 'https://' : 'http://') . ($_SERVER['HTTP_HOST'] ?? 'localhost'));
+}
+
 function url(string $path = ''): string
 {
     return BASE_URL . '/' . ltrim($path, '/');
+}
+
+/**
+ * URL pública absoluta (con dominio) de una copa cualquiera, sin depender del $torneo
+ * de la petición actual. Útil para mostrar/copiar el enlace de cada copa en el admin.
+ */
+function url_copa_de(array $torneo, string $path = ''): string
+{
+    $prefijo = (empty($torneo['es_predeterminado']) && !empty($torneo['slug'])) ? '/' . $torneo['slug'] : '';
+    return SITE_ORIGIN . BASE_URL . $prefijo . '/' . ltrim($path, '/');
 }
 
 /**

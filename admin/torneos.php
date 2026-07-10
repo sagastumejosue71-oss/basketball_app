@@ -155,9 +155,9 @@ require __DIR__ . '/includes/admin_layout_top.php';
                 <label class="form-label small fw-semibold">URL de la copa</label>
                 <div class="input-group">
                     <span class="input-group-text small">/</span>
-                    <input type="text" name="slug" id="campoSlug" class="form-control" value="<?= e($torneoEditar['slug'] ?? '') ?>" placeholder="se genera automático">
+                    <input type="text" name="slug" id="campoSlug" class="form-control" value="<?= e($torneoEditar['slug'] ?? '') ?>" placeholder="se genera automático" data-predeterminado="<?= !empty($torneoEditar['es_predeterminado']) ? '1' : '0' ?>" data-origen="<?= e(SITE_ORIGIN . BASE_URL) ?>">
                 </div>
-                <div class="form-text">Solo letras, números y guiones.</div>
+                <div class="form-text">Solo letras, números y guiones. Tu copa quedará en: <strong id="previewUrlCopa"><?= !empty($torneoEditar['es_predeterminado']) ? e(SITE_ORIGIN . BASE_URL . '/') : e(SITE_ORIGIN . BASE_URL . '/' . ($torneoEditar['slug'] ?? '') . '/') ?></strong></div>
             </div>
             <div class="col-md-4">
                 <label class="form-label small fw-semibold">Deporte</label>
@@ -297,9 +297,13 @@ require __DIR__ . '/includes/admin_layout_top.php';
                     <?php if ($t['es_predeterminado']): ?><span class="badge rounded-pill text-bg-warning small">Predeterminada</span><?php endif; ?>
                 </div>
                 <div class="fw-semibold mb-1"><?= e($t['nombre']) ?></div>
-                <div class="small text-muted mb-3">/<?= e($t['slug']) ?></div>
-                <div class="d-flex gap-2 mt-auto">
+                <div class="d-flex align-items-center gap-1 mb-3">
+                    <code class="small text-truncate" style="max-width:100%;"><?= e(url_copa_de($t)) ?></code>
+                    <button type="button" class="btn btn-sm btn-link p-0 ms-1 btn-copiar-url" data-url="<?= e(url_copa_de($t)) ?>" title="Copiar enlace"><i class="bi bi-clipboard"></i></button>
+                </div>
+                <div class="d-flex gap-2 mt-auto flex-wrap">
                     <a href="<?= url('admin/torneos.php?accion=entrar&id=' . $t['id']) ?>" class="btn btn-sm btn-degradado rounded-pill flex-grow-1">Entrar</a>
+                    <a href="<?= e(url_copa_de($t)) ?>" target="_blank" class="btn btn-sm btn-outline-secondary" title="Ver copa"><i class="bi bi-box-arrow-up-right"></i></a>
                     <a href="<?= url('admin/torneos.php?accion=editar&id=' . $t['id']) ?>" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
                     <?php if (!$t['es_predeterminado']): ?>
                     <form method="post" data-confirm="¿Eliminar la copa \"<?= e($t['nombre']) ?>\"? Se borrarán todos sus equipos, partidos y patrocinadores.">

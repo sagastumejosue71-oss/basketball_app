@@ -9,6 +9,17 @@ document.addEventListener('DOMContentLoaded', function () {
         window.addEventListener('scroll', onScroll, { passive: true });
     }
 
+    // Tabla de posiciones: toda la fila lleva al perfil del equipo (no solo el link del nombre)
+    document.querySelectorAll('.fila-clicable[data-href]').forEach(function (fila) {
+        fila.style.cursor = 'pointer';
+        fila.addEventListener('click', function (e) {
+            if (e.target.closest('a, button')) {
+                return;
+            }
+            window.location.href = fila.getAttribute('data-href');
+        });
+    });
+
     // Confirmación para acciones destructivas en el panel del organizador
     document.querySelectorAll('[data-confirm]').forEach(function (form) {
         form.addEventListener('submit', function (e) {
@@ -32,6 +43,15 @@ document.addEventListener('DOMContentLoaded', function () {
     // Formulario de copas: sugiere la URL (slug) a partir del nombre, mientras el usuario no la edite a mano
     var campoNombre = document.getElementById('campoNombre');
     var campoSlug = document.getElementById('campoSlug');
+    var previewUrlCopa = document.getElementById('previewUrlCopa');
+    if (campoSlug && previewUrlCopa) {
+        var actualizarPreviewUrl = function () {
+            var esPredeterminado = campoSlug.getAttribute('data-predeterminado') === '1';
+            var origen = campoSlug.getAttribute('data-origen') || '';
+            previewUrlCopa.textContent = esPredeterminado ? (origen + '/') : (origen + '/' + campoSlug.value + '/');
+        };
+        campoSlug.addEventListener('input', actualizarPreviewUrl);
+    }
     if (campoNombre && campoSlug) {
         var slugTocadoAMano = campoSlug.value.trim() !== '';
         campoSlug.addEventListener('input', function () { slugTocadoAMano = true; });
@@ -42,6 +62,9 @@ document.addEventListener('DOMContentLoaded', function () {
             var mapa = { 'á': 'a', 'é': 'e', 'í': 'i', 'ó': 'o', 'ú': 'u', 'ñ': 'n', 'ü': 'u' };
             var texto = campoNombre.value.toLowerCase().replace(/[áéíóúñü]/g, function (c) { return mapa[c]; });
             campoSlug.value = texto.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+            if (previewUrlCopa) {
+                actualizarPreviewUrl();
+            }
         });
     }
 
@@ -125,4 +148,27 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
     }
+
+    // Tarjetas de "Mis Copas": copiar la URL de una copa específica
+    document.querySelectorAll('.btn-copiar-url').forEach(function (boton) {
+        boton.addEventListener('click', function () {
+            var url = boton.getAttribute('data-url');
+            var iconoOriginal = boton.innerHTML;
+            var marcarCopiado = function () {
+                boton.innerHTML = '<i class="bi bi-check-lg text-success"></i>';
+                setTimeout(function () { boton.innerHTML = iconoOriginal; }, 1800);
+            };
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(url).then(marcarCopiado);
+            } else {
+                var temporal = document.createElement('input');
+                temporal.value = url;
+                document.body.appendChild(temporal);
+                temporal.select();
+                try { document.execCommand('copy'); } catch (e) { /* noop */ }
+                document.body.removeChild(temporal);
+                marcarCopiado();
+            }
+        });
+    });
 });

@@ -31,7 +31,7 @@ require __DIR__ . '/includes/layout_top.php';
                             <?php if (!empty($t['logo'])): ?>
                                 <img src="<?= e(url_imagen($t['logo'])) ?>" alt="<?= e($t['nombre']) ?>" width="72" height="72" class="rounded-circle" style="object-fit:cover;">
                             <?php else: ?>
-                                <span class="badge-pill-icon mx-auto" style="width:72px;height:72px;font-size:1.8rem;"><?= $t['deporte'] === 'futbol' ? '⚽' : icono_balon(32) ?></span>
+                                <span class="badge-pill-icon mx-auto" style="width:72px;height:72px;font-size:1.8rem;"><?= icono_deporte($t['deporte'], 32) ?></span>
                             <?php endif; ?>
                         </div>
                         <h5 class="mb-1"><?= e($t['nombre']) ?></h5>

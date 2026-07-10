@@ -206,6 +206,74 @@ function icono_balon(int $size = 24): string
 SVG;
 }
 
+function icono_futbol(int $size = 24): string
+{
+    return <<<SVG
+<svg width="{$size}" height="{$size}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="12" cy="12" r="10.5" stroke="currentColor" stroke-width="1.6"/>
+    <path d="M12 7.2l4.2 3-1.6 4.9h-5.2l-1.6-4.9z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+    <path d="M12 7.2V2.3M16.2 10.2l4.4-1.4M14.8 15.1l2.7 3.9M9.2 15.1l-2.7 3.9M7.8 10.2l-4.4-1.4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+</svg>
+SVG;
+}
+
+/**
+ * Icono según el deporte de la copa, para que basketball y fútbol se vean distintos
+ * en el navbar, footer y panel admin (no solo en el nombre).
+ */
+function icono_deporte(?string $deporte, int $size = 24): string
+{
+    return $deporte === 'futbol' ? icono_futbol($size) : icono_balon($size);
+}
+
+/**
+ * Oscurece un color hex (#rrggbb) un porcentaje dado, para derivar variantes
+ * "oscuras" de los colores que el admin elige por copa (ej. hover de botones).
+ */
+function color_oscurecer(string $hex, float $factor): string
+{
+    if (!preg_match('/^#?([0-9a-fA-F]{6})$/', $hex, $m)) {
+        return '#000000';
+    }
+    $valor = $m[1];
+    $r = (int) max(0, min(255, hexdec(substr($valor, 0, 2)) * (1 - $factor)));
+    $g = (int) max(0, min(255, hexdec(substr($valor, 2, 2)) * (1 - $factor)));
+    $b = (int) max(0, min(255, hexdec(substr($valor, 4, 2)) * (1 - $factor)));
+    return sprintf('#%02x%02x%02x', $r, $g, $b);
+}
+
+function color_hex_valido(?string $hex, string $porDefecto): string
+{
+    if (is_string($hex) && preg_match('/^#[0-9a-fA-F]{6}$/', $hex)) {
+        return $hex;
+    }
+    return $porDefecto;
+}
+
+/**
+ * Genera las variables CSS (--color-primario, etc.) para que cada copa se vea con
+ * SUS propios colores en vez del morado/rosa fijo de Copa Estrellas. El acento rosa
+ * de la marca (--color-rosa) solo se mantiene para la copa predeterminada (Copa
+ * Estrellas); el resto usa su propio color de acento, así el panel admin y el sitio
+ * público de las demás copas se ven neutros según lo que el organizador eligió.
+ */
+function torneo_variables_css(?array $torneo): string
+{
+    $primario = color_hex_valido($torneo['color_primario'] ?? null, '#475569');
+    $secundario = color_hex_valido($torneo['color_secundario'] ?? null, '#64748b');
+    $acento = color_hex_valido($torneo['color_acento'] ?? null, '#94a3b8');
+    $rosa = !empty($torneo['es_predeterminado']) ? '#f72585' : $acento;
+    $oscuro = color_oscurecer($primario, 0.35);
+
+    return '<style>:root{'
+        . '--color-primario:' . e($primario) . ';'
+        . '--color-primario-oscuro:' . e($oscuro) . ';'
+        . '--color-secundario:' . e($secundario) . ';'
+        . '--color-acento:' . e($acento) . ';'
+        . '--color-rosa:' . e($rosa) . ';'
+        . '}</style>';
+}
+
 function redirigir_con_mensaje(string $ruta, string $tipo, string $mensaje): void
 {
     $_SESSION['flash'] = ['tipo' => $tipo, 'mensaje' => $mensaje];

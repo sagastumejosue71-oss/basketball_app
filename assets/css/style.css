@@ -329,6 +329,49 @@ h1, h2, h3, h4, h5, h6, .fw-heading {
 .racha-punto.p { background: #e5484d; }
 .racha-punto.e { background: #f0b429; }
 
+/* Tabla de posiciones en móvil: cada fila se convierte en una tarjeta apilada
+   en vez de forzar scroll horizontal, y sigue siendo clicable hacia el equipo. */
+@media (max-width: 767.98px) {
+    .tabla-posiciones thead { display: none; }
+    .tabla-posiciones, .tabla-posiciones tbody, .tabla-posiciones tr, .tabla-posiciones td {
+        display: block;
+        width: 100%;
+    }
+    .tabla-posiciones tbody tr {
+        border-radius: 14px;
+        padding: .5rem .75rem;
+        margin-bottom: 10px;
+    }
+    .tabla-posiciones tbody tr td {
+        border: none;
+        padding: .3rem 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        text-align: right;
+    }
+    .tabla-posiciones tbody tr td::before {
+        content: attr(data-label);
+        font-size: .7rem;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        color: #8b7fa8;
+        font-weight: 700;
+    }
+    .tabla-posiciones tbody tr td.td-equipo {
+        justify-content: flex-start;
+        padding-bottom: .6rem;
+        margin-bottom: .3rem;
+        border-bottom: 1px solid rgba(75, 15, 176, .08);
+    }
+    .tabla-posiciones tbody tr td.td-equipo a { width: 100%; }
+    .tabla-posiciones tbody tr td:first-child {
+        justify-content: flex-end;
+        order: -1;
+        padding-bottom: 0;
+    }
+}
+
 /* ---------- Partidos ---------- */
 .partido-card {
     border-radius: 16px;

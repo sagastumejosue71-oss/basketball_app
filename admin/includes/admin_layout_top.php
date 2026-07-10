@@ -55,12 +55,13 @@ function admin_nav_copa(string $seccion_activa, ?array $torneoActivo): string
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <link href="<?= url('assets/css/style.css') ?>" rel="stylesheet">
+    <?= torneo_variables_css($torneoActivo) ?>
 </head>
 <body style="background:#f7f5fb;">
 <div class="d-flex">
     <aside class="sidebar-admin d-none d-lg-flex flex-column p-3" style="width:270px;flex-shrink:0;">
         <a href="<?= url('admin/index.php') ?>" class="d-flex align-items-center gap-2 text-decoration-none text-white mb-3 px-2 pt-2">
-            <span class="badge-pill-icon"><?= icono_balon(20) ?></span>
+            <span class="badge-pill-icon"><?= icono_deporte($torneoActivo['deporte'] ?? null, 20) ?></span>
             <span class="fw-heading fs-6"><?= e($nombreMarca) ?></span>
         </a>
         <a href="<?= url('admin/torneos.php') ?>" class="d-block small text-decoration-none px-2 mb-3" style="color:rgba(255,255,255,.6);">

@@ -3,7 +3,7 @@
         <div class="row gy-4">
             <div class="col-lg-4">
                 <div class="d-flex align-items-center gap-2 mb-3">
-                    <span class="badge-pill-icon"><?= icono_balon(20) ?></span>
+                    <span class="badge-pill-icon"><?= icono_deporte($torneo['deporte'] ?? null, 20) ?></span>
                     <span class="fw-heading text-white fs-5"><?= e($torneo['nombre']) ?></span>
                 </div>
                 <p class="small mb-3"><?= e($torneo['descripcion']) ?></p>
