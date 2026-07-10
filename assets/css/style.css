@@ -233,6 +233,33 @@ h1, h2, h3, h4, h5, h6, .fw-heading {
     50% { transform: translateY(-18px) rotate(4deg); }
 }
 
+/* Variante balón de fútbol para copas de ese deporte: esfera blanca con
+   parches oscuros en vez del degradado naranja con costuras de basketball. */
+.hero-basquet.hero-futbol .balon {
+    background: radial-gradient(circle at 32% 28%, #ffffff, #e7ebf0 55%, #aeb7c2 100%);
+    box-shadow: 0 30px 60px -18px rgba(15, 23, 42, .4), inset -14px -14px 34px rgba(0, 0, 0, .18), inset 10px 10px 24px rgba(255, 255, 255, .55);
+}
+
+.hero-basquet.hero-futbol .balon::before {
+    background: #1c1c1c;
+    top: 37%;
+    left: 37%;
+    width: 26%;
+    height: 26%;
+    clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+}
+
+.hero-basquet.hero-futbol .balon::after {
+    background:
+        radial-gradient(circle at 20% 24%, #1c1c1c 0 9%, transparent 9.5%),
+        radial-gradient(circle at 79% 21%, #1c1c1c 0 8%, transparent 8.5%),
+        radial-gradient(circle at 83% 68%, #1c1c1c 0 9%, transparent 9.5%),
+        radial-gradient(circle at 21% 73%, #1c1c1c 0 8%, transparent 8.5%),
+        radial-gradient(circle at 50% 90%, #1c1c1c 0 7%, transparent 7.5%);
+    border: none;
+    box-shadow: none;
+}
+
 /* ---------- Secciones ---------- */
 .seccion {
     padding: 4.5rem 0;

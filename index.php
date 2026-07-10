@@ -52,7 +52,7 @@ require __DIR__ . '/includes/layout_top.php';
                 </div>
             </div>
             <div class="col-lg-5">
-                <div class="hero-basquet"><div class="balon"></div></div>
+                <div class="hero-basquet <?= ($torneo['deporte'] ?? 'basketball') === 'futbol' ? 'hero-futbol' : '' ?>"><div class="balon"></div></div>
             </div>
         </div>
     </div>
