@@ -8,7 +8,7 @@ require_once __DIR__ . '/includes/helpers.php';
 $torneo = null;
 $todasLasCopas = torneos_listar(true);
 
-$titulo_pagina = 'Todas las copas';
+$titulo_pagina = 'Todas las copas y ligas';
 $pagina_activa = 'copas';
 require __DIR__ . '/includes/layout_top.php';
 ?>
@@ -16,8 +16,8 @@ require __DIR__ . '/includes/layout_top.php';
 <header class="hero-copa" style="padding-bottom:3.5rem;">
     <div class="container">
         <p class="kicker mb-2"><i class="bi bi-grid-3x3-gap me-1"></i>Explora</p>
-        <h1 class="text-white mb-2">Todas las <span class="text-degradado">Copas</span></h1>
-        <p style="color:rgba(255,255,255,.75);" class="mb-0">Cada copa tiene su propia tabla, calendario, equipos y patrocinadores.</p>
+        <h1 class="text-white mb-2">Todas las <span class="text-degradado">Copas y Ligas</span></h1>
+        <p style="color:rgba(255,255,255,.75);" class="mb-0">Cada copa o liga tiene su propia tabla, calendario, equipos y patrocinadores.</p>
     </div>
 </header>
 
@@ -38,6 +38,7 @@ require __DIR__ . '/includes/layout_top.php';
                         <h5 class="mb-1"><?= e($t['nombre']) ?></h5>
                         <p class="text-muted small mb-2"><?= e($t['subtitulo']) ?></p>
                         <span class="tier-pill oro"><?= $t['deporte'] === 'futbol' ? 'Fútbol' : 'Basketball' ?></span>
+                        <span class="tier-pill plata"><?= ($t['modo'] ?? 'copa') === 'liga' ? 'Liga' : 'Copa' ?></span>
                     </div>
                 </a>
             </div>
@@ -45,7 +46,7 @@ require __DIR__ . '/includes/layout_top.php';
         </div>
 
         <?php if (empty($todasLasCopas)): ?>
-            <p class="text-muted text-center">Todavía no hay copas activas.</p>
+            <p class="text-muted text-center">Todavía no hay copas ni ligas activas.</p>
         <?php endif; ?>
     </div>
 </section>

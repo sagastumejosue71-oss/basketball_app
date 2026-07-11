@@ -58,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
             $nuevoUsuario = usuarios_obtener_por_id($id);
             auth_iniciar_sesion_usuario($nuevoUsuario);
-            redirigir_con_mensaje(url('admin/torneos.php?accion=nuevo'), 'success', '¡Bienvenido! Crea tu primera copa para empezar.');
+            redirigir_con_mensaje(url('admin/torneos.php?accion=nuevo'), 'success', '¡Bienvenido! Crea tu primera copa o liga para empezar.');
         }
     }
 }

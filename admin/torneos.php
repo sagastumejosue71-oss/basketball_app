@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'guard
     // cambios sobre una copa ajena con solo adivinar/probar su id.
     if ($id > 0 && torneos_obtener_por_id($id, $usuarioId) === null) {
         http_response_code(403);
-        exit('No tienes permiso para editar esta copa.');
+        exit('No tienes permiso para editar esta copa o liga.');
     }
     $nombre = trim((string) $_POST['nombre']);
     $slug = torneos_slugificar((string) ($_POST['slug'] ?: $nombre));
@@ -53,14 +53,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'guard
     $fasesElegidas = array_values(array_intersect((array) ($_POST['fases_playoff'] ?? []), FASES_PLAYOFF_CATALOGO));
 
     if ($nombre === '') {
-        $errores[] = 'El nombre de la copa es obligatorio.';
+        $errores[] = 'El nombre de la copa o liga es obligatorio.';
     }
     if ($slug === '') {
         $errores[] = 'La URL (slug) no puede quedar vacía. Usa letras, números y guiones.';
     } else {
         $existente = torneos_obtener_por_slug($slug);
         if ($existente && $existente['id'] !== $id) {
-            $errores[] = "Ya existe otra copa con la URL \"{$slug}\". Elige una distinta.";
+            $errores[] = "Ya existe otra copa o liga con la URL \"{$slug}\". Elige una distinta.";
         }
     }
 
@@ -106,7 +106,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'guard
             $_SESSION['torneo_activo_id'] = $idGuardado;
         }
 
-        redirigir_con_mensaje(url('admin/torneos.php'), 'success', $id ? 'Copa actualizada correctamente.' : '¡Copa creada! Ya puedes cargar sus equipos y encuentros.');
+        $etiquetaModo = $modo === 'liga' ? 'Liga' : 'Copa';
+        redirigir_con_mensaje(url('admin/torneos.php'), 'success', $id ? "{$etiquetaModo} actualizada correctamente." : "¡{$etiquetaModo} creada! Ya puedes cargar sus equipos y encuentros.");
     } else {
         $torneoEditar = array_merge($_POST, ['id' => $id, 'fases_playoff' => $fasesElegidas]);
         $accion = $id ? 'editar' : 'nuevo';
@@ -117,11 +118,13 @@ if (($_SERVER['REQUEST_METHOD'] === 'POST') && ($_POST['accion'] ?? '') === 'eli
     csrf_validar();
     $id = (int) $_POST['id'];
     try {
+        $torneoAEliminar = torneos_obtener_por_id($id, $usuarioId);
         torneos_eliminar($id, $usuarioId);
         if (($_SESSION['torneo_activo_id'] ?? null) === $id) {
             unset($_SESSION['torneo_activo_id']);
         }
-        redirigir_con_mensaje(url('admin/torneos.php'), 'success', 'Copa eliminada.');
+        $etiquetaModo = ($torneoAEliminar['modo'] ?? 'copa') === 'liga' ? 'Liga' : 'Copa';
+        redirigir_con_mensaje(url('admin/torneos.php'), 'success', "{$etiquetaModo} eliminada.");
     } catch (RuntimeException $e) {
         redirigir_con_mensaje(url('admin/torneos.php'), 'error', $e->getMessage());
     }
@@ -143,14 +146,14 @@ $modoPorDefecto = $torneoEditar['modo'] ?? 'copa';
 $torneos = torneos_listar(false, $usuarioId);
 
 $seccion_activa = 'torneos';
-$titulo_pagina = 'Mis Copas';
+$titulo_pagina = 'Mis Copas y Ligas';
 require __DIR__ . '/includes/admin_layout_top.php';
 ?>
 
 <?php if ($accion === 'nuevo' || $accion === 'editar'): ?>
     <div class="d-flex align-items-center gap-2 mb-4">
         <a href="<?= url('admin/torneos.php') ?>" class="btn btn-sm btn-outline-secondary rounded-circle"><i class="bi bi-arrow-left"></i></a>
-        <h3 class="mb-0"><?= $accion === 'editar' ? 'Editar copa' : 'Nueva copa' ?></h3>
+        <h3 class="mb-0"><?= $accion === 'editar' ? 'Editar copa o liga' : 'Nueva copa o liga' ?></h3>
     </div>
 
     <?php if (!empty($errores)): ?>
@@ -169,16 +172,16 @@ require __DIR__ . '/includes/admin_layout_top.php';
         <h6 class="text-uppercase small fw-bold text-muted mb-3">Datos básicos</h6>
         <div class="row g-3 mb-4">
             <div class="col-md-7">
-                <label class="form-label small fw-semibold">Nombre de la copa</label>
+                <label class="form-label small fw-semibold">Nombre de la copa o liga</label>
                 <input type="text" name="nombre" id="campoNombre" class="form-control" value="<?= e($torneoEditar['nombre'] ?? '') ?>" required placeholder="Ej. Papifútbol Masculino 2026">
             </div>
             <div class="col-md-5">
-                <label class="form-label small fw-semibold">URL de la copa</label>
+                <label class="form-label small fw-semibold">URL de la copa o liga</label>
                 <div class="input-group">
                     <span class="input-group-text small">/</span>
                     <input type="text" name="slug" id="campoSlug" class="form-control" value="<?= e($torneoEditar['slug'] ?? '') ?>" placeholder="se genera automático" data-predeterminado="<?= !empty($torneoEditar['es_predeterminado']) ? '1' : '0' ?>" data-origen="<?= e(SITE_ORIGIN . BASE_URL) ?>">
                 </div>
-                <div class="form-text">Solo letras, números y guiones. Tu copa quedará en: <strong id="previewUrlCopa"><?= !empty($torneoEditar['es_predeterminado']) ? e(SITE_ORIGIN . BASE_URL . '/') : e(SITE_ORIGIN . BASE_URL . '/' . ($torneoEditar['slug'] ?? '') . '/') ?></strong></div>
+                <div class="form-text">Solo letras, números y guiones. Tu copa o liga quedará en: <strong id="previewUrlCopa"><?= !empty($torneoEditar['es_predeterminado']) ? e(SITE_ORIGIN . BASE_URL . '/') : e(SITE_ORIGIN . BASE_URL . '/' . ($torneoEditar['slug'] ?? '') . '/') ?></strong></div>
             </div>
             <div class="col-md-4">
                 <label class="form-label small fw-semibold">Deporte</label>
@@ -225,7 +228,7 @@ require __DIR__ . '/includes/admin_layout_top.php';
                 <label class="form-label small fw-semibold">¿Permite empates?</label>
                 <div class="form-check form-switch mt-2">
                     <input class="form-check-input" type="checkbox" role="switch" id="checkEmpates" name="permite_empates" <?= !empty($torneoEditar['permite_empates']) ? 'checked' : '' ?>>
-                    <label class="form-check-label small" for="checkEmpates">Sí, esta copa admite empates</label>
+                    <label class="form-check-label small" for="checkEmpates">Sí, esta copa o liga admite empates</label>
                 </div>
             </div>
             <div class="col-12">
@@ -298,13 +301,13 @@ require __DIR__ . '/includes/admin_layout_top.php';
                 <input type="color" name="color_acento" class="form-control form-control-color w-100" value="<?= e($torneoEditar['color_acento'] ?? '#ffc93c') ?>">
             </div>
             <div class="col-12">
-                <label class="form-label small fw-semibold">Logo de la copa (opcional)</label>
+                <label class="form-label small fw-semibold">Logo de la copa o liga (opcional)</label>
                 <input type="file" name="logo" class="form-control" accept=".png,.jpg,.jpeg,.webp">
             </div>
         </div>
 
         <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-degradado rounded-pill px-4">Guardar copa</button>
+            <button type="submit" class="btn btn-degradado rounded-pill px-4">Guardar</button>
             <a href="<?= url('admin/torneos.php') ?>" class="btn btn-outline-secondary rounded-pill px-4">Cancelar</a>
         </div>
     </form>
@@ -312,8 +315,8 @@ require __DIR__ . '/includes/admin_layout_top.php';
 <?php else: ?>
 
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
-        <h3 class="mb-0">Mis Copas (<?= count($torneos) ?>)</h3>
-        <a href="<?= url('admin/torneos.php?accion=nuevo') ?>" class="btn btn-degradado rounded-pill px-3"><i class="bi bi-plus-lg me-1"></i>Nueva copa</a>
+        <h3 class="mb-0">Mis Copas y Ligas (<?= count($torneos) ?>)</h3>
+        <a href="<?= url('admin/torneos.php?accion=nuevo') ?>" class="btn btn-degradado rounded-pill px-3"><i class="bi bi-plus-lg me-1"></i>Nueva copa o liga</a>
     </div>
 
     <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
@@ -344,10 +347,10 @@ require __DIR__ . '/includes/admin_layout_top.php';
                 </div>
                 <div class="d-flex gap-2 mt-auto flex-wrap">
                     <a href="<?= url('admin/torneos.php?accion=entrar&id=' . $t['id']) ?>" class="btn btn-sm btn-degradado rounded-pill flex-grow-1">Entrar</a>
-                    <a href="<?= e(url_copa_de($t)) ?>" target="_blank" class="btn btn-sm btn-outline-secondary" title="Ver copa"><i class="bi bi-box-arrow-up-right"></i></a>
+                    <a href="<?= e(url_copa_de($t)) ?>" target="_blank" class="btn btn-sm btn-outline-secondary" title="Ver"><i class="bi bi-box-arrow-up-right"></i></a>
                     <a href="<?= url('admin/torneos.php?accion=editar&id=' . $t['id']) ?>" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
                     <?php if (!$t['es_predeterminado']): ?>
-                    <form method="post" data-confirm="¿Eliminar la copa \"<?= e($t['nombre']) ?>\"? Se borrarán todos sus equipos, partidos y patrocinadores.">
+                    <form method="post" data-confirm="¿Eliminar \"<?= e($t['nombre']) ?>\"? Se borrarán todos sus equipos, partidos y patrocinadores.">
                         <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
                         <input type="hidden" name="accion" value="eliminar">
                         <input type="hidden" name="id" value="<?= $t['id'] ?>">

@@ -428,7 +428,7 @@ function torneos_obtener_por_codigo(string $codigo): ?array
 function torneos_regenerar_codigo(int $id, int $usuarioId): string
 {
     if (torneos_obtener_por_id($id, $usuarioId) === null) {
-        throw new RuntimeException('Copa no encontrada.');
+        throw new RuntimeException('Copa o liga no encontrada.');
     }
     $nuevo = torneos_generar_codigo_unico();
     $pdo = db_conexion();
@@ -513,10 +513,10 @@ function torneos_eliminar(int $id, ?int $usuarioId = null): void
 {
     $torneo = torneos_obtener_por_id($id, $usuarioId);
     if ($torneo === null) {
-        throw new RuntimeException('Copa no encontrada.');
+        throw new RuntimeException('Copa o liga no encontrada.');
     }
     if ($torneo['es_predeterminado']) {
-        throw new RuntimeException('No se puede eliminar la copa predeterminada.');
+        throw new RuntimeException('No se puede eliminar la copa o liga predeterminada.');
     }
     $pdo = db_conexion();
     $stmt = $pdo->prepare('DELETE FROM torneos WHERE id = :id');

@@ -15,7 +15,7 @@ require_once __DIR__ . '/helpers.php';
 
 $torneo = $torneo ?? null;
 $pagina_activa = $pagina_activa ?? '';
-$titulo_pagina = $titulo_pagina ?? ($torneo ? $torneo['nombre'] . ' — ' . $torneo['subtitulo'] : 'Plataforma de Copas');
+$titulo_pagina = $titulo_pagina ?? ($torneo ? $torneo['nombre'] . ' — ' . $torneo['subtitulo'] : 'Plataforma de Copas y Ligas');
 $flash = obtener_flash();
 $usuarioActual = auth_check() ? usuarios_obtener_por_id((int) $_SESSION['usuario_id']) : null;
 
@@ -49,7 +49,7 @@ function nav_activa(string $clave, string $activa): string
             <?php else: ?>
                 <?= icono_multideporte(40) ?>
             <?php endif; ?>
-            <span><?= e($torneo['nombre'] ?? 'Plataforma de Copas') ?></span>
+            <span><?= e($torneo['nombre'] ?? 'Plataforma de Copas y Ligas') ?></span>
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navPrincipal">
             <span class="navbar-toggler-icon"></span>
@@ -64,7 +64,7 @@ function nav_activa(string $clave, string $activa): string
                 <li class="nav-item"><a class="nav-link <?= nav_activa('patrocinadores', $pagina_activa) ?>" href="<?= url_copa('patrocinadores.php') ?>">Patrocinadores</a></li>
                 <li class="nav-item"><a class="nav-link <?= nav_activa('organizador', $pagina_activa) ?>" href="<?= url_copa('organizador.php') ?>">Organizador</a></li>
                 <?php endif; ?>
-                <li class="nav-item"><a class="nav-link <?= nav_activa('copas', $pagina_activa) ?>" href="<?= url('torneos.php') ?>" title="Ver todas las copas"><i class="bi bi-grid-3x3-gap"></i></a></li>
+                <li class="nav-item"><a class="nav-link <?= nav_activa('copas', $pagina_activa) ?>" href="<?= url('torneos.php') ?>" title="Ver todas las copas y ligas"><i class="bi bi-grid-3x3-gap"></i></a></li>
                 <li class="nav-item ms-lg-2">
                     <button type="button" class="btn btn-outline-luz btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalCompartir">
                         <i class="bi bi-share-fill me-1"></i>Compartir

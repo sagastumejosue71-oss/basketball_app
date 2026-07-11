@@ -22,7 +22,7 @@ if (!preg_match('/^[' . preg_quote(TORNEO_CODIGO_ALFABETO, '/') . ']{6}$/', $cod
 
 $torneo = torneos_obtener_por_codigo($codigo);
 if ($torneo === null) {
-    redirigir_con_mensaje(url('/'), 'error', 'No encontramos ninguna copa con ese código.');
+    redirigir_con_mensaje(url('/'), 'error', 'No encontramos ninguna copa ni liga con ese código.');
 }
 
 header('Location: ' . url_copa_de($torneo));

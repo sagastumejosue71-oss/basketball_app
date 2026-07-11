@@ -40,7 +40,7 @@ function admin_nav_copa(string $seccion_activa, ?array $torneoActivo): string
         <a class="nav-link <?= admin_nav_activa('partidos', $seccion_activa) ?>" href="<?= url('admin/partidos.php') ?>"><i class="bi bi-calendar2-week me-2"></i>Encuentros</a>
         <a class="nav-link <?= admin_nav_activa('patrocinadores', $seccion_activa) ?>" href="<?= url('admin/patrocinadores.php') ?>"><i class="bi bi-award me-2"></i>Patrocinadores</a>
         <a class="nav-link <?= admin_nav_activa('comentarios', $seccion_activa) ?>" href="<?= url('admin/comentarios.php') ?>"><i class="bi bi-chat-heart me-2"></i>Comentarios</a>
-        <a class="nav-link <?= admin_nav_activa('torneos', $seccion_activa) ?>" href="<?= url('admin/torneos.php?accion=editar&id=' . $torneoActivo['id']) ?>"><i class="bi bi-sliders me-2"></i>Configuración de la copa</a>
+        <a class="nav-link <?= admin_nav_activa('torneos', $seccion_activa) ?>" href="<?= url('admin/torneos.php?accion=editar&id=' . $torneoActivo['id']) ?>"><i class="bi bi-sliders me-2"></i>Configuración de la <?= ($torneoActivo['modo'] ?? 'copa') === 'liga' ? 'liga' : 'copa' ?></a>
         <?php
     }
     return (string) ob_get_clean();
@@ -95,13 +95,13 @@ function admin_tarjeta_usuario(array $usuario): string
             <span class="fw-heading fs-6"><?= e($nombreMarca) ?></span>
         </a>
         <a href="<?= url('admin/torneos.php') ?>" class="d-block small text-decoration-none px-2 mb-3" style="color:rgba(255,255,255,.6);">
-            <i class="bi bi-arrow-left-right me-1"></i>Cambiar de copa
+            <i class="bi bi-arrow-left-right me-1"></i>Cambiar de copa o liga
         </a>
         <nav class="nav flex-column flex-grow-1">
             <a class="nav-link <?= admin_nav_activa('dashboard', $seccion_activa) ?>" href="<?= url('admin/index.php') ?>"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a>
             <?= admin_nav_copa($seccion_activa, $torneoActivo) ?>
             <hr class="border-secondary opacity-25 my-2">
-            <a class="nav-link <?= admin_nav_activa('torneos-lista', $seccion_activa) ?>" href="<?= url('admin/torneos.php') ?>"><i class="bi bi-trophy me-2"></i>Mis Copas</a>
+            <a class="nav-link <?= admin_nav_activa('torneos-lista', $seccion_activa) ?>" href="<?= url('admin/torneos.php') ?>"><i class="bi bi-trophy me-2"></i>Mis Copas y Ligas</a>
             <a class="nav-link <?= admin_nav_activa('perfil', $seccion_activa) ?>" href="<?= url('admin/perfil.php') ?>"><i class="bi bi-person-badge me-2"></i>Mi Perfil</a>
         </nav>
         <hr class="border-secondary opacity-25">
@@ -126,13 +126,13 @@ function admin_tarjeta_usuario(array $usuario): string
             </div>
             <div class="offcanvas-body">
                 <a href="<?= url('admin/torneos.php') ?>" class="d-block small text-decoration-none mb-3" style="color:rgba(255,255,255,.6);">
-                    <i class="bi bi-arrow-left-right me-1"></i>Cambiar de copa
+                    <i class="bi bi-arrow-left-right me-1"></i>Cambiar de copa o liga
                 </a>
                 <nav class="nav flex-column">
                     <a class="nav-link <?= admin_nav_activa('dashboard', $seccion_activa) ?>" href="<?= url('admin/index.php') ?>"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a>
                     <?= admin_nav_copa($seccion_activa, $torneoActivo) ?>
                     <hr class="border-secondary opacity-25 my-2">
-                    <a class="nav-link <?= admin_nav_activa('torneos-lista', $seccion_activa) ?>" href="<?= url('admin/torneos.php') ?>"><i class="bi bi-trophy me-2"></i>Mis Copas</a>
+                    <a class="nav-link <?= admin_nav_activa('torneos-lista', $seccion_activa) ?>" href="<?= url('admin/torneos.php') ?>"><i class="bi bi-trophy me-2"></i>Mis Copas y Ligas</a>
                     <a class="nav-link <?= admin_nav_activa('perfil', $seccion_activa) ?>" href="<?= url('admin/perfil.php') ?>"><i class="bi bi-person-badge me-2"></i>Mi Perfil</a>
                 </nav>
                 <hr class="border-secondary opacity-25">

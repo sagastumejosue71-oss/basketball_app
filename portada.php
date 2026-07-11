@@ -5,7 +5,7 @@ declare(strict_types=1);
 
 $torneo = null;
 
-$titulo_pagina = 'Crea tu propia copa';
+$titulo_pagina = 'Crea tu copa o liga';
 $pagina_activa = 'inicio';
 require __DIR__ . '/includes/layout_top.php';
 ?>
@@ -15,11 +15,11 @@ require __DIR__ . '/includes/layout_top.php';
         <div class="row align-items-center gy-5">
             <div class="col-lg-7">
                 <p class="kicker mb-3"><i class="bi bi-stars me-1"></i>Torneos y ligas, a tu manera</p>
-                <h1 class="text-white mb-3">Crea tu <span class="text-degradado">propia copa</span></h1>
-                <p class="fs-5 mb-4" style="color:rgba(255,255,255,.8);max-width:560px;">Basketball, fútbol o el deporte que organices: equipos, calendario, tabla de posiciones y patrocinadores, con tu propia URL, tu QR y un código corto para compartirla en segundos.</p>
+                <h1 class="text-white mb-3">Crea tu <span class="text-degradado">copa o liga</span></h1>
+                <p class="fs-5 mb-4" style="color:rgba(255,255,255,.8);max-width:560px;">Basketball, fútbol o el deporte que organices: equipos, calendario, tabla de posiciones y patrocinadores, con tu propia URL, tu QR y un código corto para compartirla en segundos. Elige modo copa (marcador final) o modo liga (con jugadores, goles y tarjetas).</p>
                 <div class="d-flex flex-wrap gap-3 mb-4">
-                    <a href="<?= url('registro.php') ?>" class="btn btn-degradado btn-lg rounded-pill px-4"><i class="bi bi-plus-circle me-2"></i>Crear tu torneo</a>
-                    <a href="<?= url('torneos.php') ?>" class="btn btn-outline-luz btn-lg rounded-pill px-4">Ver todas las copas</a>
+                    <a href="<?= url('registro.php') ?>" class="btn btn-degradado btn-lg rounded-pill px-4"><i class="bi bi-plus-circle me-2"></i>Crear tu copa o liga</a>
+                    <a href="<?= url('torneos.php') ?>" class="btn btn-outline-luz btn-lg rounded-pill px-4">Ver todas las copas y ligas</a>
                 </div>
                 <form method="get" action="<?= url('codigo.php') ?>" class="d-flex flex-wrap align-items-center gap-2" style="max-width:420px;">
                     <span class="small" style="color:rgba(255,255,255,.65);white-space:nowrap;"><i class="bi bi-key-fill me-1"></i>¿Tienes un código?</span>
@@ -48,7 +48,7 @@ require __DIR__ . '/includes/layout_top.php';
                 <div class="card-suave p-4 h-100 text-center">
                     <span class="badge-pill-icon mx-auto mb-3" style="width:56px;height:56px;font-size:1.4rem;">1</span>
                     <h5 class="mb-2">Crea tu cuenta</h5>
-                    <p class="text-muted small mb-0">Regístrate gratis y arma tu copa: nombre, deporte, colores y fases de eliminación directa.</p>
+                    <p class="text-muted small mb-0">Regístrate gratis y arma tu copa o liga: nombre, deporte, modo, colores y fases de eliminación directa.</p>
                 </div>
             </div>
             <div class="col-md-4">
@@ -62,7 +62,7 @@ require __DIR__ . '/includes/layout_top.php';
                 <div class="card-suave p-4 h-100 text-center">
                     <span class="badge-pill-icon mx-auto mb-3" style="width:56px;height:56px;font-size:1.4rem;">3</span>
                     <h5 class="mb-2">Comparte</h5>
-                    <p class="text-muted small mb-0">Tu copa tiene su propia URL, un código corto y un QR para que cualquiera la encuentre.</p>
+                    <p class="text-muted small mb-0">Tu copa o liga tiene su propia URL, un código corto y un QR para que cualquiera la encuentre.</p>
                 </div>
             </div>
         </div>

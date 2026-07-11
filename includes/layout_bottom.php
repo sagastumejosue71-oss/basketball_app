@@ -8,7 +8,7 @@
                     <?php else: ?>
                         <?= icono_multideporte(36) ?>
                     <?php endif; ?>
-                    <span class="fw-heading text-white fs-5"><?= e($torneo['nombre'] ?? 'Plataforma de Copas') ?></span>
+                    <span class="fw-heading text-white fs-5"><?= e($torneo['nombre'] ?? 'Plataforma de Copas y Ligas') ?></span>
                 </div>
                 <?php if ($torneo): ?>
                 <p class="small mb-3"><?= e($torneo['descripcion']) ?></p>
@@ -16,7 +16,7 @@
                 <a href="<?= url_externa_segura($torneo['instagram']) ?>" target="_blank" rel="noopener" class="small"><i class="bi bi-instagram me-1"></i>Síguenos en Instagram</a>
                 <?php endif; ?>
                 <?php else: ?>
-                <p class="small mb-0">Un solo panel para administrar todas tus copas y torneos.</p>
+                <p class="small mb-0">Un solo panel para administrar todas tus copas y ligas.</p>
                 <?php endif; ?>
             </div>
             <?php if ($torneo): ?>
@@ -36,7 +36,7 @@
                     <li><a href="<?= url_copa('patrocinadores.php') ?>">Patrocinadores</a></li>
                     <li><a href="<?= url_copa('organizador.php') ?>">Organizador</a></li>
                     <?php endif; ?>
-                    <li><a href="<?= url('torneos.php') ?>">Todas las copas</a></li>
+                    <li><a href="<?= url('torneos.php') ?>">Todas las copas y ligas</a></li>
                     <li><a href="#" data-bs-toggle="modal" data-bs-target="#modalCompartir">Compartir sitio</a></li>
                     <li><a href="<?= url('login.php') ?>">Panel Organizador</a></li>
                 </ul>
@@ -50,7 +50,7 @@
             <?php endif; ?>
         </div>
         <hr class="border-secondary opacity-25 my-4">
-        <p class="small text-center mb-1 opacity-75">© <?= date('Y') ?> <?= e($torneo['nombre'] ?? 'Plataforma de Copas') ?><?= $torneo ? ' · ' . e($torneo['subtitulo']) : '' ?></p>
+        <p class="small text-center mb-1 opacity-75">© <?= date('Y') ?> <?= e($torneo['nombre'] ?? 'Plataforma de Copas y Ligas') ?><?= $torneo ? ' · ' . e($torneo['subtitulo']) : '' ?></p>
         <p class="small text-center mb-0 opacity-50">By Josué Sagastume</p>
     </div>
 </footer>

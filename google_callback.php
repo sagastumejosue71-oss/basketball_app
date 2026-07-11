@@ -136,7 +136,7 @@ if ($cuenta === null) {
     ]);
     $cuenta = usuarios_obtener_por_id($id);
     auth_iniciar_sesion_usuario($cuenta);
-    redirigir_con_mensaje(url('admin/torneos.php?accion=nuevo'), 'success', '¡Bienvenido! Crea tu primera copa para empezar.');
+    redirigir_con_mensaje(url('admin/torneos.php?accion=nuevo'), 'success', '¡Bienvenido! Crea tu primera copa o liga para empezar.');
 }
 
 auth_iniciar_sesion_usuario($cuenta);
