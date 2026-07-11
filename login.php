@@ -88,7 +88,7 @@ $flash = obtener_flash();
         </a>
         <?php endif; ?>
         <div class="text-center mt-4 d-flex flex-column gap-1">
-            <a href="<?= url('registro.php') ?>" class="small text-muted text-decoration-none">¿No tienes cuenta? Regístrate</a>
+            <span class="small text-muted">El acceso es por invitación del administrador.</span>
             <a href="<?= url('index.php') ?>" class="small text-muted text-decoration-none"><i class="bi bi-arrow-left me-1"></i>Volver al sitio público</a>
         </div>
     </div>

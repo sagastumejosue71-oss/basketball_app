@@ -15,6 +15,7 @@ $torneoActivoId = $_SESSION['torneo_activo_id'] ?? null;
 $torneoActivo = $torneoActivoId !== null ? torneos_obtener_por_id((int) $torneoActivoId, $usuarioIdSesion) : null;
 
 $organizador = usuarios_obtener_por_id($usuarioIdSesion) ?? [];
+$esSuperadmin = es_superadmin($organizador);
 $seccion_activa = $seccion_activa ?? '';
 $titulo_pagina = $titulo_pagina ?? 'Panel del Organizador';
 $flash = obtener_flash();
@@ -133,6 +134,7 @@ function admin_tarjeta_usuario(array $usuario): string
                     <?= admin_nav_copa($seccion_activa, $torneoActivo) ?>
                     <hr class="border-secondary opacity-25 my-2">
                     <a class="nav-link <?= admin_nav_activa('torneos-lista', $seccion_activa) ?>" href="<?= url('admin/torneos.php') ?>"><i class="bi bi-trophy me-2"></i>Mis Copas y Ligas</a>
+                    <?php if ($esSuperadmin): ?><a class="nav-link <?= admin_nav_activa('usuarios_autorizados', $seccion_activa) ?>" href="<?= url('admin/usuarios_autorizados.php') ?>"><i class="bi bi-shield-check me-2"></i>Correos autorizados</a><?php endif; ?>
                     <a class="nav-link <?= admin_nav_activa('perfil', $seccion_activa) ?>" href="<?= url('admin/perfil.php') ?>"><i class="bi bi-person-badge me-2"></i>Mi Perfil</a>
                 </nav>
                 <hr class="border-secondary opacity-25">

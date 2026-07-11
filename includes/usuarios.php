@@ -120,3 +120,54 @@ function torneo_organizador(array $torneo): ?array
     }
     return usuarios_obtener_por_id((int) $torneo['usuario_id']);
 }
+
+/**
+ * Un super-admin es quien puede gestionar la lista blanca de correos autorizados a
+ * entrar con Google. Se define por correo en la variable de entorno SUPERADMIN_EMAILS,
+ * no por una columna en la base de datos, para que otorgar/quitar el rol no dependa de
+ * escribir en la tabla usuarios.
+ */
+function es_superadmin(?array $usuario): bool
+{
+    if ($usuario === null || empty($usuario['email'])) {
+        return false;
+    }
+    return in_array(mb_strtolower($usuario['email']), SUPERADMIN_EMAILS, true);
+}
+
+/**
+ * El registro público (usuario/contraseña) está cerrado: solo se puede crear una cuenta
+ * nueva con "Continuar con Google" si el correo está en esta lista blanca, administrada
+ * por el/los super-admin. No afecta a cuentas que ya existían antes de cerrar el registro.
+ */
+function correo_autorizado(string $email): bool
+{
+    $pdo = db_conexion();
+    $stmt = $pdo->prepare('SELECT 1 FROM correos_autorizados WHERE lower(email) = lower(:email)');
+    $stmt->bindValue(':email', $email, PDO::PARAM_STR);
+    $stmt->execute();
+    return (bool) $stmt->fetchColumn();
+}
+
+function correos_autorizados_listar(): array
+{
+    $pdo = db_conexion();
+    $stmt = $pdo->query('SELECT * FROM correos_autorizados ORDER BY creado_en DESC');
+    return $stmt->fetchAll();
+}
+
+function correos_autorizados_agregar(string $email): void
+{
+    $pdo = db_conexion();
+    $stmt = $pdo->prepare('INSERT INTO correos_autorizados (email) VALUES (:email) ON CONFLICT (email) DO NOTHING');
+    $stmt->bindValue(':email', mb_strtolower(trim($email)), PDO::PARAM_STR);
+    $stmt->execute();
+}
+
+function correos_autorizados_eliminar(int $id): void
+{
+    $pdo = db_conexion();
+    $stmt = $pdo->prepare('DELETE FROM correos_autorizados WHERE id = :id');
+    $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+    $stmt->execute();
+}

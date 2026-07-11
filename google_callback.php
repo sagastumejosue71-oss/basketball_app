@@ -127,6 +127,13 @@ if ($cuenta === null) {
 }
 
 if ($cuenta === null) {
+    // El registro público está cerrado: solo se crea una cuenta nueva si el correo
+    // está en la lista blanca que administra el super-admin. No afecta a cuentas que
+    // ya existían (esas entran por el bloque de arriba, sin pasar por aquí).
+    if (!correo_autorizado($email)) {
+        redirigir_con_mensaje(url('login.php'), 'error', 'Tu correo no está autorizado para crear una cuenta. Contacta al administrador.');
+    }
+
     $id = usuarios_crear([
         'usuario' => google_generar_usuario_unico($email),
         'email' => $email,

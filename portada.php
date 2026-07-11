@@ -2,10 +2,14 @@
 declare(strict_types=1);
 // Incluido desde index.php cuando se accede a la raíz del sitio sin ninguna copa
 // (config.php, db.php y helpers.php ya están cargados por index.php).
+//
+// El registro público está cerrado (acceso por invitación, ver registro.php), así que
+// esta página ya no es una landing para "crear tu cuenta": es una puerta de entrada para
+// que un visitante con un código, QR o enlace llegue directo a la copa o liga que busca.
 
 $torneo = null;
 
-$titulo_pagina = 'Crea tu copa o liga';
+$titulo_pagina = 'Encuentra tu copa o liga';
 $pagina_activa = 'inicio';
 require __DIR__ . '/includes/layout_top.php';
 ?>
@@ -15,17 +19,18 @@ require __DIR__ . '/includes/layout_top.php';
         <div class="row align-items-center gy-5">
             <div class="col-lg-7">
                 <p class="kicker mb-3"><i class="bi bi-stars me-1"></i>Torneos y ligas, a tu manera</p>
-                <h1 class="text-white mb-3">Crea tu <span class="text-degradado">copa o liga</span></h1>
-                <p class="fs-5 mb-4" style="color:rgba(255,255,255,.8);max-width:560px;">Basketball, fútbol o el deporte que organices: equipos, calendario, tabla de posiciones y patrocinadores, con tu propia URL, tu QR y un código corto para compartirla en segundos. Elige modo copa (marcador final) o modo liga (con jugadores, goles y tarjetas).</p>
-                <div class="d-flex flex-wrap gap-3 mb-4">
-                    <a href="<?= url('registro.php') ?>" class="btn btn-degradado btn-lg rounded-pill px-4"><i class="bi bi-plus-circle me-2"></i>Crear tu copa o liga</a>
-                    <a href="<?= url('torneos.php') ?>" class="btn btn-outline-luz btn-lg rounded-pill px-4">Ver todas las copas y ligas</a>
-                </div>
-                <form method="get" action="<?= url('codigo.php') ?>" class="d-flex flex-wrap align-items-center gap-2" style="max-width:420px;">
-                    <span class="small" style="color:rgba(255,255,255,.65);white-space:nowrap;"><i class="bi bi-key-fill me-1"></i>¿Tienes un código?</span>
-                    <input type="text" name="c" class="form-control form-control-sm text-center text-uppercase fw-bold" style="letter-spacing:.2em;max-width:130px;" maxlength="6" placeholder="ABC123" autocomplete="off" required>
-                    <button type="submit" class="btn btn-outline-luz btn-sm rounded-pill px-3">Ir</button>
+                <h1 class="text-white mb-3">Encuentra tu <span class="text-degradado">copa o liga</span></h1>
+                <p class="fs-5 mb-4" style="color:rgba(255,255,255,.8);max-width:520px;">Escribe el código de 6 caracteres que te compartió el organizador, o abre el enlace o QR que te enviaron.</p>
+
+                <form method="get" action="<?= url('codigo.php') ?>" class="card-suave p-4 p-md-5 mb-3" style="max-width:480px;">
+                    <label class="d-block small fw-semibold text-muted mb-2"><i class="bi bi-key-fill me-1"></i>Código de la copa o liga</label>
+                    <div class="d-flex flex-column flex-sm-row gap-2">
+                        <input type="text" name="c" class="form-control form-control-lg text-center text-uppercase fw-bold" style="letter-spacing:.35em;font-size:1.6rem;" maxlength="6" placeholder="ABC123" autocomplete="off" required autofocus>
+                        <button type="submit" class="btn btn-degradado btn-lg rounded-pill px-4">Entrar</button>
+                    </div>
                 </form>
+
+                <p class="small mb-0" style="color:rgba(255,255,255,.6);">¿Eres organizador? <a href="<?= url('login.php') ?>" class="fw-semibold" style="color:var(--color-acento);">Inicia sesión</a></p>
             </div>
             <div class="col-lg-5">
                 <div class="portada-balones">
@@ -41,40 +46,30 @@ require __DIR__ . '/includes/layout_top.php';
     <div class="container">
         <div class="seccion-titulo mb-4 text-center">
             <p class="eyebrow mb-1">Cómo funciona</p>
-            <h2 class="mb-0">Tres pasos y ya estás jugando</h2>
+            <h2 class="mb-0">Tu organizador ya hizo el trabajo difícil</h2>
         </div>
         <div class="row g-4">
             <div class="col-md-4">
                 <div class="card-suave p-4 h-100 text-center">
                     <span class="badge-pill-icon mx-auto mb-3" style="width:56px;height:56px;font-size:1.4rem;">1</span>
-                    <h5 class="mb-2">Crea tu cuenta</h5>
-                    <p class="text-muted small mb-0">Regístrate gratis y arma tu copa o liga: nombre, deporte, modo, colores y fases de eliminación directa.</p>
+                    <h5 class="mb-2">Pide el código</h5>
+                    <p class="text-muted small mb-0">El organizador de tu copa o liga te comparte un código de 6 caracteres, un QR o un enlace directo.</p>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="card-suave p-4 h-100 text-center">
                     <span class="badge-pill-icon mx-auto mb-3" style="width:56px;height:56px;font-size:1.4rem;">2</span>
-                    <h5 class="mb-2">Carga equipos y encuentros</h5>
-                    <p class="text-muted small mb-0">Agrega equipos, programa partidos y registra resultados desde tu panel.</p>
+                    <h5 class="mb-2">Entra en segundos</h5>
+                    <p class="text-muted small mb-0">Escribe el código arriba, escanea el QR o abre el enlace: no necesitas crear cuenta para ver la copa.</p>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="card-suave p-4 h-100 text-center">
                     <span class="badge-pill-icon mx-auto mb-3" style="width:56px;height:56px;font-size:1.4rem;">3</span>
-                    <h5 class="mb-2">Comparte</h5>
-                    <p class="text-muted small mb-0">Tu copa o liga tiene su propia URL, un código corto y un QR para que cualquiera la encuentre.</p>
+                    <h5 class="mb-2">Sigue todo en vivo</h5>
+                    <p class="text-muted small mb-0">Tabla de posiciones, calendario, resultados y, en modo liga, goles y tarjetas de cada partido.</p>
                 </div>
             </div>
-        </div>
-    </div>
-</section>
-
-<section class="seccion pt-0">
-    <div class="container">
-        <div class="card-suave p-4 p-md-5 text-center">
-            <h4 class="mb-2">¿Listo para organizar tu torneo?</h4>
-            <p class="text-muted mb-3">Crear tu cuenta toma menos de un minuto.</p>
-            <a href="<?= url('registro.php') ?>" class="btn btn-degradado btn-lg rounded-pill px-4">Crear tu torneo gratis</a>
         </div>
     </div>
 </section>

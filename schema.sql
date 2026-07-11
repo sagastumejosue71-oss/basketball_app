@@ -186,6 +186,16 @@ CREATE TABLE IF NOT EXISTS usuarios (
 ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS google_id TEXT UNIQUE;
 ALTER TABLE usuarios ALTER COLUMN password_hash DROP NOT NULL;
 
+-- Lista blanca de correos autorizados a crear una cuenta nueva con "Continuar con Google".
+-- El registro público (usuario/contraseña) está cerrado; solo el/los super-admin (definidos
+-- en la variable de entorno SUPERADMIN_EMAILS) pueden agregar/quitar correos de esta lista.
+-- No bloquea a cuentas que ya existían antes de cerrar el registro público.
+CREATE TABLE IF NOT EXISTS correos_autorizados (
+    id SERIAL PRIMARY KEY,
+    email TEXT UNIQUE NOT NULL,
+    creado_en TIMESTAMP NOT NULL DEFAULT now()
+);
+
 -- Rate-limit de registro de cuentas nuevas, mismo patrón que intentos_login pero en su propia
 -- tabla para no arriesgar el límite de login que ya funciona en producción.
 CREATE TABLE IF NOT EXISTS intentos_registro (

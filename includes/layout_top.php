@@ -43,7 +43,7 @@ function nav_activa(string $clave, string $activa): string
 
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top navbar-copa">
     <div class="container">
-        <a class="navbar-brand d-flex align-items-center gap-2" href="<?= $torneo ? url_copa('index.php') : url('torneos.php') ?>">
+        <a class="navbar-brand d-flex align-items-center gap-2" href="<?= $torneo ? url_copa('index.php') : url('/') ?>">
             <?php if ($torneo): ?>
                 <span class="badge-pill-icon"><?= icono_deporte($torneo['deporte'], 22) ?></span>
             <?php else: ?>
@@ -64,7 +64,6 @@ function nav_activa(string $clave, string $activa): string
                 <li class="nav-item"><a class="nav-link <?= nav_activa('patrocinadores', $pagina_activa) ?>" href="<?= url_copa('patrocinadores.php') ?>">Patrocinadores</a></li>
                 <li class="nav-item"><a class="nav-link <?= nav_activa('organizador', $pagina_activa) ?>" href="<?= url_copa('organizador.php') ?>">Organizador</a></li>
                 <?php endif; ?>
-                <li class="nav-item"><a class="nav-link <?= nav_activa('copas', $pagina_activa) ?>" href="<?= url('torneos.php') ?>" title="Ver todas las copas y ligas"><i class="bi bi-grid-3x3-gap"></i></a></li>
                 <li class="nav-item ms-lg-2">
                     <button type="button" class="btn btn-outline-luz btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalCompartir">
                         <i class="bi bi-share-fill me-1"></i>Compartir

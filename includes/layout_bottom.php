@@ -36,7 +36,6 @@
                     <li><a href="<?= url_copa('patrocinadores.php') ?>">Patrocinadores</a></li>
                     <li><a href="<?= url_copa('organizador.php') ?>">Organizador</a></li>
                     <?php endif; ?>
-                    <li><a href="<?= url('torneos.php') ?>">Todas las copas y ligas</a></li>
                     <li><a href="#" data-bs-toggle="modal" data-bs-target="#modalCompartir">Compartir sitio</a></li>
                     <li><a href="<?= url('login.php') ?>">Panel Organizador</a></li>
                 </ul>

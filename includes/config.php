@@ -24,6 +24,14 @@ if (getenv('DATABASE_URL') === false && file_exists($archivoEnv)) {
 define('GOOGLE_CLIENT_ID', getenv('GOOGLE_CLIENT_ID') ?: '');
 define('GOOGLE_CLIENT_SECRET', getenv('GOOGLE_CLIENT_SECRET') ?: '');
 
+// Correos (en minúsculas) de las cuentas super-admin: son las únicas que pueden gestionar
+// la lista blanca de correos autorizados a entrar con Google. Separados por coma en la
+// variable de entorno, ej. "persona1@gmail.com,persona2@gmail.com".
+define('SUPERADMIN_EMAILS', array_values(array_filter(array_map(
+    fn($e) => mb_strtolower(trim($e)),
+    explode(',', getenv('SUPERADMIN_EMAILS') ?: '')
+))));
+
 // Render (y la mayoría de hostings con proxy) terminan el HTTPS antes de llegar a PHP;
 // hay que revisar X-Forwarded-Proto además de $_SERVER['HTTPS'] para detectarlo correctamente.
 $esHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
