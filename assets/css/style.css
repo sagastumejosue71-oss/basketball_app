@@ -453,6 +453,21 @@ h1, h2, h3, h4, h5, h6, .fw-heading {
         justify-content: flex-end;
         order: -1;
         padding-bottom: 0;
+        /* En escritorio este acento y las esquinas redondeadas son del extremo
+           izquierdo de una fila ancha; en la tarjeta apilada de móvil esta celda
+           ya no es "el borde de la fila", así que se ve como una forma rara si se
+           dejan tal cual — se apagan aquí y el acento de zona de playoffs se mueve
+           al borde de toda la tarjeta más abajo. */
+        border-radius: 0;
+    }
+    /* Mismo selector que la regla original de escritorio (.zona-playoff td:first-child)
+       para igualar su especificidad y realmente ganar el box-shadow, en vez de perder
+       el empate por estar definida antes en el archivo. */
+    .tabla-posiciones tr.zona-playoff td:first-child {
+        box-shadow: none;
+    }
+    .tabla-posiciones tr.zona-playoff {
+        box-shadow: inset 4px 0 0 var(--color-acento);
     }
 }
 
