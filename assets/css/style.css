@@ -701,3 +701,27 @@ h1, h2, h3, h4, h5, h6, .fw-heading {
     .partido-card .equipo-col .nombre { font-size: .78rem; }
     .hero-copa { padding-top: 6rem; }
 }
+
+/* Ficha de partido descargable en PDF (partido.php): usa window.print() del
+   navegador -no genera un PDF en el servidor-, así que lo que se ve aquí es
+   exactamente lo que termina en el PDF. Se ocultan navbar/footer/botones y se
+   convierte el hero oscuro a blanco y negro para no gastar tinta de más. */
+@media print {
+    .navbar-copa, .footer-copa, .btn-imprimir-pdf,
+    #modalCompartir, #modalCodigo, .offcanvas {
+        display: none !important;
+    }
+    body { background: #fff !important; }
+    .hero-copa {
+        background: none !important;
+        color: #000 !important;
+        padding: 0 0 1rem !important;
+    }
+    .hero-copa * { color: #000 !important; }
+    .seccion { padding: .5rem 0 !important; }
+    .card-suave {
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+        break-inside: avoid;
+    }
+}

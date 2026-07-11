@@ -137,9 +137,15 @@ function admin_tarjeta_partido(array $p, array $equiposPorId, ?array $torneo = n
     // árbitro/admin suele ir llenando la ficha -goles, tarjetas, cambios- a medida que
     // ocurren, no solo después de capturar el marcador final.
     $botonEventos = '';
+    $botonDescargar = '';
     if (($torneo['modo'] ?? 'copa') === 'liga') {
         $urlEventos = e(url('admin/partido_eventos.php?partido_id=' . $id));
         $botonEventos = "<a href=\"{$urlEventos}\" class=\"btn btn-sm btn-outline-secondary\" title=\"Goles, tarjetas y cambios\"><i class=\"bi bi-clipboard-data\"></i> Eventos</a>";
+
+        if ($jugado) {
+            $urlDescargar = e(url_copa('partido.php?id=' . $id));
+            $botonDescargar = "<a href=\"{$urlDescargar}\" target=\"_blank\" class=\"btn btn-sm btn-outline-secondary\" title=\"Descargar ficha en PDF\"><i class=\"bi bi-download\"></i></a>";
+        }
     }
 
     return <<<HTML
@@ -158,6 +164,7 @@ function admin_tarjeta_partido(array $p, array $equiposPorId, ?array $torneo = n
             <span class="small text-muted"><i class="bi bi-geo-alt me-1"></i>{$cancha}</span>
             <div class="d-flex gap-1">
                 {$botonEventos}
+                {$botonDescargar}
                 <a href="{$urlEditar}" class="btn btn-sm btn-outline-secondary">{$botonEditar}</a>
                 <form method="post" data-confirm="¿Eliminar este encuentro?">
                     <input type="hidden" name="csrf_token" value="{$csrf}">

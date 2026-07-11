@@ -29,6 +29,15 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    // Ficha de partido: "Descargar PDF" abre el diálogo de impresión del navegador
+    // (con la hoja de estilo @media print ya aplicada); ahí el usuario elige
+    // "Guardar como PDF". No genera el PDF en el servidor.
+    document.querySelectorAll('.btn-imprimir-pdf').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            window.print();
+        });
+    });
+
     // Formulario de encuentros: el campo "Jornada" solo aplica a la fase de grupos
     var selectFase = document.getElementById('selectFase');
     var grupoJornada = document.getElementById('grupoJornada');

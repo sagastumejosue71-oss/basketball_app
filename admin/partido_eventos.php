@@ -121,10 +121,11 @@ require __DIR__ . '/includes/admin_layout_top.php';
 
 <div class="d-flex align-items-center gap-2 mb-4">
     <a href="<?= url('admin/partidos.php') ?>" class="btn btn-sm btn-outline-secondary rounded-circle"><i class="bi bi-arrow-left"></i></a>
-    <div>
+    <div class="flex-grow-1">
         <h3 class="mb-0">Ficha del partido</h3>
         <div class="small text-muted"><?= $equipoLocal ? e($equipoLocal['nombre']) : '?' ?> vs <?= $equipoVisitante ? e($equipoVisitante['nombre']) : '?' ?> · <?= e(formatear_fecha_larga($partido['fecha'])) ?></div>
     </div>
+    <a href="<?= e(url_copa('partido.php?id=' . $partidoId)) ?>" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="bi bi-download me-1"></i>Descargar PDF</a>
 </div>
 
 <div class="row g-4">
@@ -175,7 +176,7 @@ require __DIR__ . '/includes/admin_layout_top.php';
         </div>
 
         <div class="card-suave p-4 mb-3">
-            <h6 class="text-uppercase small fw-bold text-muted mb-3"><i class="bi bi-square-fill text-warning me-1"></i>Agregar tarjeta</h6>
+            <h6 class="text-uppercase small fw-bold text-muted mb-3"><i class="bi bi-square-fill text-warning"></i><i class="bi bi-square-fill text-danger me-1"></i>Agregar tarjeta (amarilla o roja)</h6>
             <form method="post" class="row g-2">
                 <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
                 <input type="hidden" name="accion" value="agregar_tarjeta">

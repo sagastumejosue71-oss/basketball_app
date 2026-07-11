@@ -70,6 +70,9 @@ require __DIR__ . '/includes/layout_top.php';
             <i class="bi bi-geo-alt me-1"></i><?= e($partido['cancha']) ?>
             <?php if (!empty($partido['arbitro'])): ?> · <i class="bi bi-person-badge me-1"></i>Árbitro: <?= e($partido['arbitro']) ?><?php endif; ?>
         </p>
+        <div class="text-center mt-3">
+            <button type="button" class="btn btn-outline-luz btn-sm rounded-pill px-3 btn-imprimir-pdf"><i class="bi bi-download me-1"></i>Descargar PDF</button>
+        </div>
     </div>
 </header>
 
