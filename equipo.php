@@ -37,6 +37,14 @@ foreach ($tabla as $fila) {
 $partidosEquipo = array_values(array_filter($partidos, fn($p) => (int) $p['equipo_local'] === $id || (int) $p['equipo_visitante'] === $id));
 usort($partidosEquipo, fn($a, $b) => strcmp($a['fecha'] . $a['hora'], $b['fecha'] . $b['hora']));
 
+$esLiga = ($torneo['modo'] ?? 'copa') === 'liga';
+$jugadoresEquipo = [];
+if ($esLiga) {
+    $jugadoresTodos = db_leer('jugadores', $torneo['id']);
+    $jugadoresEquipo = array_values(array_filter($jugadoresTodos, fn($j) => (int) $j['equipo_id'] === $id && !empty($j['activo'])));
+    usort($jugadoresEquipo, fn($a, $b) => $a['dorsal'] <=> $b['dorsal']);
+}
+
 $titulo_pagina = $equipo['nombre'] . ' — ' . $torneo['nombre'];
 $pagina_activa = 'equipos';
 require __DIR__ . '/includes/layout_top.php';
@@ -92,6 +100,24 @@ require __DIR__ . '/includes/layout_top.php';
             <div class="col-6 col-md-2"><div class="stat-tile text-center"><div class="fs-4 fw-bold"><?= $filaEquipo['porcentaje'] ?>%</div><div class="small text-muted">% Victorias</div></div></div>
             <div class="col-6 col-md-2"><div class="stat-tile text-center"><div class="fs-4 fw-bold"><?= $filaEquipo['pts'] ?></div><div class="small text-muted">Puntos tabla</div></div></div>
         </div>
+        <?php endif; ?>
+
+        <?php if ($esLiga): ?>
+        <h4 class="mb-3"><?= e(forma_genero($torneo['genero'] ?? null, 'Jugadores', 'Jugadoras')) ?></h4>
+        <?php if (empty($jugadoresEquipo)): ?>
+            <p class="text-muted small mb-5">Todavía no hay <?= e(mb_strtolower(forma_genero($torneo['genero'] ?? null, 'jugadores', 'jugadoras'))) ?> registrados para este equipo.</p>
+        <?php else: ?>
+        <div class="row row-cols-2 row-cols-md-4 g-3 mb-5">
+            <?php foreach ($jugadoresEquipo as $j): ?>
+            <div class="col">
+                <div class="stat-tile text-center">
+                    <div class="fs-4 fw-bold">#<?= e($j['dorsal']) ?></div>
+                    <div class="small text-muted"><?= e($j['nombre']) ?></div>
+                </div>
+            </div>
+            <?php endforeach; ?>
+        </div>
+        <?php endif; ?>
         <?php endif; ?>
 
         <h4 class="mb-3">Partidos de <?= e($equipo['nombre']) ?></h4>

@@ -41,11 +41,20 @@ $amarillas = array_values(array_filter($eventos, fn($e) => $e['tipo'] === 'amari
 $rojas = array_values(array_filter($eventos, fn($e) => $e['tipo'] === 'roja'));
 $cambios = array_values(array_filter($eventos, fn($e) => $e['tipo'] === 'cambio'));
 
+// Para la ficha imprimible (ver .solo-impresion más abajo): "-" cuando el dato no aplica,
+// para que se vea como un formulario lleno a mano, no como una página web recortada.
+function ficha_valor(?string $valor): string
+{
+    $valor = trim((string) $valor);
+    return $valor === '' ? '—' : e($valor);
+}
+
 $titulo_pagina = $local['nombre'] . ' vs ' . $visit['nombre'] . ' — ' . $torneo['nombre'];
 $pagina_activa = 'calendario';
 require __DIR__ . '/includes/layout_top.php';
 ?>
 
+<div class="solo-pantalla">
 <header class="hero-copa" style="padding-bottom:3rem;">
     <div class="container">
         <p class="kicker mb-2"><i class="bi bi-calendar3 me-1"></i><?= e(formatear_fecha_larga($partido['fecha'])) ?> · <?= e($partido['hora']) ?></p>
@@ -70,9 +79,11 @@ require __DIR__ . '/includes/layout_top.php';
             <i class="bi bi-geo-alt me-1"></i><?= e($partido['cancha']) ?>
             <?php if (!empty($partido['arbitro'])): ?> · <i class="bi bi-person-badge me-1"></i>Árbitro: <?= e($partido['arbitro']) ?><?php endif; ?>
         </p>
+        <?php if ($jugado): ?>
         <div class="text-center mt-3">
             <button type="button" class="btn btn-outline-luz btn-sm rounded-pill px-3 btn-imprimir-pdf"><i class="bi bi-download me-1"></i>Descargar PDF</button>
         </div>
+        <?php endif; ?>
     </div>
 </header>
 
@@ -144,5 +155,102 @@ require __DIR__ . '/includes/layout_top.php';
         <?php endif; ?>
     </div>
 </section>
+</div>
+
+<?php // Ficha imprimible: solo se muestra en el PDF/impresión (ver @media print en style.css).
+      // Es un documento aparte -no la página web recortada- con el mismo look de un formulario
+      // de arbitraje lleno a mano: sin logos grandes ni fondo de color, solo los datos. ?>
+<div class="solo-impresion ficha-imprimir">
+    <div class="ficha-titulo">
+        <h2><?= e($torneo['nombre']) ?></h2>
+        <p>Ficha oficial de partido</p>
+    </div>
+
+    <table class="ficha-datos">
+        <tr>
+            <td><strong>Equipo local</strong></td><td><?= e($local['nombre']) ?></td>
+            <td><strong>Equipo visitante</strong></td><td><?= e($visit['nombre']) ?></td>
+        </tr>
+        <tr>
+            <td><strong>Marcador</strong></td><td><?= $jugado ? (int) $partido['marcador_local'] . ' - ' . (int) $partido['marcador_visitante'] : '—' ?></td>
+            <td><strong>Fecha</strong></td><td><?= e(formatear_fecha_larga($partido['fecha'])) . ' · ' . e($partido['hora']) ?></td>
+        </tr>
+        <tr>
+            <td><strong>Cancha</strong></td><td><?= ficha_valor($partido['cancha']) ?></td>
+            <td><strong>Árbitro</strong></td><td><?= ficha_valor($partido['arbitro']) ?></td>
+        </tr>
+    </table>
+
+    <h3>⚽ Goles</h3>
+    <table class="ficha-tabla">
+        <thead><tr><th>Min.</th><th>Equipo</th><th>Jugador</th><th>Tipo</th><th>Asistencia</th></tr></thead>
+        <tbody>
+            <?php foreach ($goles as $ev): ?>
+            <tr>
+                <td><?= $ev['minuto'] !== null ? e((string) $ev['minuto']) . "'" : '—' ?></td>
+                <td><?= e($equiposPorId[$ev['equipo_id']]['nombre'] ?? '—') ?></td>
+                <td><?= e(jugador_nombre($jugadoresPorId[(int) ($ev['jugador_id'] ?? 0)] ?? null)) ?></td>
+                <td><?= e(TIPOS_GOL_LABEL[$ev['tipo_gol'] ?? ''] ?? '—') ?></td>
+                <td><?= !empty($ev['asistencia_jugador_id']) ? e(jugador_nombre($jugadoresPorId[(int) $ev['asistencia_jugador_id']] ?? null)) : '—' ?></td>
+            </tr>
+            <?php endforeach; ?>
+            <?php if (empty($goles)): ?><tr><td colspan="5">Sin goles registrados.</td></tr><?php endif; ?>
+        </tbody>
+    </table>
+
+    <h3>🟨 Tarjetas amarillas</h3>
+    <table class="ficha-tabla">
+        <thead><tr><th>Min.</th><th>Equipo</th><th>Jugador</th></tr></thead>
+        <tbody>
+            <?php foreach ($amarillas as $ev): ?>
+            <tr>
+                <td><?= $ev['minuto'] !== null ? e((string) $ev['minuto']) . "'" : '—' ?></td>
+                <td><?= e($equiposPorId[$ev['equipo_id']]['nombre'] ?? '—') ?></td>
+                <td><?= e(jugador_nombre($jugadoresPorId[(int) ($ev['jugador_id'] ?? 0)] ?? null)) ?></td>
+            </tr>
+            <?php endforeach; ?>
+            <?php if (empty($amarillas)): ?><tr><td colspan="3">Sin tarjetas amarillas registradas.</td></tr><?php endif; ?>
+        </tbody>
+    </table>
+
+    <h3>🟥 Tarjetas rojas</h3>
+    <table class="ficha-tabla">
+        <thead><tr><th>Min.</th><th>Equipo</th><th>Jugador</th><th>Motivo</th></tr></thead>
+        <tbody>
+            <?php foreach ($rojas as $ev): ?>
+            <tr>
+                <td><?= $ev['minuto'] !== null ? e((string) $ev['minuto']) . "'" : '—' ?></td>
+                <td><?= e($equiposPorId[$ev['equipo_id']]['nombre'] ?? '—') ?></td>
+                <td><?= e(jugador_nombre($jugadoresPorId[(int) ($ev['jugador_id'] ?? 0)] ?? null)) ?></td>
+                <td><?= e(MOTIVOS_ROJA_LABEL[$ev['motivo'] ?? ''] ?? '—') ?></td>
+            </tr>
+            <?php endforeach; ?>
+            <?php if (empty($rojas)): ?><tr><td colspan="4">Sin tarjetas rojas registradas.</td></tr><?php endif; ?>
+        </tbody>
+    </table>
+
+    <h3>🔄 Cambios</h3>
+    <table class="ficha-tabla">
+        <thead><tr><th>Min.</th><th>Equipo</th><th>Sale</th><th>Entra</th></tr></thead>
+        <tbody>
+            <?php foreach ($cambios as $ev): ?>
+            <tr>
+                <td><?= $ev['minuto'] !== null ? e((string) $ev['minuto']) . "'" : '—' ?></td>
+                <td><?= e($equiposPorId[$ev['equipo_id']]['nombre'] ?? '—') ?></td>
+                <td><?= e(jugador_nombre($jugadoresPorId[(int) ($ev['jugador_id'] ?? 0)] ?? null)) ?></td>
+                <td><?= e(jugador_nombre($jugadoresPorId[(int) ($ev['jugador_entra_id'] ?? 0)] ?? null)) ?></td>
+            </tr>
+            <?php endforeach; ?>
+            <?php if (empty($cambios)): ?><tr><td colspan="4">Sin cambios registrados.</td></tr><?php endif; ?>
+        </tbody>
+    </table>
+
+    <h3>Observaciones</h3>
+    <p class="ficha-observaciones"><?= !empty($partido['observaciones']) ? nl2br(e($partido['observaciones'])) : '—' ?></p>
+
+    <div class="ficha-firma">
+        <div class="ficha-firma-linea">Firma del árbitro</div>
+    </div>
+</div>
 
 <?php require __DIR__ . '/includes/layout_bottom.php'; ?>

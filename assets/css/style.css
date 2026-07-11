@@ -703,25 +703,51 @@ h1, h2, h3, h4, h5, h6, .fw-heading {
 }
 
 /* Ficha de partido descargable en PDF (partido.php): usa window.print() del
-   navegador -no genera un PDF en el servidor-, así que lo que se ve aquí es
-   exactamente lo que termina en el PDF. Se ocultan navbar/footer/botones y se
-   convierte el hero oscuro a blanco y negro para no gastar tinta de más. */
+   navegador -no genera un PDF en el servidor-. La página web normal
+   (.solo-pantalla) se oculta al imprimir y en su lugar se muestra un
+   documento aparte (.solo-impresion) con formato de formulario oficial lleno. */
+.solo-impresion { display: none; }
+
 @media print {
     .navbar-copa, .footer-copa, .btn-imprimir-pdf,
-    #modalCompartir, #modalCodigo, .offcanvas {
+    #modalCompartir, #modalCodigo, .offcanvas,
+    .solo-pantalla {
         display: none !important;
     }
     body { background: #fff !important; }
-    .hero-copa {
-        background: none !important;
-        color: #000 !important;
-        padding: 0 0 1rem !important;
+    .solo-impresion {
+        display: block !important;
+        color: #000;
+        font-size: 12px;
     }
-    .hero-copa * { color: #000 !important; }
-    .seccion { padding: .5rem 0 !important; }
-    .card-suave {
-        box-shadow: none !important;
-        border: 1px solid #ccc !important;
-        break-inside: avoid;
+    .ficha-imprimir { padding: 0; }
+    .ficha-titulo { text-align: center; margin-bottom: 1rem; }
+    .ficha-titulo h2 { margin: 0; font-size: 18px; }
+    .ficha-titulo p { margin: 0; font-size: 12px; color: #444; }
+    .ficha-datos, .ficha-tabla {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 1rem;
+    }
+    .ficha-datos td {
+        border: 1px solid #999;
+        padding: 4px 6px;
+    }
+    .ficha-tabla th, .ficha-tabla td {
+        border: 1px solid #999;
+        padding: 4px 6px;
+        text-align: left;
+        font-size: 11px;
+    }
+    .ficha-tabla th { background: #eee !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .ficha-imprimir h3 { font-size: 13px; margin: 1rem 0 .4rem; break-after: avoid; }
+    .ficha-observaciones { border: 1px solid #999; padding: 6px; min-height: 40px; }
+    .ficha-firma { margin-top: 2.5rem; }
+    .ficha-firma-linea {
+        width: 260px;
+        border-top: 1px solid #000;
+        padding-top: 4px;
+        text-align: center;
+        font-size: 11px;
     }
 }

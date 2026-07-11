@@ -38,6 +38,33 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    // Ficha de eventos del partido (admin/partido_eventos.php): cada select de
+    // jugador solo debe mostrar la plantilla del equipo elegido en el mismo
+    // formulario, para no mezclar jugadores de ambos equipos al cargar un evento.
+    document.querySelectorAll('form').forEach(function (form) {
+        var equipoSelect = form.querySelector('select[name="equipo_id"]');
+        var jugadorSelects = form.querySelectorAll('select[data-filtra-jugador]');
+        if (!equipoSelect || jugadorSelects.length === 0) {
+            return;
+        }
+
+        var actualizarJugadores = function () {
+            var equipoId = equipoSelect.value;
+            jugadorSelects.forEach(function (select) {
+                Array.prototype.forEach.call(select.options, function (opcion) {
+                    if (opcion.value === '') {
+                        return;
+                    }
+                    opcion.hidden = opcion.getAttribute('data-equipo') !== equipoId;
+                });
+                select.value = '';
+            });
+        };
+
+        equipoSelect.addEventListener('change', actualizarJugadores);
+        actualizarJugadores();
+    });
+
     // Formulario de encuentros: el campo "Jornada" solo aplica a la fase de grupos
     var selectFase = document.getElementById('selectFase');
     var grupoJornada = document.getElementById('grupoJornada');

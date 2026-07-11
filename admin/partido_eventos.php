@@ -144,10 +144,10 @@ require __DIR__ . '/includes/admin_layout_top.php';
                     </select>
                 </div>
                 <div class="col-8">
-                    <select name="jugador_id" class="form-select form-select-sm" required>
+                    <select name="jugador_id" class="form-select form-select-sm" data-filtra-jugador required>
                         <option value=""><?= e($etJugador) ?> que anota...</option>
                         <?php foreach ($equiposDelPartido as $eid): foreach ($jugadoresPorEquipo[$eid] ?? [] as $j): ?>
-                        <option value="<?= $j['id'] ?>">#<?= e($j['dorsal']) ?> <?= e($j['nombre']) ?> (<?= e($equiposPorId[$eid]['nombre']) ?>)</option>
+                        <option value="<?= $j['id'] ?>" data-equipo="<?= $eid ?>">#<?= e($j['dorsal']) ?> <?= e($j['nombre']) ?></option>
                         <?php endforeach; endforeach; ?>
                     </select>
                 </div>
@@ -162,10 +162,10 @@ require __DIR__ . '/includes/admin_layout_top.php';
                     </select>
                 </div>
                 <div class="col-12">
-                    <select name="asistencia_jugador_id" class="form-select form-select-sm">
+                    <select name="asistencia_jugador_id" class="form-select form-select-sm" data-filtra-jugador>
                         <option value="">Sin asistencia</option>
                         <?php foreach ($equiposDelPartido as $eid): foreach ($jugadoresPorEquipo[$eid] ?? [] as $j): ?>
-                        <option value="<?= $j['id'] ?>">#<?= e($j['dorsal']) ?> <?= e($j['nombre']) ?> (<?= e($equiposPorId[$eid]['nombre']) ?>)</option>
+                        <option value="<?= $j['id'] ?>" data-equipo="<?= $eid ?>">#<?= e($j['dorsal']) ?> <?= e($j['nombre']) ?></option>
                         <?php endforeach; endforeach; ?>
                     </select>
                 </div>
@@ -189,10 +189,10 @@ require __DIR__ . '/includes/admin_layout_top.php';
                     </select>
                 </div>
                 <div class="col-8">
-                    <select name="jugador_id" class="form-select form-select-sm" required>
+                    <select name="jugador_id" class="form-select form-select-sm" data-filtra-jugador required>
                         <option value=""><?= e($etJugador) ?>...</option>
                         <?php foreach ($equiposDelPartido as $eid): foreach ($jugadoresPorEquipo[$eid] ?? [] as $j): ?>
-                        <option value="<?= $j['id'] ?>">#<?= e($j['dorsal']) ?> <?= e($j['nombre']) ?> (<?= e($equiposPorId[$eid]['nombre']) ?>)</option>
+                        <option value="<?= $j['id'] ?>" data-equipo="<?= $eid ?>">#<?= e($j['dorsal']) ?> <?= e($j['nombre']) ?></option>
                         <?php endforeach; endforeach; ?>
                     </select>
                 </div>
@@ -233,18 +233,18 @@ require __DIR__ . '/includes/admin_layout_top.php';
                     </select>
                 </div>
                 <div class="col-6">
-                    <select name="jugador_id" class="form-select form-select-sm" required>
+                    <select name="jugador_id" class="form-select form-select-sm" data-filtra-jugador required>
                         <option value="">Sale...</option>
                         <?php foreach ($equiposDelPartido as $eid): foreach ($jugadoresPorEquipo[$eid] ?? [] as $j): ?>
-                        <option value="<?= $j['id'] ?>">#<?= e($j['dorsal']) ?> <?= e($j['nombre']) ?> (<?= e($equiposPorId[$eid]['nombre']) ?>)</option>
+                        <option value="<?= $j['id'] ?>" data-equipo="<?= $eid ?>">#<?= e($j['dorsal']) ?> <?= e($j['nombre']) ?></option>
                         <?php endforeach; endforeach; ?>
                     </select>
                 </div>
                 <div class="col-6">
-                    <select name="jugador_entra_id" class="form-select form-select-sm" required>
+                    <select name="jugador_entra_id" class="form-select form-select-sm" data-filtra-jugador required>
                         <option value="">Entra...</option>
                         <?php foreach ($equiposDelPartido as $eid): foreach ($jugadoresPorEquipo[$eid] ?? [] as $j): ?>
-                        <option value="<?= $j['id'] ?>">#<?= e($j['dorsal']) ?> <?= e($j['nombre']) ?> (<?= e($equiposPorId[$eid]['nombre']) ?>)</option>
+                        <option value="<?= $j['id'] ?>" data-equipo="<?= $eid ?>">#<?= e($j['dorsal']) ?> <?= e($j['nombre']) ?></option>
                         <?php endforeach; endforeach; ?>
                     </select>
                 </div>
