@@ -34,6 +34,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         redirigir_con_mensaje(url('admin/partidos.php'), 'success', 'Encuentro eliminado correctamente.');
     }
 
+    // Interruptor rápido en la tarjeta del encuentro: alternar jugado/programado sin
+    // abrir el formulario completo. Para marcarlo como jugado sí hace falta el marcador
+    // (lo usa la tabla de posiciones), así que si todavía no está capturado se manda a
+    // editar en vez de fallar en silencio.
+    if (($_POST['accion'] ?? '') === 'alternar_jugado') {
+        $id = (int) $_POST['id'];
+        $partidoActual = db_buscar_por_id($partidos, $id);
+        if ($partidoActual === null) {
+            redirigir_con_mensaje(url('admin/partidos.php'), 'error', 'Encuentro no encontrado.');
+        }
+
+        if ($partidoActual['estado'] === 'jugado') {
+            foreach ($partidos as &$p) {
+                if ($p['id'] === $id) {
+                    $p['estado'] = 'programado';
+                }
+            }
+            unset($p);
+            db_guardar('partidos', $partidos, $torneo['id']);
+            redirigir_con_mensaje(url('admin/partidos.php'), 'success', 'Encuentro marcado como programado.');
+        }
+
+        if ($partidoActual['marcador_local'] === null || $partidoActual['marcador_visitante'] === null) {
+            redirigir_con_mensaje(url('admin/partidos.php?accion=editar&id=' . $id), 'error', 'Captura el marcador de ambos equipos para marcar este encuentro como jugado.');
+        }
+
+        foreach ($partidos as &$p) {
+            if ($p['id'] === $id) {
+                $p['estado'] = 'jugado';
+            }
+        }
+        unset($p);
+        db_guardar('partidos', $partidos, $torneo['id']);
+        redirigir_con_mensaje(url('admin/partidos.php'), 'success', 'Encuentro marcado como jugado.');
+    }
+
     if (($_POST['accion'] ?? '') === 'guardar') {
         $id = (int) ($_POST['id'] ?? 0);
         $local = (int) $_POST['equipo_local'];

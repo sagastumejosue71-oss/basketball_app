@@ -148,12 +148,27 @@ function admin_tarjeta_partido(array $p, array $equiposPorId, ?array $torneo = n
         }
     }
 
+    // Interruptor rápido para marcar jugado/programado sin abrir el formulario completo
+    // (útil a mitad de temporada, cuando hay que ir capturando encuentros seguidos).
+    $toggleChecked = $jugado ? 'checked' : '';
+    $toggleJugado = <<<HTML
+<form method="post" class="form-check form-switch mb-0" title="Marcar como jugado">
+    <input type="hidden" name="csrf_token" value="{$csrf}">
+    <input type="hidden" name="accion" value="alternar_jugado">
+    <input type="hidden" name="id" value="{$id}">
+    <input class="form-check-input" type="checkbox" role="switch" style="cursor:pointer;" onchange="this.form.submit()" {$toggleChecked}>
+</form>
+HTML;
+
     return <<<HTML
 <div class="col">
     <div class="card-suave p-3">
         <div class="d-flex justify-content-between align-items-center mb-2">
             <span class="small text-muted">{$fecha} · {$hora}</span>
-            {$badgeEstado}
+            <div class="d-flex align-items-center gap-2">
+                {$toggleJugado}
+                {$badgeEstado}
+            </div>
         </div>
         <div class="d-flex align-items-center justify-content-between mb-2">
             <div class="equipo-col">{$logoLocal}<span class="nombre">{$nombreLocal}</span></div>
