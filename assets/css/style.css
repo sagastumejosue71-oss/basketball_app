@@ -217,104 +217,48 @@ h1, h2, h3, h4, h5, h6, .fw-heading {
     color: rgba(255, 255, 255, .65);
 }
 
-.hero-basquet {
-    position: relative;
-    width: 260px;
-    height: 260px;
-    margin: 0 auto;
-}
-
-.hero-basquet .balon {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    background: radial-gradient(circle at 32% 28%, #ff9457, var(--color-secundario) 55%, #c8451a 100%);
-    box-shadow: 0 30px 60px -18px rgba(255, 107, 53, .55), inset -14px -14px 34px rgba(0, 0, 0, .28), inset 10px 10px 24px rgba(255, 255, 255, .25);
-    position: relative;
-    animation: flotar 5s ease-in-out infinite;
-}
-
-.hero-basquet .balon::before,
-.hero-basquet .balon::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-}
-
-.hero-basquet .balon::before {
-    background:
-        linear-gradient(transparent 48%, rgba(20, 10, 5, .55) 49%, rgba(20, 10, 5, .55) 51%, transparent 52%),
-        linear-gradient(90deg, transparent 48%, rgba(20, 10, 5, .55) 49%, rgba(20, 10, 5, .55) 51%, transparent 52%);
-}
-
-.hero-basquet .balon::after {
-    border: 2px solid rgba(20, 10, 5, .4);
-    box-shadow: inset 0 0 0 42px transparent;
-    background:
-        radial-gradient(ellipse 60% 100% at 0% 50%, transparent 63%, rgba(20, 10, 5, .5) 64%, rgba(20, 10, 5, .5) 66%, transparent 67%),
-        radial-gradient(ellipse 60% 100% at 100% 50%, transparent 63%, rgba(20, 10, 5, .5) 64%, rgba(20, 10, 5, .5) 66%, transparent 67%);
-}
-
 @keyframes flotar {
     0%, 100% { transform: translateY(0) rotate(-4deg); }
     50% { transform: translateY(-18px) rotate(4deg); }
 }
 
-/* Variante balón de fútbol para copas de ese deporte: esfera blanca con
-   parches oscuros en vez del degradado naranja con costuras de basketball. */
-.hero-basquet.hero-futbol .balon {
-    background: radial-gradient(circle at 32% 28%, #ffffff, #e7ebf0 55%, #aeb7c2 100%);
-    box-shadow: 0 30px 60px -18px rgba(15, 23, 42, .4), inset -14px -14px 34px rgba(0, 0, 0, .18), inset 10px 10px 24px rgba(255, 255, 255, .55);
-}
-
-.hero-basquet.hero-futbol .balon::before {
-    background: #1c1c1c;
-    top: 37%;
-    left: 37%;
-    width: 26%;
-    height: 26%;
-    clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
-}
-
-.hero-basquet.hero-futbol .balon::after {
-    background:
-        radial-gradient(circle at 20% 24%, #1c1c1c 0 9%, transparent 9.5%),
-        radial-gradient(circle at 79% 21%, #1c1c1c 0 8%, transparent 8.5%),
-        radial-gradient(circle at 83% 68%, #1c1c1c 0 9%, transparent 9.5%),
-        radial-gradient(circle at 21% 73%, #1c1c1c 0 8%, transparent 8.5%),
-        radial-gradient(circle at 50% 90%, #1c1c1c 0 7%, transparent 7.5%);
-    border: none;
-    box-shadow: none;
-}
-
-/* Portada: dos balones 3D superpuestos (basketball + fútbol) representando que la
-   plataforma no es de un solo deporte. Reutiliza el mismo balón que cada copa ya
-   usa en su propia portada, solo que aquí van dos a la vez con tamaños distintos. */
-.portada-balones {
+/* Balones 3D reales (recortados del logo), usados tanto en la portada general
+   (dos balones superpuestos) como en el hero de cada copa/liga (uno solo, del
+   deporte de esa copa). */
+.balones-3d {
     position: relative;
     height: 300px;
     max-width: 380px;
     margin: 0 auto;
 }
 
-.portada-balones .balon-real {
+.balones-3d .balon-real {
     position: absolute;
     border-radius: 50%;
     filter: drop-shadow(0 22px 26px rgba(0, 0, 0, .35));
 }
 
-.portada-balones .balon-flotante-1 {
+.balones-3d .balon-flotante-1 {
     animation: flotar 5s ease-in-out infinite;
 }
 
-.portada-balones .balon-flotante-2 {
+.balones-3d .balon-flotante-2 {
     animation: flotar 5s ease-in-out infinite;
     animation-delay: 1.2s;
 }
 
 @media (max-width: 991.98px) {
-    .portada-balones { height: 260px; }
+    .balones-3d { height: 260px; }
+}
+
+/* Un solo balón centrado (hero de cada copa/liga individual), a diferencia de los
+   dos balones superpuestos y fijos en tamaño de la portada general. */
+.balon-hero-solo {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: clamp(170px, 32vw, 280px);
+    height: clamp(170px, 32vw, 280px);
 }
 
 /* ---------- Secciones ---------- */
@@ -362,6 +306,35 @@ h1, h2, h3, h4, h5, h6, .fw-heading {
 .tabla-posiciones tbody tr {
     background: #fff;
     box-shadow: 0 6px 18px -12px rgba(var(--color-primario-oscuro-rgb), .25);
+    transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease;
+    animation: filaAparece .4s ease both;
+}
+
+.tabla-posiciones tbody tr:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 28px -14px rgba(var(--color-primario-oscuro-rgb), .45);
+    background: #fbfaff;
+}
+
+@keyframes filaAparece {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.tabla-posiciones tbody tr:nth-child(1) { animation-delay: .02s; }
+.tabla-posiciones tbody tr:nth-child(2) { animation-delay: .06s; }
+.tabla-posiciones tbody tr:nth-child(3) { animation-delay: .10s; }
+.tabla-posiciones tbody tr:nth-child(4) { animation-delay: .14s; }
+.tabla-posiciones tbody tr:nth-child(5) { animation-delay: .18s; }
+.tabla-posiciones tbody tr:nth-child(6) { animation-delay: .22s; }
+.tabla-posiciones tbody tr:nth-child(7) { animation-delay: .26s; }
+.tabla-posiciones tbody tr:nth-child(8) { animation-delay: .30s; }
+.tabla-posiciones tbody tr:nth-child(9) { animation-delay: .34s; }
+.tabla-posiciones tbody tr:nth-child(10) { animation-delay: .38s; }
+.tabla-posiciones tbody tr:nth-child(n+11) { animation-delay: .42s; }
+
+@media (prefers-reduced-motion: reduce) {
+    .tabla-posiciones tbody tr { animation: none; }
 }
 
 .tabla-posiciones tbody tr td {
@@ -398,9 +371,18 @@ h1, h2, h3, h4, h5, h6, .fw-heading {
     color: var(--color-primario-oscuro);
 }
 
-.pos-num.oro { background: linear-gradient(135deg, #ffdf80, #ffb63c); color: #6b4400; }
+.pos-num.oro { background: linear-gradient(135deg, #ffdf80, #ffb63c); color: #6b4400; animation: brilloLider 2.4s ease-in-out infinite; }
 .pos-num.plata { background: linear-gradient(135deg, #eaeaf2, #c7c7d9); color: #4a4a5c; }
 .pos-num.bronce { background: linear-gradient(135deg, #e3ab7a, #c17a3f); color: #3e2306; }
+
+@keyframes brilloLider {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255, 182, 60, .55); }
+    50% { box-shadow: 0 0 0 6px rgba(255, 182, 60, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pos-num.oro { animation: none; }
+}
 
 .racha-punto {
     display: inline-block;

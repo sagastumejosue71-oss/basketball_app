@@ -33,7 +33,7 @@ require __DIR__ . '/includes/layout_top.php';
                 <p class="small mb-0" style="color:rgba(255,255,255,.6);">¿Eres organizador? <a href="<?= url('login.php') ?>" class="fw-semibold" style="color:var(--color-acento);">Inicia sesión</a></p>
             </div>
             <div class="col-lg-5">
-                <div class="portada-balones">
+                <div class="balones-3d">
                     <img src="<?= url('assets/img/balon-basketball.png') ?>" alt="" class="balon-real balon-flotante-1" style="width:230px;height:230px;top:0;left:10px;">
                     <img src="<?= url('assets/img/balon-futbol.png') ?>" alt="" class="balon-real balon-flotante-2" style="width:150px;height:150px;bottom:0;right:15px;">
                 </div>

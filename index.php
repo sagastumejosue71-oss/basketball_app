@@ -61,7 +61,10 @@ require __DIR__ . '/includes/layout_top.php';
                 </div>
             </div>
             <div class="col-lg-5">
-                <div class="hero-basquet <?= ($torneo['deporte'] ?? 'basketball') === 'futbol' ? 'hero-futbol' : '' ?>"><div class="balon"></div></div>
+                <div class="balones-3d">
+                    <?php $balonImg = ($torneo['deporte'] ?? 'basketball') === 'futbol' ? 'balon-futbol.png' : 'balon-basketball.png'; ?>
+                    <img src="<?= url('assets/img/' . $balonImg) ?>" alt="" class="balon-real balon-flotante-1 balon-hero-solo">
+                </div>
             </div>
         </div>
     </div>
