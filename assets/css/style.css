@@ -254,7 +254,7 @@ h1, h2, h3, h4, h5, h6, .fw-heading {
 /* Un solo balón centrado (hero de cada copa/liga individual), a diferencia de los
    dos balones superpuestos y fijos en tamaño de la portada general. */
 .balon-hero-solo {
-    top: 50%;
+    top: 38%;
     left: 50%;
     transform: translate(-50%, -50%);
     width: clamp(170px, 32vw, 280px);
@@ -307,34 +307,12 @@ h1, h2, h3, h4, h5, h6, .fw-heading {
     background: #fff;
     box-shadow: 0 6px 18px -12px rgba(var(--color-primario-oscuro-rgb), .25);
     transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease;
-    animation: filaAparece .4s ease both;
 }
 
 .tabla-posiciones tbody tr:hover {
     transform: translateY(-3px);
     box-shadow: 0 14px 28px -14px rgba(var(--color-primario-oscuro-rgb), .45);
     background: #fbfaff;
-}
-
-@keyframes filaAparece {
-    from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.tabla-posiciones tbody tr:nth-child(1) { animation-delay: .02s; }
-.tabla-posiciones tbody tr:nth-child(2) { animation-delay: .06s; }
-.tabla-posiciones tbody tr:nth-child(3) { animation-delay: .10s; }
-.tabla-posiciones tbody tr:nth-child(4) { animation-delay: .14s; }
-.tabla-posiciones tbody tr:nth-child(5) { animation-delay: .18s; }
-.tabla-posiciones tbody tr:nth-child(6) { animation-delay: .22s; }
-.tabla-posiciones tbody tr:nth-child(7) { animation-delay: .26s; }
-.tabla-posiciones tbody tr:nth-child(8) { animation-delay: .30s; }
-.tabla-posiciones tbody tr:nth-child(9) { animation-delay: .34s; }
-.tabla-posiciones tbody tr:nth-child(10) { animation-delay: .38s; }
-.tabla-posiciones tbody tr:nth-child(n+11) { animation-delay: .42s; }
-
-@media (prefers-reduced-motion: reduce) {
-    .tabla-posiciones tbody tr { animation: none; }
 }
 
 .tabla-posiciones tbody tr td {

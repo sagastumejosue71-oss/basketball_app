@@ -133,8 +133,11 @@ function admin_tarjeta_partido(array $p, array $equiposPorId, ?array $torneo = n
     $csrf = e(csrf_token());
     $id = (int) $p['id'];
 
+    // Se ofrece desde que se crea el partido (no solo cuando ya está "jugado"): el
+    // árbitro/admin suele ir llenando la ficha -goles, tarjetas, cambios- a medida que
+    // ocurren, no solo después de capturar el marcador final.
     $botonEventos = '';
-    if (($torneo['modo'] ?? 'copa') === 'liga' && $jugado) {
+    if (($torneo['modo'] ?? 'copa') === 'liga') {
         $urlEventos = e(url('admin/partido_eventos.php?partido_id=' . $id));
         $botonEventos = "<a href=\"{$urlEventos}\" class=\"btn btn-sm btn-outline-secondary\" title=\"Goles, tarjetas y cambios\"><i class=\"bi bi-clipboard-data\"></i> Eventos</a>";
     }
@@ -246,6 +249,16 @@ function icono_deporte(?string $deporte, int $size = 24): string
         return icono_multideporte($size);
     }
     return $deporte === 'futbol' ? icono_futbol($size) : icono_balon($size);
+}
+
+/**
+ * Nombre del deporte para usar en párrafos genéricos (patrocinadores, etc.) que antes
+ * asumían "basketball femenino" sin importar la copa/liga real. Cada deporte nuevo que
+ * se agregue al catálogo (ver admin/torneos.php) debe sumarse aquí también.
+ */
+function nombre_deporte(?string $deporte): string
+{
+    return $deporte === 'futbol' ? 'fútbol' : 'basketball';
 }
 
 /**

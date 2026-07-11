@@ -22,7 +22,7 @@ require __DIR__ . '/includes/layout_top.php';
     <div class="container">
         <p class="kicker mb-2"><i class="bi bi-heart-fill me-1"></i>Aliados del torneo</p>
         <h1 class="text-white mb-2">Nuestros <span class="text-degradado">Patrocinadores</span></h1>
-        <p style="color:rgba(255,255,255,.75);max-width:560px;" class="mb-0">Marcas que apuestan por el deporte femenino y hacen posible <?= e($torneo['nombre']) ?>.</p>
+        <p style="color:rgba(255,255,255,.75);max-width:560px;" class="mb-0">Marcas que apuestan por el <?= e(nombre_deporte($torneo['deporte'] ?? null)) ?> y hacen posible <?= e($torneo['nombre']) ?>.</p>
     </div>
 </header>
 

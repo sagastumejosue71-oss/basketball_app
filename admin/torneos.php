@@ -201,19 +201,19 @@ require __DIR__ . '/includes/admin_layout_top.php';
             </div>
             <div class="col-md-4">
                 <label class="form-label small fw-semibold">Subtítulo</label>
-                <input type="text" name="subtitulo" class="form-control" value="<?= e($torneoEditar['subtitulo'] ?? '') ?>">
+                <input type="text" name="subtitulo" class="form-control" placeholder="Ej. Liga Municipal de Verano" value="<?= e($torneoEditar['subtitulo'] ?? '') ?>">
             </div>
             <div class="col-md-4">
                 <label class="form-label small fw-semibold">Temporada</label>
-                <input type="text" name="temporada" class="form-control" value="<?= e($torneoEditar['temporada'] ?? '') ?>">
+                <input type="text" name="temporada" class="form-control" placeholder="Ej. 2026" value="<?= e($torneoEditar['temporada'] ?? '') ?>">
             </div>
             <div class="col-12">
                 <label class="form-label small fw-semibold">Descripción</label>
-                <textarea name="descripcion" class="form-control" rows="2"><?= e($torneoEditar['descripcion'] ?? '') ?></textarea>
+                <textarea name="descripcion" class="form-control" rows="2" placeholder="Ej. Ocho equipos, una vuelta de temporada regular y el sueño de levantar la copa."><?= e($torneoEditar['descripcion'] ?? '') ?></textarea>
             </div>
             <div class="col-12">
                 <label class="form-label small fw-semibold">Frase del hero (portada)</label>
-                <input type="text" name="hero_frase" class="form-control" value="<?= e($torneoEditar['hero_frase'] ?? '') ?>">
+                <input type="text" name="hero_frase" class="form-control" placeholder="Ej. Pasión, esfuerzo y comunidad en cada jornada" value="<?= e($torneoEditar['hero_frase'] ?? '') ?>">
             </div>
         </div>
 
@@ -278,15 +278,15 @@ require __DIR__ . '/includes/admin_layout_top.php';
             </div>
             <div class="col-md-4">
                 <label class="form-label small fw-semibold">Formato</label>
-                <input type="text" name="formato" class="form-control" value="<?= e($torneoEditar['formato'] ?? '') ?>">
+                <input type="text" name="formato" class="form-control" placeholder="Ej. Fase de grupos + eliminación directa" value="<?= e($torneoEditar['formato'] ?? '') ?>">
             </div>
             <div class="col-md-6">
                 <label class="form-label small fw-semibold">Sede principal</label>
-                <input type="text" name="sede_principal" class="form-control" value="<?= e($torneoEditar['sede_principal'] ?? '') ?>">
+                <input type="text" name="sede_principal" class="form-control" placeholder="Ej. Polideportivo Municipal, Ciudad Capital" value="<?= e($torneoEditar['sede_principal'] ?? '') ?>">
             </div>
             <div class="col-md-6">
                 <label class="form-label small fw-semibold">Instagram (opcional)</label>
-                <input type="url" name="instagram" class="form-control" value="<?= e($torneoEditar['instagram'] ?? '') ?>">
+                <input type="url" name="instagram" class="form-control" placeholder="https://instagram.com/tu_copa" value="<?= e($torneoEditar['instagram'] ?? '') ?>">
             </div>
             <div class="col-md-4">
                 <label class="form-label small fw-semibold">Color primario</label>

@@ -83,3 +83,40 @@ function evento_descripcion(array $evento, array $jugadoresPorId): string
             return $minuto . $nombreJugador;
     }
 }
+
+/**
+ * Ranking de goleadores a partir de los eventos de todos los partidos de la copa/liga.
+ * Los autogoles no suman al goleador (van a favor del marcador del rival, pero no son
+ * "su" gol), igual que en cualquier tabla de goleadores real.
+ *
+ * @return array<int, array{jugador: array, equipo: ?array, goles: int}> Ordenado de más a menos goles.
+ */
+function calcular_goleadores(array $eventos, array $jugadores, array $equiposPorId): array
+{
+    $jugadoresPorId = jugadores_por_id($jugadores);
+
+    $conteo = [];
+    foreach ($eventos as $evento) {
+        if ($evento['tipo'] !== 'gol' || ($evento['tipo_gol'] ?? '') === 'autogol') {
+            continue;
+        }
+        $jugadorId = (int) ($evento['jugador_id'] ?? 0);
+        if (!isset($jugadoresPorId[$jugadorId])) {
+            continue;
+        }
+        $conteo[$jugadorId] = ($conteo[$jugadorId] ?? 0) + 1;
+    }
+
+    $goleadores = [];
+    foreach ($conteo as $jugadorId => $goles) {
+        $jugador = $jugadoresPorId[$jugadorId];
+        $goleadores[] = [
+            'jugador' => $jugador,
+            'equipo' => $equiposPorId[(int) $jugador['equipo_id']] ?? null,
+            'goles' => $goles,
+        ];
+    }
+
+    usort($goleadores, fn($a, $b) => $b['goles'] <=> $a['goles']);
+    return $goleadores;
+}

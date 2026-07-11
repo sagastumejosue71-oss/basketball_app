@@ -13,6 +13,7 @@ if (($_GET['copa'] ?? null) === null) {
 }
 
 require_once __DIR__ . '/includes/tabla.php';
+require_once __DIR__ . '/includes/liga.php';
 require_once __DIR__ . '/includes/torneo_actual.php';
 
 $equipos = db_leer('equipos', $torneo['id']);
@@ -30,6 +31,14 @@ $jornadaActual = empty($partidos) ? 0 : max(array_column($partidos, 'jornada'));
 $equiposPorId = [];
 foreach ($equipos as $eq) {
     $equiposPorId[$eq['id']] = $eq;
+}
+
+$esLiga = ($torneo['modo'] ?? 'copa') === 'liga';
+$topGoleadores = [];
+if ($esLiga) {
+    $jugadores = db_leer('jugadores', $torneo['id']);
+    $eventos = db_leer('partido_eventos', $torneo['id']);
+    $topGoleadores = array_slice(calcular_goleadores($eventos, $jugadores, $equiposPorId), 0, 5);
 }
 
 $patrocOficiales = array_values(array_filter($patrocinadores, fn($p) => $p['nivel'] === 'oficial'));
@@ -95,21 +104,21 @@ require __DIR__ . '/includes/layout_top.php';
                 </thead>
                 <tbody>
                     <?php foreach ($top5 as $fila): ?>
-                    <tr class="<?= $fila['posicion'] <= 4 ? 'zona-playoff' : '' ?>">
-                        <td>
+                    <tr class="fila-clicable <?= $fila['posicion'] <= 4 ? 'zona-playoff' : '' ?>" data-href="<?= e(url_copa('equipo.php?id=' . $fila['equipo']['id'])) ?>">
+                        <td data-label="#">
                             <span class="pos-num <?= $fila['posicion'] === 1 ? 'oro' : ($fila['posicion'] === 2 ? 'plata' : ($fila['posicion'] === 3 ? 'bronce' : '')) ?>"><?= $fila['posicion'] ?></span>
                         </td>
-                        <td>
+                        <td class="td-equipo" data-label="Equipo">
                             <a href="<?= url_copa('equipo.php?id=' . $fila['equipo']['id']) ?>" class="d-flex align-items-center gap-2 text-decoration-none text-dark">
                                 <?= logo_equipo($fila['equipo'], 34) ?>
                                 <span class="fw-semibold"><?= e($fila['equipo']['nombre']) ?></span>
                             </a>
                         </td>
-                        <td class="text-center"><?= $fila['pj'] ?></td>
-                        <td class="text-center"><?= $fila['pg'] ?></td>
-                        <td class="text-center"><?= $fila['pp'] ?></td>
-                        <td class="text-center fw-semibold <?= $fila['dif'] >= 0 ? 'text-success' : 'text-danger' ?>"><?= $fila['dif'] >= 0 ? '+' : '' ?><?= $fila['dif'] ?></td>
-                        <td class="text-center fw-bold"><?= $fila['pts'] ?></td>
+                        <td class="text-center" data-label="PJ"><?= $fila['pj'] ?></td>
+                        <td class="text-center" data-label="PG"><?= $fila['pg'] ?></td>
+                        <td class="text-center" data-label="PP"><?= $fila['pp'] ?></td>
+                        <td class="text-center fw-semibold <?= $fila['dif'] >= 0 ? 'text-success' : 'text-danger' ?>" data-label="DIF"><?= $fila['dif'] >= 0 ? '+' : '' ?><?= $fila['dif'] ?></td>
+                        <td class="text-center fw-bold" data-label="PTS"><?= $fila['pts'] ?></td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -118,6 +127,46 @@ require __DIR__ . '/includes/layout_top.php';
         <p class="small text-muted mt-3 mb-0"><span class="d-inline-block" style="width:10px;height:10px;background:var(--color-acento);border-radius:2px;"></span> Zona de Playoffs (Top 4)</p>
     </div>
 </section>
+
+<!-- GOLEADORES (solo modo liga) -->
+<?php if ($esLiga && !empty($topGoleadores)): ?>
+<section class="seccion pt-0" id="goleadores">
+    <div class="container">
+        <div class="d-flex flex-wrap justify-content-between align-items-end mb-4 seccion-titulo">
+            <div>
+                <p class="eyebrow mb-1">Máximos anotadores</p>
+                <h2 class="mb-0">Tabla de goleadores</h2>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table tabla-posiciones align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Jugador</th>
+                        <th>Equipo</th>
+                        <th class="text-center">Goles</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($topGoleadores as $i => $g): ?>
+                    <tr>
+                        <td data-label="#">
+                            <span class="pos-num <?= $i === 0 ? 'oro' : ($i === 1 ? 'plata' : ($i === 2 ? 'bronce' : '')) ?>"><?= $i + 1 ?></span>
+                        </td>
+                        <td class="td-equipo" data-label="Jugador">
+                            <span class="fw-semibold">#<?= e($g['jugador']['dorsal']) ?> <?= e($g['jugador']['nombre']) ?></span>
+                        </td>
+                        <td data-label="Equipo"><span class="small text-muted"><?= e($g['equipo']['nombre'] ?? '') ?></span></td>
+                        <td class="text-center fw-bold" data-label="Goles"><?= $g['goles'] ?></td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+<?php endif; ?>
 
 <!-- PARTIDOS -->
 <section class="seccion bg-white bg-opacity-50" style="background:#f4f0fb;">

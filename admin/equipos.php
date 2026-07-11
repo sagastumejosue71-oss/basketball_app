@@ -126,7 +126,7 @@ require __DIR__ . '/includes/admin_layout_top.php';
                 <input type="text" name="sede" class="form-control" value="<?= e($equipoEditar['sede'] ?? '') ?>">
             </div>
             <div class="col-md-6">
-                <label class="form-label small fw-semibold">Entrenadora</label>
+                <label class="form-label small fw-semibold">Entrenador</label>
                 <input type="text" name="entrenador" class="form-control" value="<?= e($equipoEditar['entrenador'] ?? '') ?>">
             </div>
             <div class="col-md-6">
