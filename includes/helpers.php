@@ -262,6 +262,30 @@ function nombre_deporte(?string $deporte): string
 }
 
 /**
+ * Forma masculina o femenina de una palabra ("Entrenador"/"Entrenadora",
+ * "Jugador"/"Jugadora"...) según torneos.genero. "Mixto" o sin configurar usa la forma
+ * masculina, que es la que ya usaba el sitio como genérica antes de tener este campo.
+ */
+function forma_genero(?string $genero, string $masculino, string $femenino): string
+{
+    return $genero === 'femenino' ? $femenino : $masculino;
+}
+
+/**
+ * Sufijo para frases tipo "el fútbol{sufijo}" / "el basketball{sufijo}" (categoría del
+ * deporte, no la persona: siempre "femenino"/"masculino", nunca "femenina"/"masculina").
+ * Vacío en modo mixto para no forzar una categoría que la copa no declaró.
+ */
+function sufijo_genero_deporte(?string $genero): string
+{
+    return match ($genero) {
+        'femenino' => ' femenino',
+        'masculino' => ' masculino',
+        default => '',
+    };
+}
+
+/**
  * Oscurece un color hex (#rrggbb) un porcentaje dado, para derivar variantes
  * "oscuras" de los colores que el admin elige por copa (ej. hover de botones).
  */

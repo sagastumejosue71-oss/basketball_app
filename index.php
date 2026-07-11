@@ -134,8 +134,8 @@ require __DIR__ . '/includes/layout_top.php';
     <div class="container">
         <div class="d-flex flex-wrap justify-content-between align-items-end mb-4 seccion-titulo">
             <div>
-                <p class="eyebrow mb-1">Máximos anotadores</p>
-                <h2 class="mb-0">Tabla de goleadores</h2>
+                <p class="eyebrow mb-1"><?= e(forma_genero($torneo['genero'] ?? null, 'Máximos anotadores', 'Máximas anotadoras')) ?></p>
+                <h2 class="mb-0">Tabla de <?= e(forma_genero($torneo['genero'] ?? null, 'goleadores', 'goleadoras')) ?></h2>
             </div>
         </div>
         <div class="table-responsive">
@@ -143,7 +143,7 @@ require __DIR__ . '/includes/layout_top.php';
                 <thead>
                     <tr>
                         <th>#</th>
-                        <th>Jugador</th>
+                        <th><?= e(forma_genero($torneo['genero'] ?? null, 'Jugador', 'Jugadora')) ?></th>
                         <th>Equipo</th>
                         <th class="text-center">Goles</th>
                     </tr>
@@ -154,7 +154,7 @@ require __DIR__ . '/includes/layout_top.php';
                         <td data-label="#">
                             <span class="pos-num <?= $i === 0 ? 'oro' : ($i === 1 ? 'plata' : ($i === 2 ? 'bronce' : '')) ?>"><?= $i + 1 ?></span>
                         </td>
-                        <td class="td-equipo" data-label="Jugador">
+                        <td class="td-equipo" data-label="<?= e(forma_genero($torneo['genero'] ?? null, 'Jugador', 'Jugadora')) ?>">
                             <span class="fw-semibold">#<?= e($g['jugador']['dorsal']) ?> <?= e($g['jugador']['nombre']) ?></span>
                         </td>
                         <td data-label="Equipo"><span class="small text-muted"><?= e($g['equipo']['nombre'] ?? '') ?></span></td>

@@ -66,7 +66,7 @@ require __DIR__ . '/includes/layout_top.php';
     <div class="container">
         <div class="row g-4 mb-5">
             <div class="col-6 col-md-3">
-                <div class="stat-tile text-center"><div class="fs-3 fw-bold"><?= e($equipo['entrenador']) ?></div><div class="small text-muted">Entrenador</div></div>
+                <div class="stat-tile text-center"><div class="fs-3 fw-bold"><?= e($equipo['entrenador']) ?></div><div class="small text-muted"><?= e(forma_genero($torneo['genero'] ?? null, 'Entrenador', 'Entrenadora')) ?></div></div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="stat-tile text-center"><div class="fs-3 fw-bold"><?= e($equipo['sede']) ?></div><div class="small text-muted">Sede local</div></div>

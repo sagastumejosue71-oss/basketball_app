@@ -36,6 +36,7 @@ const COLUMNAS_TORNEO = [
     'color_primario', 'color_secundario', 'color_acento', 'fecha_inicio', 'fecha_fin', 'formato',
     'instagram', 'hero_frase', 'deporte', 'num_equipos', 'fases_playoff', 'permite_empates',
     'puntos_victoria', 'puntos_empate', 'puntos_derrota', 'es_predeterminado', 'activo', 'modo',
+    'genero',
 ];
 
 /**

@@ -27,6 +27,7 @@ $equiposDelPartido = array_filter([(int) $partido['equipo_local'], (int) $partid
 $jugadoresTodos = db_leer('jugadores', $torneo['id']);
 $jugadoresPorEquipo = jugadores_por_equipo($jugadoresTodos);
 $jugadoresPorId = jugadores_por_id($jugadoresTodos);
+$etJugador = forma_genero($torneo['genero'] ?? null, 'Jugador', 'Jugadora');
 
 $urlLista = url('admin/partido_eventos.php?partido_id=' . $partidoId);
 
@@ -63,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($accion === 'agregar_gol') {
             $jugadorId = (int) ($_POST['jugador_id'] ?? 0);
             if (!in_array($jugadorId, $rosterEquipo, true)) {
-                redirigir_con_mensaje($urlLista, 'error', 'Selecciona un jugador válido de ese equipo.');
+                redirigir_con_mensaje($urlLista, 'error', forma_genero($torneo['genero'] ?? null, 'Selecciona un jugador válido de ese equipo.', 'Selecciona una jugadora válida de ese equipo.'));
             }
             $tipoGol = (string) ($_POST['tipo_gol'] ?? 'jugada');
             $asistenciaId = (int) ($_POST['asistencia_jugador_id'] ?? 0);
@@ -77,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($accion === 'agregar_tarjeta') {
             $jugadorId = (int) ($_POST['jugador_id'] ?? 0);
             if (!in_array($jugadorId, $rosterEquipo, true)) {
-                redirigir_con_mensaje($urlLista, 'error', 'Selecciona un jugador válido de ese equipo.');
+                redirigir_con_mensaje($urlLista, 'error', forma_genero($torneo['genero'] ?? null, 'Selecciona un jugador válido de ese equipo.', 'Selecciona una jugadora válida de ese equipo.'));
             }
             $color = (string) ($_POST['color'] ?? 'amarilla') === 'roja' ? 'roja' : 'amarilla';
             $motivo = (string) ($_POST['motivo'] ?? 'directa');
@@ -91,10 +92,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $jugadorSaleId = (int) ($_POST['jugador_id'] ?? 0);
             $jugadorEntraId = (int) ($_POST['jugador_entra_id'] ?? 0);
             if (!in_array($jugadorSaleId, $rosterEquipo, true) || !in_array($jugadorEntraId, $rosterEquipo, true)) {
-                redirigir_con_mensaje($urlLista, 'error', 'Selecciona jugadores válidos de ese equipo.');
+                redirigir_con_mensaje($urlLista, 'error', forma_genero($torneo['genero'] ?? null, 'Selecciona jugadores válidos de ese equipo.', 'Selecciona jugadoras válidas de ese equipo.'));
             }
             if ($jugadorSaleId === $jugadorEntraId) {
-                redirigir_con_mensaje($urlLista, 'error', 'El jugador que entra y el que sale no pueden ser el mismo.');
+                redirigir_con_mensaje($urlLista, 'error', forma_genero($torneo['genero'] ?? null, 'El jugador que entra y el que sale no pueden ser el mismo.', 'La jugadora que entra y la que sale no pueden ser la misma.'));
             }
 
             $evento['tipo'] = 'cambio';
@@ -143,7 +144,7 @@ require __DIR__ . '/includes/admin_layout_top.php';
                 </div>
                 <div class="col-8">
                     <select name="jugador_id" class="form-select form-select-sm" required>
-                        <option value="">Jugador que anota...</option>
+                        <option value=""><?= e($etJugador) ?> que anota...</option>
                         <?php foreach ($equiposDelPartido as $eid): foreach ($jugadoresPorEquipo[$eid] ?? [] as $j): ?>
                         <option value="<?= $j['id'] ?>">#<?= e($j['dorsal']) ?> <?= e($j['nombre']) ?> (<?= e($equiposPorId[$eid]['nombre']) ?>)</option>
                         <?php endforeach; endforeach; ?>
@@ -188,7 +189,7 @@ require __DIR__ . '/includes/admin_layout_top.php';
                 </div>
                 <div class="col-8">
                     <select name="jugador_id" class="form-select form-select-sm" required>
-                        <option value="">Jugador...</option>
+                        <option value=""><?= e($etJugador) ?>...</option>
                         <?php foreach ($equiposDelPartido as $eid): foreach ($jugadoresPorEquipo[$eid] ?? [] as $j): ?>
                         <option value="<?= $j['id'] ?>">#<?= e($j['dorsal']) ?> <?= e($j['nombre']) ?> (<?= e($equiposPorId[$eid]['nombre']) ?>)</option>
                         <?php endforeach; endforeach; ?>

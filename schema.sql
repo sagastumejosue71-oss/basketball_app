@@ -44,6 +44,11 @@ ALTER TABLE torneos ADD COLUMN IF NOT EXISTS codigo TEXT UNIQUE;
 -- y ficha de partido: goles/tarjetas/cambios). Con DEFAULT, las copas ya existentes
 -- quedan en 'copa' automáticamente, sin necesitar backfill.
 ALTER TABLE torneos ADD COLUMN IF NOT EXISTS modo TEXT NOT NULL DEFAULT 'copa';
+-- 'femenino' | 'masculino' | 'mixto' (no aplica / no se distingue). Ajusta "entrenador/a",
+-- "jugador/a", etc. en todo el sitio sin tener que hardcodear un género fijo. DEFAULT
+-- 'mixto' deja el lenguaje neutro-masculino genérico que ya usaba el sitio, así que las
+-- copas existentes no cambian de texto hasta que el organizador elija explícitamente.
+ALTER TABLE torneos ADD COLUMN IF NOT EXISTS genero TEXT NOT NULL DEFAULT 'mixto';
 
 CREATE TABLE IF NOT EXISTS equipos (
     id INTEGER PRIMARY KEY,

@@ -126,7 +126,7 @@ require __DIR__ . '/includes/admin_layout_top.php';
                 <input type="text" name="sede" class="form-control" value="<?= e($equipoEditar['sede'] ?? '') ?>">
             </div>
             <div class="col-md-6">
-                <label class="form-label small fw-semibold">Entrenador</label>
+                <label class="form-label small fw-semibold"><?= e(forma_genero($torneo['genero'] ?? null, 'Entrenador', 'Entrenadora')) ?></label>
                 <input type="text" name="entrenador" class="form-control" value="<?= e($equipoEditar['entrenador'] ?? '') ?>">
             </div>
             <div class="col-md-6">
@@ -179,7 +179,7 @@ require __DIR__ . '/includes/admin_layout_top.php';
                 </div>
                 <div class="d-flex flex-column gap-1">
                     <?php if (($torneo['modo'] ?? 'copa') === 'liga'): ?>
-                    <a href="<?= url('admin/jugadores.php?equipo_id=' . $eq['id']) ?>" class="btn btn-sm btn-outline-secondary" title="Jugadores"><i class="bi bi-people"></i></a>
+                    <a href="<?= url('admin/jugadores.php?equipo_id=' . $eq['id']) ?>" class="btn btn-sm btn-outline-secondary" title="<?= e(forma_genero($torneo['genero'] ?? null, 'Jugadores', 'Jugadoras')) ?>"><i class="bi bi-people"></i></a>
                     <?php endif; ?>
                     <a href="<?= url('admin/equipos.php?accion=editar&id=' . $eq['id']) ?>" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
                     <form method="post" data-confirm="¿Eliminar a <?= e($eq['nombre']) ?>? Esta acción no se puede deshacer.">

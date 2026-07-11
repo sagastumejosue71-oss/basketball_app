@@ -49,6 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'guard
     $slug = torneos_slugificar((string) ($_POST['slug'] ?: $nombre));
     $deporte = (string) $_POST['deporte'] === 'futbol' ? 'futbol' : 'basketball';
     $modo = (string) ($_POST['modo'] ?? '') === 'liga' ? 'liga' : 'copa';
+    $genero = in_array($_POST['genero'] ?? '', ['femenino', 'masculino'], true) ? $_POST['genero'] : 'mixto';
 
     $fasesElegidas = array_values(array_intersect((array) ($_POST['fases_playoff'] ?? []), FASES_PLAYOFF_CATALOGO));
 
@@ -90,6 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'guard
             'hero_frase' => trim((string) $_POST['hero_frase']),
             'deporte' => $deporte,
             'modo' => $modo,
+            'genero' => $genero,
             'num_equipos' => max(2, (int) $_POST['num_equipos']),
             'fases_playoff' => $fasesElegidas,
             'permite_empates' => isset($_POST['permite_empates']),
@@ -143,6 +145,7 @@ if (($_SERVER['REQUEST_METHOD'] === 'POST') && ($_POST['accion'] ?? '') === 'reg
 
 $deportePorDefecto = $torneoEditar['deporte'] ?? 'basketball';
 $modoPorDefecto = $torneoEditar['modo'] ?? 'copa';
+$generoPorDefecto = $torneoEditar['genero'] ?? 'mixto';
 $torneos = torneos_listar(false, $usuarioId);
 
 $seccion_activa = 'torneos';
@@ -198,6 +201,15 @@ require __DIR__ . '/includes/admin_layout_top.php';
                     <option value="liga" <?= $modoPorDefecto === 'liga' ? 'selected' : '' ?>>Liga (con jugadores, goles y tarjetas)</option>
                 </select>
                 <div class="form-text">En modo liga puedes cargar la plantilla de jugadores y la ficha de cada partido.</div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small fw-semibold">Género</label>
+                <select name="genero" class="form-select">
+                    <option value="mixto" <?= $generoPorDefecto === 'mixto' ? 'selected' : '' ?>>Mixto / no aplica</option>
+                    <option value="femenino" <?= $generoPorDefecto === 'femenino' ? 'selected' : '' ?>>Femenino</option>
+                    <option value="masculino" <?= $generoPorDefecto === 'masculino' ? 'selected' : '' ?>>Masculino</option>
+                </select>
+                <div class="form-text">Ajusta "entrenador/a", "jugador/a", etc. en todo el sitio.</div>
             </div>
             <div class="col-md-4">
                 <label class="form-label small fw-semibold">Subtítulo</label>
@@ -326,6 +338,7 @@ require __DIR__ . '/includes/admin_layout_top.php';
                 <div class="d-flex align-items-center gap-2 mb-2">
                     <span class="badge rounded-pill text-bg-light border small"><?= $t['deporte'] === 'futbol' ? '⚽ Fútbol' : '🏀 Basketball' ?></span>
                     <?php if (($t['modo'] ?? 'copa') === 'liga'): ?><span class="badge rounded-pill text-bg-light border small">Liga</span><?php endif; ?>
+                    <?php if (($t['genero'] ?? 'mixto') !== 'mixto'): ?><span class="badge rounded-pill text-bg-light border small"><?= $t['genero'] === 'femenino' ? 'Femenino' : 'Masculino' ?></span><?php endif; ?>
                     <?php if (!$t['activo']): ?><span class="badge rounded-pill text-bg-secondary small">Inactiva</span><?php endif; ?>
                     <?php if ($t['es_predeterminado']): ?><span class="badge rounded-pill text-bg-warning small">Predeterminada</span><?php endif; ?>
                 </div>

@@ -11,7 +11,7 @@ declare(strict_types=1);
         <div class="seccion-titulo mb-4 text-center">
             <p class="eyebrow mb-1">Gracias a</p>
             <h2 class="mb-2">Nuestros Patrocinadores</h2>
-            <p class="text-muted mx-auto" style="max-width:520px;">Marcas que creen en el crecimiento del <?= e(nombre_deporte($torneo['deporte'] ?? null)) ?> y hacen posible cada jornada.</p>
+            <p class="text-muted mx-auto" style="max-width:520px;">Marcas que creen en el crecimiento del <?= e(nombre_deporte($torneo['deporte'] ?? null)) ?><?= e(sufijo_genero_deporte($torneo['genero'] ?? null)) ?> y hacen posible cada jornada.</p>
         </div>
 
         <?php if (!empty($patrocOficiales)): ?>
