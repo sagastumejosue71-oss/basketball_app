@@ -50,7 +50,7 @@
         </div>
         <hr class="border-secondary opacity-25 my-4">
         <p class="small text-center mb-1 opacity-75">© <?= date('Y') ?> <?= e($torneo['nombre'] ?? 'Plataforma de Copas y Ligas') ?><?= $torneo ? ' · ' . e($torneo['subtitulo']) : '' ?></p>
-        <p class="small text-center mb-0 opacity-50">By Josué Sagastume</p>
+        <p class="small text-center mb-0 opacity-50">MJ Control Systems · Plataformas web inteligentes, control total de tu negocio.</p>
     </div>
 </footer>
 
