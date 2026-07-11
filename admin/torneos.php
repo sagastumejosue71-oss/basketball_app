@@ -48,6 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'guard
     $nombre = trim((string) $_POST['nombre']);
     $slug = torneos_slugificar((string) ($_POST['slug'] ?: $nombre));
     $deporte = (string) $_POST['deporte'] === 'futbol' ? 'futbol' : 'basketball';
+    $modo = (string) ($_POST['modo'] ?? '') === 'liga' ? 'liga' : 'copa';
 
     $fasesElegidas = array_values(array_intersect((array) ($_POST['fases_playoff'] ?? []), FASES_PLAYOFF_CATALOGO));
 
@@ -88,6 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'guard
             'instagram' => trim((string) $_POST['instagram']),
             'hero_frase' => trim((string) $_POST['hero_frase']),
             'deporte' => $deporte,
+            'modo' => $modo,
             'num_equipos' => max(2, (int) $_POST['num_equipos']),
             'fases_playoff' => $fasesElegidas,
             'permite_empates' => isset($_POST['permite_empates']),
@@ -137,6 +139,7 @@ if (($_SERVER['REQUEST_METHOD'] === 'POST') && ($_POST['accion'] ?? '') === 'reg
 }
 
 $deportePorDefecto = $torneoEditar['deporte'] ?? 'basketball';
+$modoPorDefecto = $torneoEditar['modo'] ?? 'copa';
 $torneos = torneos_listar(false, $usuarioId);
 
 $seccion_activa = 'torneos';
@@ -184,6 +187,14 @@ require __DIR__ . '/includes/admin_layout_top.php';
                     <option value="futbol" <?= $deportePorDefecto === 'futbol' ? 'selected' : '' ?>>Fútbol</option>
                 </select>
                 <div class="form-text">Define los valores iniciales de empates y puntos abajo.</div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small fw-semibold">Modo</label>
+                <select name="modo" class="form-select">
+                    <option value="copa" <?= $modoPorDefecto === 'copa' ? 'selected' : '' ?>>Copa (marcador final)</option>
+                    <option value="liga" <?= $modoPorDefecto === 'liga' ? 'selected' : '' ?>>Liga (con jugadores, goles y tarjetas)</option>
+                </select>
+                <div class="form-text">En modo liga puedes cargar la plantilla de jugadores y la ficha de cada partido.</div>
             </div>
             <div class="col-md-4">
                 <label class="form-label small fw-semibold">Subtítulo</label>
@@ -311,6 +322,7 @@ require __DIR__ . '/includes/admin_layout_top.php';
             <div class="card-suave p-3 h-100 d-flex flex-column <?= ($_SESSION['torneo_activo_id'] ?? null) === $t['id'] ? 'border border-2' : '' ?>" style="<?= ($_SESSION['torneo_activo_id'] ?? null) === $t['id'] ? 'border-color:var(--color-primario) !important;' : '' ?>">
                 <div class="d-flex align-items-center gap-2 mb-2">
                     <span class="badge rounded-pill text-bg-light border small"><?= $t['deporte'] === 'futbol' ? '⚽ Fútbol' : '🏀 Basketball' ?></span>
+                    <?php if (($t['modo'] ?? 'copa') === 'liga'): ?><span class="badge rounded-pill text-bg-light border small">Liga</span><?php endif; ?>
                     <?php if (!$t['activo']): ?><span class="badge rounded-pill text-bg-secondary small">Inactiva</span><?php endif; ?>
                     <?php if ($t['es_predeterminado']): ?><span class="badge rounded-pill text-bg-warning small">Predeterminada</span><?php endif; ?>
                 </div>

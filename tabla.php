@@ -8,7 +8,9 @@ require_once __DIR__ . '/includes/torneo_actual.php';
 
 $equipos = db_leer('equipos', $torneo['id']);
 $partidos = db_leer('partidos', $torneo['id']);
-$tabla = calcular_tabla($equipos, $partidos, $torneo);
+$esLiga = ($torneo['modo'] ?? 'copa') === 'liga';
+$eventos = $esLiga ? db_leer('partido_eventos', $torneo['id']) : [];
+$tabla = calcular_tabla($equipos, $partidos, $torneo, $eventos);
 
 $explicacionPuntos = $torneo['permite_empates']
     ? "PTS = {$torneo['puntos_victoria']} por victoria + {$torneo['puntos_empate']} por empate + {$torneo['puntos_derrota']} por derrota"
@@ -43,6 +45,7 @@ require __DIR__ . '/includes/layout_top.php';
                         <th class="text-center">PF</th>
                         <th class="text-center">PC</th>
                         <th class="text-center">DIF</th>
+                        <?php if ($esLiga): ?><th class="text-center">TA</th><th class="text-center">TR</th><?php endif; ?>
                         <th class="text-center">PTS</th>
                         <th>Racha</th>
                     </tr>
@@ -70,6 +73,10 @@ require __DIR__ . '/includes/layout_top.php';
                         <td class="text-center" data-label="PF"><?= $fila['pf'] ?></td>
                         <td class="text-center" data-label="PC"><?= $fila['pc'] ?></td>
                         <td class="text-center fw-semibold <?= $fila['dif'] >= 0 ? 'text-success' : 'text-danger' ?>" data-label="DIF"><?= $fila['dif'] >= 0 ? '+' : '' ?><?= $fila['dif'] ?></td>
+                        <?php if ($esLiga): ?>
+                        <td class="text-center" data-label="TA"><?= $fila['tarjetas_amarillas'] ?></td>
+                        <td class="text-center" data-label="TR"><?= $fila['tarjetas_rojas'] ?></td>
+                        <?php endif; ?>
                         <td class="text-center fw-bold" data-label="PTS"><?= $fila['pts'] ?></td>
                         <td data-label="Racha">
                             <?php if (empty($fila['racha'])): ?>

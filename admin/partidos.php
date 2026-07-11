@@ -28,6 +28,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id = (int) $_POST['id'];
         $partidos = array_values(array_filter($partidos, fn($p) => $p['id'] !== $id));
         db_guardar('partidos', $partidos, $torneo['id']);
+        if (($torneo['modo'] ?? 'copa') === 'liga') {
+            db_guardar_eventos_partido($torneo['id'], $id, []);
+        }
         redirigir_con_mensaje(url('admin/partidos.php'), 'success', 'Encuentro eliminado correctamente.');
     }
 
@@ -72,6 +75,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'marcador_local' => $estado === 'jugado' ? $marcadorLocal : null,
                 'marcador_visitante' => $estado === 'jugado' ? $marcadorVisitante : null,
                 'fase' => $fase,
+                'arbitro' => trim((string) ($_POST['arbitro'] ?? '')),
+                'observaciones' => trim((string) ($_POST['observaciones'] ?? '')),
             ];
 
             if ($id > 0) {
@@ -191,6 +196,15 @@ require __DIR__ . '/includes/admin_layout_top.php';
                 <label class="form-label small fw-semibold">Marcador visitante</label>
                 <input type="number" min="0" name="marcador_visitante" class="form-control" value="<?= e((string) ($partidoEditar['marcador_visitante'] ?? '')) ?>">
             </div>
+
+            <div class="col-md-6">
+                <label class="form-label small fw-semibold">Árbitro (opcional)</label>
+                <input type="text" name="arbitro" class="form-control" value="<?= e($partidoEditar['arbitro'] ?? '') ?>">
+            </div>
+            <div class="col-12">
+                <label class="form-label small fw-semibold">Observaciones (opcional)</label>
+                <textarea name="observaciones" class="form-control" rows="2"><?= e($partidoEditar['observaciones'] ?? '') ?></textarea>
+            </div>
         </div>
 
         <div class="d-flex gap-2 mt-4">
@@ -219,7 +233,7 @@ require __DIR__ . '/includes/admin_layout_top.php';
             <h6 class="text-muted text-uppercase small fw-bold mb-2 mt-4">Jornada <?= $numJornada ?></h6>
             <div class="row row-cols-1 row-cols-lg-2 g-3 mb-2">
                 <?php foreach ($lista as $p): ?>
-                    <?= admin_tarjeta_partido($p, $equiposPorId) ?>
+                    <?= admin_tarjeta_partido($p, $equiposPorId, $torneo) ?>
                 <?php endforeach; ?>
             </div>
             <?php endforeach; ?>
@@ -242,7 +256,7 @@ require __DIR__ . '/includes/admin_layout_top.php';
             <?php else: ?>
                 <div class="row row-cols-1 row-cols-lg-2 g-3">
                     <?php foreach ($playoffsPorFase[$f] as $p): ?>
-                        <?= admin_tarjeta_partido($p, $equiposPorId) ?>
+                        <?= admin_tarjeta_partido($p, $equiposPorId, $torneo) ?>
                     <?php endforeach; ?>
                 </div>
             <?php endif; ?>

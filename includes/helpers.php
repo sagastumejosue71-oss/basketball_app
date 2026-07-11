@@ -106,7 +106,7 @@ function badge_patrocinador(array $patrocinador): string
  * Tarjeta de un encuentro para las listas del panel admin (fase de grupos y playoffs comparten el mismo diseño).
  * Requiere sesión con csrf_token() disponible.
  */
-function admin_tarjeta_partido(array $p, array $equiposPorId): string
+function admin_tarjeta_partido(array $p, array $equiposPorId, ?array $torneo = null): string
 {
     $local = $equiposPorId[$p['equipo_local']] ?? null;
     $visit = $equiposPorId[$p['equipo_visitante']] ?? null;
@@ -133,6 +133,12 @@ function admin_tarjeta_partido(array $p, array $equiposPorId): string
     $csrf = e(csrf_token());
     $id = (int) $p['id'];
 
+    $botonEventos = '';
+    if (($torneo['modo'] ?? 'copa') === 'liga' && $jugado) {
+        $urlEventos = e(url('admin/partido_eventos.php?partido_id=' . $id));
+        $botonEventos = "<a href=\"{$urlEventos}\" class=\"btn btn-sm btn-outline-secondary\" title=\"Goles, tarjetas y cambios\"><i class=\"bi bi-clipboard-data\"></i> Eventos</a>";
+    }
+
     return <<<HTML
 <div class="col">
     <div class="card-suave p-3">
@@ -148,6 +154,7 @@ function admin_tarjeta_partido(array $p, array $equiposPorId): string
         <div class="d-flex justify-content-between align-items-center">
             <span class="small text-muted"><i class="bi bi-geo-alt me-1"></i>{$cancha}</span>
             <div class="d-flex gap-1">
+                {$botonEventos}
                 <a href="{$urlEditar}" class="btn btn-sm btn-outline-secondary">{$botonEditar}</a>
                 <form method="post" data-confirm="¿Eliminar este encuentro?">
                     <input type="hidden" name="csrf_token" value="{$csrf}">

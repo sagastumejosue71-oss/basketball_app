@@ -20,9 +20,11 @@ const FASES_LABEL = [
  * basketball y fútbol se califican distinto.
  *
  * @param array $reglas ['permite_empates' => bool, 'puntos_victoria' => int, 'puntos_empate' => int, 'puntos_derrota' => int]
+ * @param array $eventos Solo modo liga: filas de partido_eventos de toda la copa, para sumar
+ *   tarjetas por equipo. Se deja vacío (default) en modo copa, donde ni siquiera existen.
  * @return array<int, array> Tabla ordenada, cada fila incluye los datos del equipo + estadísticas + posición.
  */
-function calcular_tabla(array $equipos, array $partidos, array $reglas): array
+function calcular_tabla(array $equipos, array $partidos, array $reglas, array $eventos = []): array
 {
     $permiteEmpates = !empty($reglas['permite_empates']);
     $ptsVictoria = (int) ($reglas['puntos_victoria'] ?? 2);
@@ -42,6 +44,8 @@ function calcular_tabla(array $equipos, array $partidos, array $reglas): array
             'pp' => 0,
             'pf' => 0,
             'pc' => 0,
+            'tarjetas_amarillas' => 0,
+            'tarjetas_rojas' => 0,
             'racha' => [],
         ];
     }
@@ -82,6 +86,25 @@ function calcular_tabla(array $equipos, array $partidos, array $reglas): array
             $stats[$localId]['pp']++;
             $stats[$visitId]['racha'][] = 'G';
             $stats[$localId]['racha'][] = 'P';
+        }
+    }
+
+    if ($eventos) {
+        // Solo cuenta tarjetas de partidos de fase de grupos ya jugados (mismo universo que pf/pc).
+        $partidosValidos = array_flip(array_map(fn($p) => (int) $p['id'], $jugados));
+        foreach ($eventos as $evento) {
+            if (!isset($partidosValidos[(int) $evento['partido_id']])) {
+                continue;
+            }
+            $equipoId = (int) $evento['equipo_id'];
+            if (!isset($stats[$equipoId])) {
+                continue;
+            }
+            if ($evento['tipo'] === 'amarilla') {
+                $stats[$equipoId]['tarjetas_amarillas']++;
+            } elseif ($evento['tipo'] === 'roja') {
+                $stats[$equipoId]['tarjetas_rojas']++;
+            }
         }
     }
 

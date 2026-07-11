@@ -40,6 +40,10 @@ CREATE TABLE IF NOT EXISTS torneos (
 -- respalda con un usuario_id/codigo y luego pone estas columnas NOT NULL.
 ALTER TABLE torneos ADD COLUMN IF NOT EXISTS usuario_id INTEGER;
 ALTER TABLE torneos ADD COLUMN IF NOT EXISTS codigo TEXT UNIQUE;
+-- 'copa' (formato clásico, marcador final) | 'liga' (además lleva plantilla de jugadores
+-- y ficha de partido: goles/tarjetas/cambios). Con DEFAULT, las copas ya existentes
+-- quedan en 'copa' automáticamente, sin necesitar backfill.
+ALTER TABLE torneos ADD COLUMN IF NOT EXISTS modo TEXT NOT NULL DEFAULT 'copa';
 
 CREATE TABLE IF NOT EXISTS equipos (
     id INTEGER PRIMARY KEY,
@@ -56,6 +60,19 @@ CREATE TABLE IF NOT EXISTS equipos (
 );
 -- Migración aditiva para la tabla que ya existía en producción (sin torneo_id todavía)
 ALTER TABLE equipos ADD COLUMN IF NOT EXISTS torneo_id INTEGER REFERENCES torneos(id) ON DELETE CASCADE;
+
+-- Solo se usa en modo 'liga': plantilla de jugadores por equipo (dorsal + nombre), reutilizada
+-- en todos los partidos de la temporada. Sin FK a equipos(id) a propósito, mismo criterio que
+-- ya usa este esquema (p.ej. partidos.equipo_local tampoco referencia equipos.id): la
+-- integridad se valida en PHP, no en SQL.
+CREATE TABLE IF NOT EXISTS jugadores (
+    id INTEGER PRIMARY KEY,
+    torneo_id INTEGER NOT NULL REFERENCES torneos(id) ON DELETE CASCADE,
+    equipo_id INTEGER NOT NULL,
+    dorsal TEXT NOT NULL,
+    nombre TEXT NOT NULL,
+    activo BOOLEAN NOT NULL DEFAULT TRUE
+);
 
 CREATE TABLE IF NOT EXISTS partidos (
     id INTEGER PRIMARY KEY,
@@ -74,6 +91,26 @@ CREATE TABLE IF NOT EXISTS partidos (
 );
 ALTER TABLE partidos ADD COLUMN IF NOT EXISTS fase TEXT NOT NULL DEFAULT 'grupos';
 ALTER TABLE partidos ADD COLUMN IF NOT EXISTS torneo_id INTEGER REFERENCES torneos(id) ON DELETE CASCADE;
+ALTER TABLE partidos ADD COLUMN IF NOT EXISTS arbitro TEXT NOT NULL DEFAULT '';
+ALTER TABLE partidos ADD COLUMN IF NOT EXISTS observaciones TEXT NOT NULL DEFAULT '';
+
+-- Solo se usa en modo 'liga': ficha del partido (goles, tarjetas, cambios), cargada por el admin
+-- después de jugado. tipo = 'gol' | 'amarilla' | 'roja' | 'cambio'. jugador_entra_id solo aplica
+-- a 'cambio'; tipo_gol y asistencia_jugador_id solo a 'gol'; motivo solo a las tarjetas. Sin FK a
+-- partidos(id)/jugadores(id) a propósito, mismo criterio que el resto del esquema.
+CREATE TABLE IF NOT EXISTS partido_eventos (
+    id INTEGER PRIMARY KEY,
+    torneo_id INTEGER NOT NULL REFERENCES torneos(id) ON DELETE CASCADE,
+    partido_id INTEGER NOT NULL,
+    tipo TEXT NOT NULL,
+    equipo_id INTEGER NOT NULL,
+    jugador_id INTEGER,
+    jugador_entra_id INTEGER,
+    minuto INTEGER,
+    tipo_gol TEXT,
+    asistencia_jugador_id INTEGER,
+    motivo TEXT
+);
 
 CREATE TABLE IF NOT EXISTS patrocinadores (
     id INTEGER PRIMARY KEY,

@@ -8,9 +8,11 @@ const TABLAS_SINGLETON = ['organizador'];
 
 const COLUMNAS_POR_TABLA = [
     'equipos' => ['id', 'torneo_id', 'nombre', 'ciudad', 'sede', 'entrenador', 'fundacion', 'color_primario', 'color_secundario', 'logo', 'descripcion'],
-    'partidos' => ['id', 'torneo_id', 'jornada', 'equipo_local', 'equipo_visitante', 'fecha', 'hora', 'cancha', 'estado', 'marcador_local', 'marcador_visitante', 'fase'],
+    'partidos' => ['id', 'torneo_id', 'jornada', 'equipo_local', 'equipo_visitante', 'fecha', 'hora', 'cancha', 'estado', 'marcador_local', 'marcador_visitante', 'fase', 'arbitro', 'observaciones'],
     'patrocinadores' => ['id', 'torneo_id', 'nombre', 'nivel', 'url', 'logo', 'orden'],
     'comentarios' => ['id', 'torneo_id', 'mensaje', 'fecha', 'leido'],
+    'jugadores' => ['id', 'torneo_id', 'equipo_id', 'dorsal', 'nombre', 'activo'],
+    'partido_eventos' => ['id', 'torneo_id', 'partido_id', 'tipo', 'equipo_id', 'jugador_id', 'jugador_entra_id', 'minuto', 'tipo_gol', 'asistencia_jugador_id', 'motivo'],
 ];
 
 const COLUMNAS_ENTERAS_POR_TABLA = [
@@ -18,13 +20,22 @@ const COLUMNAS_ENTERAS_POR_TABLA = [
     'partidos' => ['id', 'torneo_id', 'jornada', 'equipo_local', 'equipo_visitante', 'marcador_local', 'marcador_visitante'],
     'patrocinadores' => ['id', 'torneo_id', 'orden'],
     'comentarios' => ['id', 'torneo_id'],
+    'jugadores' => ['id', 'torneo_id', 'equipo_id'],
+    'partido_eventos' => ['id', 'torneo_id', 'partido_id', 'equipo_id', 'jugador_id', 'jugador_entra_id', 'minuto', 'asistencia_jugador_id'],
+];
+
+// Columnas boolean reales (no INTEGER 0/1 como comentarios.leido): con prepares emulados,
+// Postgres no castea implícitamente un entero a boolean, así que estas se mandan como texto
+// 'true'/'false', igual que ya hace torneos_guardar() con sus columnas booleanas.
+const COLUMNAS_BOOLEANAS_POR_TABLA = [
+    'jugadores' => ['activo'],
 ];
 
 const COLUMNAS_TORNEO = [
     'slug', 'nombre', 'subtitulo', 'temporada', 'descripcion', 'sede_principal', 'logo',
     'color_primario', 'color_secundario', 'color_acento', 'fecha_inicio', 'fecha_fin', 'formato',
     'instagram', 'hero_frase', 'deporte', 'num_equipos', 'fases_playoff', 'permite_empates',
-    'puntos_victoria', 'puntos_empate', 'puntos_derrota', 'es_predeterminado', 'activo',
+    'puntos_victoria', 'puntos_empate', 'puntos_derrota', 'es_predeterminado', 'activo', 'modo',
 ];
 
 /**
@@ -85,6 +96,10 @@ function db_normalizar_fila(string $tabla, array $fila): array
 
     if ($tabla === 'comentarios' && array_key_exists('leido', $fila)) {
         $fila['leido'] = (bool) (int) $fila['leido'];
+    }
+
+    if ($tabla === 'jugadores' && array_key_exists('activo', $fila)) {
+        $fila['activo'] = is_string($fila['activo']) ? ($fila['activo'] === 't' || $fila['activo'] === '1') : (bool) $fila['activo'];
     }
 
     return $fila;
@@ -191,6 +206,67 @@ function db_guardar_coleccion(PDO $pdo, string $tabla, array $registros, int $to
                 // torneo_id siempre viene del parámetro, no del array, para que ningún llamado
                 // pueda "escaparse" a otra copa por accidente.
                 $valor = $col === 'torneo_id' ? $torneoId : ($registro[$col] ?? null);
+                if (in_array($col, COLUMNAS_BOOLEANAS_POR_TABLA[$tabla] ?? [], true)) {
+                    $valor = !empty($valor) ? 'true' : 'false';
+                }
+                db_bind($stmt, ":{$col}", $valor);
+            }
+            $stmt->execute();
+        }
+        $pdo->commit();
+    } catch (Throwable $e) {
+        $pdo->rollBack();
+        throw $e;
+    }
+
+    return true;
+}
+
+/**
+ * partido_eventos NO usa db_leer()/db_guardar_coleccion(): esas funciones borran y reescriben
+ * TODA la tabla del torneo, lo que aquí sería reescribir los eventos de TODOS los partidos de
+ * la temporada cada vez que se agrega un solo gol o tarjeta a UNO de ellos (riesgo de choque si
+ * hay dos partidos editándose a la vez, y un costo innecesario). En su lugar, estas dos funciones
+ * acotan el DELETE+INSERT a un partido puntual, forzando torneo_id y partido_id siempre desde los
+ * parámetros (nunca del array), mismo principio de seguridad que db_guardar_coleccion().
+ */
+function db_leer_eventos_partido(int $torneoId, int $partidoId): array
+{
+    $pdo = db_conexion();
+    $stmt = $pdo->prepare('SELECT * FROM partido_eventos WHERE torneo_id = :torneo_id AND partido_id = :partido_id ORDER BY id');
+    $stmt->bindValue(':torneo_id', $torneoId, PDO::PARAM_INT);
+    $stmt->bindValue(':partido_id', $partidoId, PDO::PARAM_INT);
+    $stmt->execute();
+    $filas = $stmt->fetchAll();
+    return array_map(fn($fila) => db_normalizar_fila('partido_eventos', $fila), $filas);
+}
+
+function db_guardar_eventos_partido(int $torneoId, int $partidoId, array $eventos): bool
+{
+    $pdo = db_conexion();
+    $columnas = COLUMNAS_POR_TABLA['partido_eventos'];
+    $marcadores = array_map(fn($c) => ":{$c}", $columnas);
+    $sql = sprintf(
+        'INSERT INTO partido_eventos (%s) VALUES (%s)',
+        implode(', ', $columnas),
+        implode(', ', $marcadores)
+    );
+
+    $pdo->beginTransaction();
+    try {
+        $stmtBorrar = $pdo->prepare('DELETE FROM partido_eventos WHERE torneo_id = :torneo_id AND partido_id = :partido_id');
+        $stmtBorrar->bindValue(':torneo_id', $torneoId, PDO::PARAM_INT);
+        $stmtBorrar->bindValue(':partido_id', $partidoId, PDO::PARAM_INT);
+        $stmtBorrar->execute();
+
+        $stmt = $pdo->prepare($sql);
+        foreach ($eventos as $evento) {
+            foreach ($columnas as $col) {
+                $valor = match ($col) {
+                    'torneo_id' => $torneoId,
+                    'partido_id' => $partidoId,
+                    default => $evento[$col] ?? null,
+                };
                 db_bind($stmt, ":{$col}", $valor);
             }
             $stmt->execute();

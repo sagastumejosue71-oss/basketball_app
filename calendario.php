@@ -42,7 +42,7 @@ $titulo_pagina = 'Calendario — ' . $torneo['nombre'];
 $pagina_activa = 'calendario';
 require __DIR__ . '/includes/layout_top.php';
 
-function tarjeta_partido_publica(array $p, array $equiposPorId): void
+function tarjeta_partido_publica(array $p, array $equiposPorId, ?array $torneo = null): void
 {
     $local = $equiposPorId[$p['equipo_local']] ?? null;
     $visit = $equiposPorId[$p['equipo_visitante']] ?? null;
@@ -50,9 +50,10 @@ function tarjeta_partido_publica(array $p, array $equiposPorId): void
         return;
     }
     $jugado = $p['estado'] === 'jugado';
+    $clicable = ($torneo['modo'] ?? 'copa') === 'liga' && $jugado;
     ?>
     <div class="col">
-        <div class="partido-card h-100">
+        <div class="partido-card h-100 <?= $clicable ? 'fila-clicable' : '' ?>" <?= $clicable ? 'data-href="' . e(url_copa('partido.php?id=' . $p['id'])) . '"' : '' ?>>
             <div class="d-flex justify-content-between align-items-center mb-2">
                 <span class="small text-muted"><i class="bi bi-calendar3 me-1"></i><?= formatear_fecha_larga($p['fecha']) ?> · <?= e($p['hora']) ?></span>
                 <?php if ($jugado): ?>
@@ -112,7 +113,7 @@ function tarjeta_partido_publica(array $p, array $equiposPorId): void
                     <?php endforeach; ?>
                 </div>
                 <div class="row row-cols-1 row-cols-lg-2 g-3">
-                    <?php foreach ($jornadas[$jornadaSeleccionada] as $p): tarjeta_partido_publica($p, $equiposPorId); ?>
+                    <?php foreach ($jornadas[$jornadaSeleccionada] as $p): tarjeta_partido_publica($p, $equiposPorId, $torneo); ?>
                     <?php endforeach; ?>
                 </div>
             <?php endif; ?>
@@ -127,7 +128,7 @@ function tarjeta_partido_publica(array $p, array $equiposPorId): void
                 </div>
             <?php else: ?>
                 <div class="row row-cols-1 row-cols-lg-2 g-3">
-                    <?php foreach ($playoffsPorFase[$faseSeleccionada] as $p): tarjeta_partido_publica($p, $equiposPorId); ?>
+                    <?php foreach ($playoffsPorFase[$faseSeleccionada] as $p): tarjeta_partido_publica($p, $equiposPorId, $torneo); ?>
                     <?php endforeach; ?>
                 </div>
             <?php endif; ?>

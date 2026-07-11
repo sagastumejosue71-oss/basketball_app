@@ -96,9 +96,9 @@ require __DIR__ . '/includes/layout_top.php';
 
         <h4 class="mb-3">Partidos de <?= e($equipo['nombre']) ?></h4>
         <div class="row row-cols-1 row-cols-lg-2 g-3">
-            <?php foreach ($partidosEquipo as $p): $local = $equiposPorId[$p['equipo_local']]; $visit = $equiposPorId[$p['equipo_visitante']]; $jugado = $p['estado'] === 'jugado'; ?>
+            <?php foreach ($partidosEquipo as $p): $local = $equiposPorId[$p['equipo_local']]; $visit = $equiposPorId[$p['equipo_visitante']]; $jugado = $p['estado'] === 'jugado'; $clicable = ($torneo['modo'] ?? 'copa') === 'liga' && $jugado; ?>
             <div class="col">
-                <div class="partido-card h-100">
+                <div class="partido-card h-100 <?= $clicable ? 'fila-clicable' : '' ?>" <?= $clicable ? 'data-href="' . e(url_copa('partido.php?id=' . $p['id'])) . '"' : '' ?>>
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <span class="badge-jornada">Jornada <?= $p['jornada'] ?></span>
                         <span class="small text-muted"><?= formatear_fecha_larga($p['fecha']) ?></span>
