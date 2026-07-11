@@ -41,6 +41,12 @@ $amarillas = array_values(array_filter($eventos, fn($e) => $e['tipo'] === 'amari
 $rojas = array_values(array_filter($eventos, fn($e) => $e['tipo'] === 'roja'));
 $cambios = array_values(array_filter($eventos, fn($e) => $e['tipo'] === 'cambio'));
 
+// El admin puede ir cargando goles/tarjetas/cambios desde antes de marcar el partido como
+// "jugado" (se captura el marcador al final). La ficha/descarga debe estar disponible en
+// cuanto haya algo que mostrar, no solo cuando el estado ya es "jugado" — si no, el botón
+// "Descargar PDF" de la pantalla de Eventos manda a una página vacía sin nada para imprimir.
+$hayFicha = $jugado || !empty($eventos) || !empty($partido['observaciones']);
+
 // Para la ficha imprimible (ver .solo-impresion más abajo): "-" cuando el dato no aplica,
 // para que se vea como un formulario lleno a mano, no como una página web recortada.
 function ficha_valor(?string $valor): string
@@ -79,7 +85,7 @@ require __DIR__ . '/includes/layout_top.php';
             <i class="bi bi-geo-alt me-1"></i><?= e($partido['cancha']) ?>
             <?php if (!empty($partido['arbitro'])): ?> · <i class="bi bi-person-badge me-1"></i>Árbitro: <?= e($partido['arbitro']) ?><?php endif; ?>
         </p>
-        <?php if ($jugado): ?>
+        <?php if ($hayFicha): ?>
         <div class="text-center mt-3">
             <button type="button" class="btn btn-outline-luz btn-sm rounded-pill px-3 btn-imprimir-pdf"><i class="bi bi-download me-1"></i>Descargar PDF</button>
         </div>
@@ -89,7 +95,7 @@ require __DIR__ . '/includes/layout_top.php';
 
 <section class="seccion pt-4">
     <div class="container" style="max-width:760px;">
-        <?php if (!$jugado): ?>
+        <?php if (!$hayFicha): ?>
             <div class="card-suave p-4 text-center text-muted">
                 <i class="bi bi-clock-history fs-3 d-block mb-2 opacity-50"></i>
                 Este partido todavía no se ha jugado.
@@ -253,7 +259,7 @@ require __DIR__ . '/includes/layout_top.php';
     </div>
 </div>
 
-<?php if ($jugado && ($_GET['imprimir'] ?? '') === '1'): ?>
+<?php if ($hayFicha && ($_GET['imprimir'] ?? '') === '1'): ?>
 <script>
     // Se llega aquí desde el botón "Descargar PDF" del panel admin: en vez de
     // obligar a un segundo clic en esta página, se abre directo el diálogo de
