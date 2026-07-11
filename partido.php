@@ -177,7 +177,7 @@ require __DIR__ . '/includes/layout_top.php';
         </tr>
         <tr>
             <td><strong>Cancha</strong></td><td><?= ficha_valor($partido['cancha']) ?></td>
-            <td><strong>Árbitro</strong></td><td><?= ficha_valor($partido['arbitro']) ?></td>
+            <td><strong>Árbitro</strong></td><td><?= empty($partido['arbitro']) ? '<span class="ficha-linea-blanco"></span>' : e($partido['arbitro']) ?></td>
         </tr>
     </table>
 
@@ -252,5 +252,16 @@ require __DIR__ . '/includes/layout_top.php';
         <div class="ficha-firma-linea">Firma del árbitro</div>
     </div>
 </div>
+
+<?php if ($jugado && ($_GET['imprimir'] ?? '') === '1'): ?>
+<script>
+    // Se llega aquí desde el botón "Descargar PDF" del panel admin: en vez de
+    // obligar a un segundo clic en esta página, se abre directo el diálogo de
+    // impresión del navegador con la ficha ya lista.
+    window.addEventListener('load', function () {
+        window.print();
+    });
+</script>
+<?php endif; ?>
 
 <?php require __DIR__ . '/includes/layout_bottom.php'; ?>

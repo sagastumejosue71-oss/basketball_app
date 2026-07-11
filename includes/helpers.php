@@ -143,7 +143,7 @@ function admin_tarjeta_partido(array $p, array $equiposPorId, ?array $torneo = n
         $botonEventos = "<a href=\"{$urlEventos}\" class=\"btn btn-sm btn-outline-secondary\" title=\"Goles, tarjetas y cambios\"><i class=\"bi bi-clipboard-data\"></i> Eventos</a>";
 
         if ($jugado) {
-            $urlDescargar = e(url_copa('partido.php?id=' . $id));
+            $urlDescargar = e(url_copa('partido.php?id=' . $id . '&imprimir=1'));
             $botonDescargar = "<a href=\"{$urlDescargar}\" target=\"_blank\" class=\"btn btn-sm btn-outline-secondary\" title=\"Descargar ficha en PDF\"><i class=\"bi bi-download\"></i></a>";
         }
     }
