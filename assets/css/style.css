@@ -252,13 +252,18 @@ h1, h2, h3, h4, h5, h6, .fw-heading {
 }
 
 /* Un solo balón centrado (hero de cada copa/liga individual), a diferencia de los
-   dos balones superpuestos y fijos en tamaño de la portada general. */
+   dos balones superpuestos y fijos en tamaño de la portada general. Centrado con
+   márgenes negativos (no con transform: translate) a propósito: la animación
+   "flotar" también anima la propiedad transform, y como un elemento solo puede
+   tener un valor de transform a la vez, translate(-50%,-50%) quedaba pisado por
+   la animación y el balón terminaba centrado por su esquina, no por su centro
+   -viéndose desplazado hacia abajo, pegado a la sección blanca siguiente-. */
 .balon-hero-solo {
-    top: 38%;
+    top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
     width: clamp(170px, 32vw, 280px);
     height: clamp(170px, 32vw, 280px);
+    margin: calc(clamp(170px, 32vw, 280px) / -2) 0 0 calc(clamp(170px, 32vw, 280px) / -2);
 }
 
 /* ---------- Secciones ---------- */
