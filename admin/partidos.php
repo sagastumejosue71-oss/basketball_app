@@ -70,6 +70,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         redirigir_con_mensaje(url('admin/partidos.php'), 'success', 'Encuentro marcado como jugado.');
     }
 
+    // Cuadro de marcador directo en la tarjeta del encuentro (sin abrir el formulario
+    // completo). Capturar un marcador siempre marca el encuentro como jugado.
+    if (($_POST['accion'] ?? '') === 'guardar_marcador') {
+        $id = (int) $_POST['id'];
+        $partidoActual = db_buscar_por_id($partidos, $id);
+        if ($partidoActual === null) {
+            redirigir_con_mensaje(url('admin/partidos.php'), 'error', 'Encuentro no encontrado.');
+        }
+
+        $marcadorLocal = $_POST['marcador_local'] !== '' ? (int) $_POST['marcador_local'] : null;
+        $marcadorVisitante = $_POST['marcador_visitante'] !== '' ? (int) $_POST['marcador_visitante'] : null;
+
+        if ($marcadorLocal === null || $marcadorVisitante === null) {
+            redirigir_con_mensaje(url('admin/partidos.php'), 'error', 'Captura el marcador de ambos equipos.');
+        }
+        if ($marcadorLocal === $marcadorVisitante && !$torneo['permite_empates']) {
+            redirigir_con_mensaje(url('admin/partidos.php'), 'error', 'Esta copa no permite empates: los marcadores no pueden ser iguales.');
+        }
+
+        foreach ($partidos as &$p) {
+            if ($p['id'] === $id) {
+                $p['marcador_local'] = $marcadorLocal;
+                $p['marcador_visitante'] = $marcadorVisitante;
+                $p['estado'] = 'jugado';
+            }
+        }
+        unset($p);
+        db_guardar('partidos', $partidos, $torneo['id']);
+        redirigir_con_mensaje(url('admin/partidos.php'), 'success', 'Marcador guardado.');
+    }
+
     if (($_POST['accion'] ?? '') === 'guardar') {
         $id = (int) ($_POST['id'] ?? 0);
         $local = (int) $_POST['equipo_local'];
@@ -90,6 +121,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $marcadorLocal = $_POST['marcador_local'] !== '' ? (int) $_POST['marcador_local'] : null;
         $marcadorVisitante = $_POST['marcador_visitante'] !== '' ? (int) $_POST['marcador_visitante'] : null;
+
+        // Si se capturó el marcador de ambos equipos, el encuentro se da por jugado aunque
+        // no se haya tocado el selector de Estado a mano — si no, un marcador capturado se
+        // perdía en silencio porque más abajo solo se guarda cuando estado === 'jugado'.
+        if ($marcadorLocal !== null && $marcadorVisitante !== null) {
+            $estado = 'jugado';
+        }
 
         if ($estado === 'jugado') {
             if ($marcadorLocal === null || $marcadorVisitante === null) {

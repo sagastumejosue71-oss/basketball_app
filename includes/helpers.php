@@ -122,9 +122,8 @@ function admin_tarjeta_partido(array $p, array $equiposPorId, ?array $torneo = n
     $logoVisit = logo_equipo($visit, 40);
     $nombreLocal = e($local['nombre']);
     $nombreVisit = e($visit['nombre']);
-    $marcador = $jugado ? e((string) $p['marcador_local']) . ' - ' . e((string) $p['marcador_visitante']) : 'VS';
     $badgeEstado = $jugado
-        ? '<span class="badge badge-estado-jugado rounded-pill px-2 py-1 small">Finalizado</span>'
+        ? '<span class="badge badge-estado-jugado rounded-pill px-2 py-1 small">Jugado</span>'
         : '<span class="badge badge-estado-programado rounded-pill px-2 py-1 small">Programado</span>';
     $botonEditar = $jugado
         ? '<i class="bi bi-pencil"></i>'
@@ -149,14 +148,33 @@ function admin_tarjeta_partido(array $p, array $equiposPorId, ?array $torneo = n
     }
 
     // Interruptor rápido para marcar jugado/programado sin abrir el formulario completo
-    // (útil a mitad de temporada, cuando hay que ir capturando encuentros seguidos).
+    // (útil a mitad de temporada, cuando hay que ir capturando encuentros seguidos). Lleva
+    // texto visible ("Jugado") porque un switch sin etiqueta no comunica qué hace.
     $toggleChecked = $jugado ? 'checked' : '';
     $toggleJugado = <<<HTML
-<form method="post" class="form-check form-switch mb-0" title="Marcar como jugado">
+<form method="post" class="d-flex align-items-center gap-1 mb-0" title="Marcar como jugado">
     <input type="hidden" name="csrf_token" value="{$csrf}">
     <input type="hidden" name="accion" value="alternar_jugado">
     <input type="hidden" name="id" value="{$id}">
-    <input class="form-check-input" type="checkbox" role="switch" style="cursor:pointer;" onchange="this.form.submit()" {$toggleChecked}>
+    <input class="form-check-input m-0" type="checkbox" role="switch" id="switchJugado{$id}" style="cursor:pointer;" onchange="this.form.submit()" {$toggleChecked}>
+    <label class="form-check-label small text-muted mb-0" for="switchJugado{$id}" style="cursor:pointer;">Jugado</label>
+</form>
+HTML;
+
+    // Cuadro de marcador junto a cada equipo: capturar y guardar aquí marca el
+    // encuentro como jugado automáticamente (antes había que acordarse de cambiar
+    // el selector de Estado aparte, y si no, el marcador capturado se perdía).
+    $valorLocal = $p['marcador_local'] !== null ? (int) $p['marcador_local'] : '';
+    $valorVisit = $p['marcador_visitante'] !== null ? (int) $p['marcador_visitante'] : '';
+    $formMarcador = <<<HTML
+<form method="post" class="d-flex align-items-center gap-2">
+    <input type="hidden" name="csrf_token" value="{$csrf}">
+    <input type="hidden" name="accion" value="guardar_marcador">
+    <input type="hidden" name="id" value="{$id}">
+    <input type="number" min="0" name="marcador_local" value="{$valorLocal}" placeholder="-" class="form-control form-control-lg text-center fw-bold p-1" style="width:60px;">
+    <span class="text-muted">-</span>
+    <input type="number" min="0" name="marcador_visitante" value="{$valorVisit}" placeholder="-" class="form-control form-control-lg text-center fw-bold p-1" style="width:60px;">
+    <button type="submit" class="btn btn-sm btn-outline-success" title="Guardar marcador"><i class="bi bi-check-lg"></i></button>
 </form>
 HTML;
 
@@ -172,7 +190,7 @@ HTML;
         </div>
         <div class="d-flex align-items-center justify-content-between mb-2">
             <div class="equipo-col">{$logoLocal}<span class="nombre">{$nombreLocal}</span></div>
-            <div class="marcador fs-5">{$marcador}</div>
+            {$formMarcador}
             <div class="equipo-col">{$logoVisit}<span class="nombre">{$nombreVisit}</span></div>
         </div>
         <div class="d-flex justify-content-between align-items-center">

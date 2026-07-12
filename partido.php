@@ -5,6 +5,7 @@ require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/helpers.php';
 require_once __DIR__ . '/includes/tabla.php';
 require_once __DIR__ . '/includes/liga.php';
+require_once __DIR__ . '/includes/usuarios.php';
 require_once __DIR__ . '/includes/torneo_actual.php';
 
 $id = (int) ($_GET['id'] ?? 0);
@@ -46,6 +47,13 @@ $cambios = array_values(array_filter($eventos, fn($e) => $e['tipo'] === 'cambio'
 // cuanto haya algo que mostrar, no solo cuando el estado ya es "jugado" — si no, el botón
 // "Descargar PDF" de la pantalla de Eventos manda a una página vacía sin nada para imprimir.
 $hayFicha = $jugado || !empty($eventos) || !empty($partido['observaciones']);
+
+// Para dejar constancia de quién descargó la ficha (control interno): solo aplica si
+// quien la pide tiene sesión de organizador iniciada; un visitante público no queda registrado.
+$usuarioImprime = null;
+if (!empty($_SESSION['usuario_autenticado']) && !empty($_SESSION['usuario_id'])) {
+    $usuarioImprime = usuarios_obtener_por_id((int) $_SESSION['usuario_id']);
+}
 
 // Para la ficha imprimible (ver .solo-impresion más abajo): "-" cuando el dato no aplica,
 // para que se vea como un formulario lleno a mano, no como una página web recortada.
@@ -256,6 +264,14 @@ require __DIR__ . '/includes/layout_top.php';
 
     <div class="ficha-firma">
         <div class="ficha-firma-linea">Firma del árbitro</div>
+    </div>
+
+    <div class="ficha-pie">
+        <?php if ($usuarioImprime): ?>
+        <p>Impreso por: <?= e($usuarioImprime['nombre'] ?: $usuarioImprime['email']) ?> · <?= e(date('d/m/Y H:i')) ?></p>
+        <?php endif; ?>
+        <p>MJ Control Systems · Plataformas web inteligentes, control total de tu negocio.</p>
+        <p>Contrataciones: mjcontrolsystems@gmail.com</p>
     </div>
 </div>
 
