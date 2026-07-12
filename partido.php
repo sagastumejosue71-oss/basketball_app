@@ -32,6 +32,8 @@ if (($torneo['modo'] ?? 'copa') !== 'liga' || !$partido || !$local || !$visit) {
 }
 
 $jugado = $partido['estado'] === 'jugado';
+$deporte = $torneo['deporte'] ?? null;
+$basketball = es_basketball($deporte);
 
 $jugadoresTodos = db_leer('jugadores', $torneo['id']);
 $jugadoresPorId = jugadores_por_id($jugadoresTodos);
@@ -117,10 +119,10 @@ require __DIR__ . '/includes/layout_top.php';
 
             <?php if (!empty($goles)): ?>
             <div class="card-suave p-4 mb-3">
-                <h6 class="text-uppercase small fw-bold text-muted mb-3">⚽ Goles</h6>
+                <h6 class="text-uppercase small fw-bold text-muted mb-3"><?= $basketball ? '🏀' : '⚽' ?> <?= e(etiqueta_anotaciones($deporte)) ?></h6>
                 <ul class="list-unstyled mb-0">
                     <?php foreach ($goles as $ev): ?>
-                    <li class="mb-2 small"><span class="fw-semibold"><?= e($equiposPorId[$ev['equipo_id']]['nombre'] ?? '') ?>:</span> <?= e(evento_descripcion($ev, $jugadoresPorId)) ?></li>
+                    <li class="mb-2 small"><span class="fw-semibold"><?= e($equiposPorId[$ev['equipo_id']]['nombre'] ?? '') ?>:</span> <?= e(evento_descripcion($ev, $jugadoresPorId, $deporte)) ?></li>
                     <?php endforeach; ?>
                 </ul>
             </div>
@@ -128,21 +130,26 @@ require __DIR__ . '/includes/layout_top.php';
 
             <?php if (!empty($amarillas)): ?>
             <div class="card-suave p-4 mb-3">
-                <h6 class="text-uppercase small fw-bold text-muted mb-3">🟨 Tarjetas amarillas</h6>
+                <h6 class="text-uppercase small fw-bold text-muted mb-3">🟨 <?= e(etiqueta_faltas_leves($deporte)) ?></h6>
                 <ul class="list-unstyled mb-0">
                     <?php foreach ($amarillas as $ev): ?>
-                    <li class="mb-2 small"><span class="fw-semibold"><?= e($equiposPorId[$ev['equipo_id']]['nombre'] ?? '') ?>:</span> <?= e(evento_descripcion($ev, $jugadoresPorId)) ?></li>
+                    <li class="mb-2 small"><span class="fw-semibold"><?= e($equiposPorId[$ev['equipo_id']]['nombre'] ?? '') ?>:</span> <?= e(evento_descripcion($ev, $jugadoresPorId, $deporte)) ?></li>
                     <?php endforeach; ?>
                 </ul>
+                <?php if ($basketball): $expulsados = array_filter(faltas_por_jugador($amarillas), fn($n) => $n >= LIMITE_FALTAS_EXPULSION); ?>
+                <?php foreach ($expulsados as $jid => $n): ?>
+                <p class="small text-danger fw-semibold mt-2 mb-0"><i class="bi bi-exclamation-triangle me-1"></i><?= e(jugador_nombre($jugadoresPorId[$jid] ?? null)) ?> expulsado por acumular <?= $n ?> faltas.</p>
+                <?php endforeach; ?>
+                <?php endif; ?>
             </div>
             <?php endif; ?>
 
             <?php if (!empty($rojas)): ?>
             <div class="card-suave p-4 mb-3">
-                <h6 class="text-uppercase small fw-bold text-muted mb-3">🟥 Tarjetas rojas</h6>
+                <h6 class="text-uppercase small fw-bold text-muted mb-3">🟥 <?= e(etiqueta_faltas_graves($deporte)) ?></h6>
                 <ul class="list-unstyled mb-0">
                     <?php foreach ($rojas as $ev): ?>
-                    <li class="mb-2 small"><span class="fw-semibold"><?= e($equiposPorId[$ev['equipo_id']]['nombre'] ?? '') ?>:</span> <?= e(evento_descripcion($ev, $jugadoresPorId)) ?></li>
+                    <li class="mb-2 small"><span class="fw-semibold"><?= e($equiposPorId[$ev['equipo_id']]['nombre'] ?? '') ?>:</span> <?= e(evento_descripcion($ev, $jugadoresPorId, $deporte)) ?></li>
                     <?php endforeach; ?>
                 </ul>
             </div>
@@ -153,7 +160,7 @@ require __DIR__ . '/includes/layout_top.php';
                 <h6 class="text-uppercase small fw-bold text-muted mb-3">🔄 Cambios</h6>
                 <ul class="list-unstyled mb-0">
                     <?php foreach ($cambios as $ev): ?>
-                    <li class="mb-2 small"><span class="fw-semibold"><?= e($equiposPorId[$ev['equipo_id']]['nombre'] ?? '') ?>:</span> <?= e(evento_descripcion($ev, $jugadoresPorId)) ?></li>
+                    <li class="mb-2 small"><span class="fw-semibold"><?= e($equiposPorId[$ev['equipo_id']]['nombre'] ?? '') ?>:</span> <?= e(evento_descripcion($ev, $jugadoresPorId, $deporte)) ?></li>
                     <?php endforeach; ?>
                 </ul>
             </div>
@@ -195,7 +202,7 @@ require __DIR__ . '/includes/layout_top.php';
         </tr>
     </table>
 
-    <h3>⚽ Goles</h3>
+    <h3><?= $basketball ? '🏀' : '⚽' ?> <?= e(etiqueta_anotaciones($deporte)) ?></h3>
     <table class="ficha-tabla">
         <thead><tr><th>Min.</th><th>Equipo</th><th>Jugador</th><th>Tipo</th><th>Asistencia</th></tr></thead>
         <tbody>
@@ -204,15 +211,15 @@ require __DIR__ . '/includes/layout_top.php';
                 <td><?= $ev['minuto'] !== null ? e((string) $ev['minuto']) . "'" : '—' ?></td>
                 <td><?= e($equiposPorId[$ev['equipo_id']]['nombre'] ?? '—') ?></td>
                 <td><?= e(jugador_nombre($jugadoresPorId[(int) ($ev['jugador_id'] ?? 0)] ?? null)) ?></td>
-                <td><?= e(TIPOS_GOL_LABEL[$ev['tipo_gol'] ?? ''] ?? '—') ?></td>
+                <td><?= e(tipos_anotacion_label($deporte)[$ev['tipo_gol'] ?? ''] ?? '—') ?></td>
                 <td><?= !empty($ev['asistencia_jugador_id']) ? e(jugador_nombre($jugadoresPorId[(int) $ev['asistencia_jugador_id']] ?? null)) : '—' ?></td>
             </tr>
             <?php endforeach; ?>
-            <?php if (empty($goles)): ?><tr><td colspan="5">Sin goles registrados.</td></tr><?php endif; ?>
+            <?php if (empty($goles)): ?><tr><td colspan="5">Sin <?= e(mb_strtolower(etiqueta_anotaciones($deporte))) ?> registrados.</td></tr><?php endif; ?>
         </tbody>
     </table>
 
-    <h3>🟨 Tarjetas amarillas</h3>
+    <h3>🟨 <?= e(etiqueta_faltas_leves($deporte)) ?></h3>
     <table class="ficha-tabla">
         <thead><tr><th>Min.</th><th>Equipo</th><th>Jugador</th></tr></thead>
         <tbody>
@@ -223,11 +230,11 @@ require __DIR__ . '/includes/layout_top.php';
                 <td><?= e(jugador_nombre($jugadoresPorId[(int) ($ev['jugador_id'] ?? 0)] ?? null)) ?></td>
             </tr>
             <?php endforeach; ?>
-            <?php if (empty($amarillas)): ?><tr><td colspan="3">Sin tarjetas amarillas registradas.</td></tr><?php endif; ?>
+            <?php if (empty($amarillas)): ?><tr><td colspan="3">Sin <?= e(mb_strtolower(etiqueta_faltas_leves($deporte))) ?> registradas.</td></tr><?php endif; ?>
         </tbody>
     </table>
 
-    <h3>🟥 Tarjetas rojas</h3>
+    <h3>🟥 <?= e(etiqueta_faltas_graves($deporte)) ?></h3>
     <table class="ficha-tabla">
         <thead><tr><th>Min.</th><th>Equipo</th><th>Jugador</th><th>Motivo</th></tr></thead>
         <tbody>
@@ -236,10 +243,10 @@ require __DIR__ . '/includes/layout_top.php';
                 <td><?= $ev['minuto'] !== null ? e((string) $ev['minuto']) . "'" : '—' ?></td>
                 <td><?= e($equiposPorId[$ev['equipo_id']]['nombre'] ?? '—') ?></td>
                 <td><?= e(jugador_nombre($jugadoresPorId[(int) ($ev['jugador_id'] ?? 0)] ?? null)) ?></td>
-                <td><?= e(MOTIVOS_ROJA_LABEL[$ev['motivo'] ?? ''] ?? '—') ?></td>
+                <td><?= e(motivos_falta_grave_label($deporte)[$ev['motivo'] ?? ''] ?? '—') ?></td>
             </tr>
             <?php endforeach; ?>
-            <?php if (empty($rojas)): ?><tr><td colspan="4">Sin tarjetas rojas registradas.</td></tr><?php endif; ?>
+            <?php if (empty($rojas)): ?><tr><td colspan="4">Sin <?= e(mb_strtolower(etiqueta_faltas_graves($deporte))) ?> registradas.</td></tr><?php endif; ?>
         </tbody>
     </table>
 

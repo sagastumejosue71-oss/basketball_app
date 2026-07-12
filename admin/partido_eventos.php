@@ -28,6 +28,8 @@ $jugadoresTodos = db_leer('jugadores', $torneo['id']);
 $jugadoresPorEquipo = jugadores_por_equipo($jugadoresTodos);
 $jugadoresPorId = jugadores_por_id($jugadoresTodos);
 $etJugador = forma_genero($torneo['genero'] ?? null, 'Jugador', 'Jugadora');
+$deporte = $torneo['deporte'] ?? null;
+$basketball = es_basketball($deporte);
 
 $urlLista = url('admin/partido_eventos.php?partido_id=' . $partidoId);
 
@@ -66,12 +68,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!in_array($jugadorId, $rosterEquipo, true)) {
                 redirigir_con_mensaje($urlLista, 'error', forma_genero($torneo['genero'] ?? null, 'Selecciona un jugador válido de ese equipo.', 'Selecciona una jugadora válida de ese equipo.'));
             }
-            $tipoGol = (string) ($_POST['tipo_gol'] ?? 'jugada');
+            $catalogoTipoGol = tipos_anotacion_catalogo($deporte);
+            $tipoGolDefault = $catalogoTipoGol[0];
+            $tipoGol = (string) ($_POST['tipo_gol'] ?? $tipoGolDefault);
             $asistenciaId = (int) ($_POST['asistencia_jugador_id'] ?? 0);
 
             $evento['tipo'] = 'gol';
             $evento['jugador_id'] = $jugadorId;
-            $evento['tipo_gol'] = in_array($tipoGol, TIPOS_GOL_CATALOGO, true) ? $tipoGol : 'jugada';
+            $evento['tipo_gol'] = in_array($tipoGol, $catalogoTipoGol, true) ? $tipoGol : $tipoGolDefault;
             $evento['asistencia_jugador_id'] = in_array($asistenciaId, $rosterEquipo, true) ? $asistenciaId : null;
         }
 
@@ -81,11 +85,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 redirigir_con_mensaje($urlLista, 'error', forma_genero($torneo['genero'] ?? null, 'Selecciona un jugador válido de ese equipo.', 'Selecciona una jugadora válida de ese equipo.'));
             }
             $color = (string) ($_POST['color'] ?? 'amarilla') === 'roja' ? 'roja' : 'amarilla';
-            $motivo = (string) ($_POST['motivo'] ?? 'directa');
+            $catalogoMotivo = motivos_falta_grave_catalogo($deporte);
+            $motivoDefault = $catalogoMotivo[0];
+            $motivo = (string) ($_POST['motivo'] ?? $motivoDefault);
 
             $evento['tipo'] = $color;
             $evento['jugador_id'] = $jugadorId;
-            $evento['motivo'] = $color === 'roja' ? (in_array($motivo, MOTIVOS_ROJA_CATALOGO, true) ? $motivo : 'directa') : null;
+            $evento['motivo'] = $color === 'roja' ? (in_array($motivo, $catalogoMotivo, true) ? $motivo : $motivoDefault) : null;
         }
 
         if ($accion === 'agregar_cambio') {
@@ -131,7 +137,7 @@ require __DIR__ . '/includes/admin_layout_top.php';
 <div class="row g-4">
     <div class="col-lg-5">
         <div class="card-suave p-4 mb-3">
-            <h6 class="text-uppercase small fw-bold text-muted mb-3"><i class="bi bi-dribbble me-1"></i>Agregar gol</h6>
+            <h6 class="text-uppercase small fw-bold text-muted mb-3"><i class="bi bi-dribbble me-1"></i>Agregar <?= e(mb_strtolower(etiqueta_anotacion($deporte))) ?></h6>
             <form method="post" class="row g-2">
                 <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
                 <input type="hidden" name="accion" value="agregar_gol">
@@ -156,8 +162,8 @@ require __DIR__ . '/includes/admin_layout_top.php';
                 </div>
                 <div class="col-8">
                     <select name="tipo_gol" class="form-select form-select-sm">
-                        <?php foreach (TIPOS_GOL_CATALOGO as $tg): ?>
-                        <option value="<?= e($tg) ?>"><?= e(TIPOS_GOL_LABEL[$tg]) ?></option>
+                        <?php foreach (tipos_anotacion_catalogo($deporte) as $tg): ?>
+                        <option value="<?= e($tg) ?>"><?= e(tipos_anotacion_label($deporte)[$tg]) ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -170,13 +176,16 @@ require __DIR__ . '/includes/admin_layout_top.php';
                     </select>
                 </div>
                 <div class="col-12">
-                    <button type="submit" class="btn btn-sm btn-degradado rounded-pill px-3 w-100">Agregar gol</button>
+                    <button type="submit" class="btn btn-sm btn-degradado rounded-pill px-3 w-100">Agregar <?= e(mb_strtolower(etiqueta_anotacion($deporte))) ?></button>
                 </div>
             </form>
         </div>
 
         <div class="card-suave p-4 mb-3">
-            <h6 class="text-uppercase small fw-bold text-muted mb-3"><i class="bi bi-square-fill text-warning"></i><i class="bi bi-square-fill text-danger me-1"></i>Agregar tarjeta (amarilla o roja)</h6>
+            <h6 class="text-uppercase small fw-bold text-muted mb-3"><i class="bi bi-square-fill text-warning"></i><i class="bi bi-square-fill text-danger me-1"></i>Agregar <?= $basketball ? 'falta' : 'tarjeta' ?> (<?= e(mb_strtolower(etiqueta_falta_leve($deporte))) ?> o <?= e(mb_strtolower(etiqueta_falta_grave($deporte))) ?>)</h6>
+            <?php if ($basketball): ?>
+            <p class="small text-muted mb-2">Al llegar a <?= LIMITE_FALTAS_EXPULSION ?> faltas personales en el partido, el jugador queda expulsado automáticamente (regla FIBA).</p>
+            <?php endif; ?>
             <form method="post" class="row g-2">
                 <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
                 <input type="hidden" name="accion" value="agregar_tarjeta">
@@ -201,20 +210,20 @@ require __DIR__ . '/includes/admin_layout_top.php';
                 </div>
                 <div class="col-6">
                     <select name="color" class="form-select form-select-sm">
-                        <option value="amarilla">Amarilla</option>
-                        <option value="roja">Roja</option>
+                        <option value="amarilla"><?= e(etiqueta_falta_leve($deporte)) ?></option>
+                        <option value="roja"><?= e(etiqueta_falta_grave($deporte)) ?></option>
                     </select>
                 </div>
                 <div class="col-6">
                     <select name="motivo" class="form-select form-select-sm">
-                        <?php foreach (MOTIVOS_ROJA_CATALOGO as $mr): ?>
-                        <option value="<?= e($mr) ?>"><?= e(MOTIVOS_ROJA_LABEL[$mr]) ?></option>
+                        <?php foreach (motivos_falta_grave_catalogo($deporte) as $mr): ?>
+                        <option value="<?= e($mr) ?>"><?= e(motivos_falta_grave_label($deporte)[$mr]) ?></option>
                         <?php endforeach; ?>
                     </select>
-                    <div class="form-text">Solo aplica si es roja.</div>
+                    <div class="form-text">Solo aplica si es <?= e(mb_strtolower(etiqueta_falta_grave($deporte))) ?>.</div>
                 </div>
                 <div class="col-12">
-                    <button type="submit" class="btn btn-sm btn-degradado rounded-pill px-3 w-100">Agregar tarjeta</button>
+                    <button type="submit" class="btn btn-sm btn-degradado rounded-pill px-3 w-100">Agregar <?= $basketball ? 'falta' : 'tarjeta' ?></button>
                 </div>
             </form>
         </div>
@@ -259,16 +268,30 @@ require __DIR__ . '/includes/admin_layout_top.php';
     </div>
 
     <div class="col-lg-7">
+        <?php if ($basketball): ?>
+        <?php $faltasPorJugador = faltas_por_jugador($eventos); ?>
+        <?php $expulsados = array_filter($faltasPorJugador, fn($n) => $n >= LIMITE_FALTAS_EXPULSION); ?>
+        <?php if (!empty($expulsados)): ?>
+        <div class="card-suave p-3 mb-3 border border-danger-subtle">
+            <h6 class="text-uppercase small fw-bold text-danger mb-2"><i class="bi bi-exclamation-triangle me-1"></i>Expulsados por faltas</h6>
+            <ul class="list-unstyled mb-0 small">
+                <?php foreach ($expulsados as $jid => $n): $j = $jugadoresPorId[$jid] ?? null; ?>
+                <li><?= e(jugador_nombre($j)) ?> — <?= $n ?> faltas personales</li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+        <?php endif; ?>
+        <?php endif; ?>
         <div class="card-suave p-4">
             <h6 class="text-uppercase small fw-bold text-muted mb-3">Eventos cargados (<?= count($eventos) ?>)</h6>
             <?php if (empty($eventos)): ?>
-                <p class="text-muted small mb-0">Todavía no hay goles, tarjetas ni cambios cargados en este partido.</p>
+                <p class="text-muted small mb-0">Todavía no hay <?= $basketball ? 'puntos, faltas' : 'goles, tarjetas' ?> ni cambios cargados en este partido.</p>
             <?php else: ?>
             <ul class="list-group list-group-flush">
-                <?php $iconosEvento = ['gol' => '⚽', 'amarilla' => '🟨', 'roja' => '🟥', 'cambio' => '🔄']; ?>
+                <?php $iconosEvento = ['gol' => $basketball ? '🏀' : '⚽', 'amarilla' => '🟨', 'roja' => '🟥', 'cambio' => '🔄']; ?>
                 <?php foreach ($eventos as $ev): ?>
                 <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                    <span class="small"><?= $iconosEvento[$ev['tipo']] ?? '' ?> <?= e(evento_descripcion($ev, $jugadoresPorId)) ?> <span class="text-muted">— <?= e($equiposPorId[$ev['equipo_id']]['nombre'] ?? '') ?></span></span>
+                    <span class="small"><?= $iconosEvento[$ev['tipo']] ?? '' ?> <?= e(evento_descripcion($ev, $jugadoresPorId, $deporte)) ?> <span class="text-muted">— <?= e($equiposPorId[$ev['equipo_id']]['nombre'] ?? '') ?></span></span>
                     <form method="post" data-confirm="¿Eliminar este evento?">
                         <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
                         <input type="hidden" name="accion" value="eliminar_evento">

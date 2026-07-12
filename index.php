@@ -34,11 +34,13 @@ foreach ($equipos as $eq) {
 }
 
 $esLiga = ($torneo['modo'] ?? 'copa') === 'liga';
+$deporte = $torneo['deporte'] ?? null;
+$basketball = es_basketball($deporte);
 $topGoleadores = [];
 if ($esLiga) {
     $jugadores = db_leer('jugadores', $torneo['id']);
     $eventos = db_leer('partido_eventos', $torneo['id']);
-    $topGoleadores = array_slice(calcular_goleadores($eventos, $jugadores, $equiposPorId), 0, 5);
+    $topGoleadores = array_slice(calcular_goleadores($eventos, $jugadores, $equiposPorId, $deporte), 0, 5);
 }
 
 $patrocOficiales = array_values(array_filter($patrocinadores, fn($p) => $p['nivel'] === 'oficial'));
@@ -135,7 +137,7 @@ require __DIR__ . '/includes/layout_top.php';
         <div class="d-flex flex-wrap justify-content-between align-items-end mb-4 seccion-titulo">
             <div>
                 <p class="eyebrow mb-1"><?= e(forma_genero($torneo['genero'] ?? null, 'Máximos anotadores', 'Máximas anotadoras')) ?></p>
-                <h2 class="mb-0">Tabla de <?= e(forma_genero($torneo['genero'] ?? null, 'goleadores', 'goleadoras')) ?></h2>
+                <h2 class="mb-0">Tabla de <?= e($basketball ? 'anotación' : forma_genero($torneo['genero'] ?? null, 'goleadores', 'goleadoras')) ?></h2>
             </div>
         </div>
         <div class="table-responsive">
@@ -145,7 +147,7 @@ require __DIR__ . '/includes/layout_top.php';
                         <th>#</th>
                         <th><?= e(forma_genero($torneo['genero'] ?? null, 'Jugador', 'Jugadora')) ?></th>
                         <th>Equipo</th>
-                        <th class="text-center">Goles</th>
+                        <th class="text-center"><?= e(etiqueta_anotaciones($deporte)) ?></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -158,7 +160,7 @@ require __DIR__ . '/includes/layout_top.php';
                             <span class="fw-semibold">#<?= e($g['jugador']['dorsal']) ?> <?= e($g['jugador']['nombre']) ?></span>
                         </td>
                         <td data-label="Equipo"><span class="small text-muted"><?= e($g['equipo']['nombre'] ?? '') ?></span></td>
-                        <td class="text-center fw-bold" data-label="Goles"><?= $g['goles'] ?></td>
+                        <td class="text-center fw-bold" data-label="<?= e(etiqueta_anotaciones($deporte)) ?>"><?= $g['goles'] ?></td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>
