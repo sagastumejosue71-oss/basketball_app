@@ -50,7 +50,10 @@
         </div>
         <hr class="border-secondary opacity-25 my-4">
         <p class="small text-center mb-1 opacity-75">© <?= date('Y') ?> <?= e($torneo['nombre'] ?? 'Plataforma de Copas y Ligas') ?><?= $torneo ? ' · ' . e($torneo['subtitulo']) : '' ?></p>
-        <p class="small text-center mb-0 opacity-50">MJ Control Systems · Plataformas web inteligentes, control total de tu negocio.</p>
+        <div class="d-flex align-items-center justify-content-center gap-2 opacity-50">
+            <img src="<?= url('assets/img/logo-empresa.png') ?>" alt="MJ Control Systems" height="28" width="28" style="object-fit:contain;">
+            <p class="small mb-0">MJ Control Systems · Plataformas web inteligentes, control total de tu negocio.</p>
+        </div>
     </div>
 </footer>
 
