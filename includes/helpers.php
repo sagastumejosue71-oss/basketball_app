@@ -106,7 +106,7 @@ function badge_patrocinador(array $patrocinador): string
  * Tarjeta de un encuentro para las listas del panel admin (fase de grupos y playoffs comparten el mismo diseño).
  * Requiere sesión con csrf_token() disponible.
  */
-function admin_tarjeta_partido(array $p, array $equiposPorId, ?array $torneo = null): string
+function admin_tarjeta_partido(array $p, array $equiposPorId): string
 {
     $local = $equiposPorId[$p['equipo_local']] ?? null;
     $visit = $equiposPorId[$p['equipo_visitante']] ?? null;
@@ -135,16 +135,13 @@ function admin_tarjeta_partido(array $p, array $equiposPorId, ?array $torneo = n
     // Se ofrece desde que se crea el partido (no solo cuando ya está "jugado"): el
     // árbitro/admin suele ir llenando la ficha -goles, tarjetas, cambios- a medida que
     // ocurren, no solo después de capturar el marcador final.
-    $botonEventos = '';
-    $botonDescargar = '';
-    if (($torneo['modo'] ?? 'copa') === 'liga') {
-        $urlEventos = e(url('admin/partido_eventos.php?partido_id=' . $id));
-        $botonEventos = "<a href=\"{$urlEventos}\" class=\"btn btn-sm btn-outline-secondary\" title=\"Goles, tarjetas y cambios\"><i class=\"bi bi-clipboard-data\"></i> Eventos</a>";
+    $urlEventos = e(url('admin/partido_eventos.php?partido_id=' . $id));
+    $botonEventos = "<a href=\"{$urlEventos}\" class=\"btn btn-sm btn-outline-secondary\" title=\"Goles, tarjetas y cambios\"><i class=\"bi bi-clipboard-data\"></i> Eventos</a>";
 
-        if ($jugado) {
-            $urlDescargar = e(url_copa('partido.php?id=' . $id . '&imprimir=1'));
-            $botonDescargar = "<a href=\"{$urlDescargar}\" target=\"_blank\" class=\"btn btn-sm btn-outline-secondary\" title=\"Descargar ficha en PDF\"><i class=\"bi bi-download\"></i></a>";
-        }
+    $botonDescargar = '';
+    if ($jugado) {
+        $urlDescargar = e(url_copa('partido.php?id=' . $id . '&imprimir=1'));
+        $botonDescargar = "<a href=\"{$urlDescargar}\" target=\"_blank\" class=\"btn btn-sm btn-outline-secondary\" title=\"Descargar ficha en PDF\"><i class=\"bi bi-download\"></i></a>";
     }
 
     // Interruptor rápido para marcar jugado/programado sin abrir el formulario completo

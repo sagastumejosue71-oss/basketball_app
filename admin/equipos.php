@@ -29,16 +29,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $partidos = array_values(array_filter($partidos, fn($p) => (int) $p['equipo_local'] !== $id && (int) $p['equipo_visitante'] !== $id));
         db_guardar('partidos', $partidos, $torneo['id']);
 
-        if (($torneo['modo'] ?? 'copa') === 'liga') {
-            // Limpia también la plantilla del equipo y la ficha (goles/tarjetas/cambios) de los
-            // partidos que jugaba, para no dejar referencias huérfanas.
-            $jugadores = db_leer('jugadores', $torneo['id']);
-            $jugadores = array_values(array_filter($jugadores, fn($j) => (int) $j['equipo_id'] !== $id));
-            db_guardar('jugadores', $jugadores, $torneo['id']);
+        // Limpia también la plantilla del equipo y la ficha (goles/tarjetas/cambios) de los
+        // partidos que jugaba, para no dejar referencias huérfanas.
+        $jugadores = db_leer('jugadores', $torneo['id']);
+        $jugadores = array_values(array_filter($jugadores, fn($j) => (int) $j['equipo_id'] !== $id));
+        db_guardar('jugadores', $jugadores, $torneo['id']);
 
-            foreach ($partidosAEliminar as $p) {
-                db_guardar_eventos_partido($torneo['id'], (int) $p['id'], []);
-            }
+        foreach ($partidosAEliminar as $p) {
+            db_guardar_eventos_partido($torneo['id'], (int) $p['id'], []);
         }
 
         if ($equipoAEliminar) {
@@ -178,9 +176,7 @@ require __DIR__ . '/includes/admin_layout_top.php';
                     <div class="small text-muted"><?= e($eq['ciudad']) ?> · <?= e($eq['entrenador']) ?></div>
                 </div>
                 <div class="d-flex flex-column gap-1">
-                    <?php if (($torneo['modo'] ?? 'copa') === 'liga'): ?>
                     <a href="<?= url('admin/jugadores.php?equipo_id=' . $eq['id']) ?>" class="btn btn-sm btn-outline-secondary" title="<?= e(forma_genero($torneo['genero'] ?? null, 'Jugadores', 'Jugadoras')) ?>"><i class="bi bi-people"></i></a>
-                    <?php endif; ?>
                     <a href="<?= url('admin/equipos.php?accion=editar&id=' . $eq['id']) ?>" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
                     <form method="post" data-confirm="¿Eliminar a <?= e($eq['nombre']) ?>? Esta acción no se puede deshacer.">
                         <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">

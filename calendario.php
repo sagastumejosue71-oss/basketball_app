@@ -42,7 +42,7 @@ $titulo_pagina = 'Calendario — ' . $torneo['nombre'];
 $pagina_activa = 'calendario';
 require __DIR__ . '/includes/layout_top.php';
 
-function tarjeta_partido_publica(array $p, array $equiposPorId, ?array $torneo = null): void
+function tarjeta_partido_publica(array $p, array $equiposPorId): void
 {
     $local = $equiposPorId[$p['equipo_local']] ?? null;
     $visit = $equiposPorId[$p['equipo_visitante']] ?? null;
@@ -50,7 +50,7 @@ function tarjeta_partido_publica(array $p, array $equiposPorId, ?array $torneo =
         return;
     }
     $jugado = $p['estado'] === 'jugado';
-    $clicable = ($torneo['modo'] ?? 'copa') === 'liga' && $jugado;
+    $clicable = $jugado;
     ?>
     <div class="col">
         <div class="partido-card h-100 <?= $clicable ? 'fila-clicable' : '' ?>" <?= $clicable ? 'data-href="' . e(url_copa('partido.php?id=' . $p['id'])) . '"' : '' ?>>
@@ -113,7 +113,7 @@ function tarjeta_partido_publica(array $p, array $equiposPorId, ?array $torneo =
                     <?php endforeach; ?>
                 </div>
                 <div class="row row-cols-1 row-cols-lg-2 g-3">
-                    <?php foreach ($jornadas[$jornadaSeleccionada] as $p): tarjeta_partido_publica($p, $equiposPorId, $torneo); ?>
+                    <?php foreach ($jornadas[$jornadaSeleccionada] as $p): tarjeta_partido_publica($p, $equiposPorId); ?>
                     <?php endforeach; ?>
                 </div>
             <?php endif; ?>
@@ -128,7 +128,7 @@ function tarjeta_partido_publica(array $p, array $equiposPorId, ?array $torneo =
                 </div>
             <?php else: ?>
                 <div class="row row-cols-1 row-cols-lg-2 g-3">
-                    <?php foreach ($playoffsPorFase[$faseSeleccionada] as $p): tarjeta_partido_publica($p, $equiposPorId, $torneo); ?>
+                    <?php foreach ($playoffsPorFase[$faseSeleccionada] as $p): tarjeta_partido_publica($p, $equiposPorId); ?>
                     <?php endforeach; ?>
                 </div>
             <?php endif; ?>

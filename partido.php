@@ -21,8 +21,9 @@ foreach ($equipos as $eq) {
 $local = $partido ? ($equiposPorId[$partido['equipo_local']] ?? null) : null;
 $visit = $partido ? ($equiposPorId[$partido['equipo_visitante']] ?? null) : null;
 
-// La ficha de partido solo existe en modo liga; en modo copa (o partido/equipo inválido) es un 404.
-if (($torneo['modo'] ?? 'copa') !== 'liga' || !$partido || !$local || !$visit) {
+// La ficha de partido está disponible para cualquier copa o liga; si el partido o
+// alguno de los equipos no existe (o no pertenece a esta copa), es un 404.
+if (!$partido || !$local || !$visit) {
     http_response_code(404);
     $titulo_pagina = 'Partido no encontrado';
     require __DIR__ . '/includes/layout_top.php';

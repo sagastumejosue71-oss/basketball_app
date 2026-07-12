@@ -48,7 +48,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'guard
     $nombre = trim((string) $_POST['nombre']);
     $slug = torneos_slugificar((string) ($_POST['slug'] ?: $nombre));
     $deporte = (string) $_POST['deporte'] === 'futbol' ? 'futbol' : 'basketball';
-    $modo = (string) ($_POST['modo'] ?? '') === 'liga' ? 'liga' : 'copa';
     $genero = in_array($_POST['genero'] ?? '', ['femenino', 'masculino'], true) ? $_POST['genero'] : 'mixto';
 
     $fasesElegidas = array_values(array_intersect((array) ($_POST['fases_playoff'] ?? []), FASES_PLAYOFF_CATALOGO));
@@ -90,7 +89,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'guard
             'instagram' => trim((string) $_POST['instagram']),
             'hero_frase' => trim((string) $_POST['hero_frase']),
             'deporte' => $deporte,
-            'modo' => $modo,
             'genero' => $genero,
             'num_equipos' => max(2, (int) $_POST['num_equipos']),
             'fases_playoff' => $fasesElegidas,
@@ -108,8 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'guard
             $_SESSION['torneo_activo_id'] = $idGuardado;
         }
 
-        $etiquetaModo = $modo === 'liga' ? 'Liga' : 'Copa';
-        redirigir_con_mensaje(url('admin/torneos.php'), 'success', $id ? "{$etiquetaModo} actualizada correctamente." : "¡{$etiquetaModo} creada! Ya puedes cargar sus equipos y encuentros.");
+        redirigir_con_mensaje(url('admin/torneos.php'), 'success', $id ? 'Copa o liga actualizada correctamente.' : '¡Copa o liga creada! Ya puedes cargar sus equipos y encuentros.');
     } else {
         $torneoEditar = array_merge($_POST, ['id' => $id, 'fases_playoff' => $fasesElegidas]);
         $accion = $id ? 'editar' : 'nuevo';
@@ -120,13 +117,11 @@ if (($_SERVER['REQUEST_METHOD'] === 'POST') && ($_POST['accion'] ?? '') === 'eli
     csrf_validar();
     $id = (int) $_POST['id'];
     try {
-        $torneoAEliminar = torneos_obtener_por_id($id, $usuarioId);
         torneos_eliminar($id, $usuarioId);
         if (($_SESSION['torneo_activo_id'] ?? null) === $id) {
             unset($_SESSION['torneo_activo_id']);
         }
-        $etiquetaModo = ($torneoAEliminar['modo'] ?? 'copa') === 'liga' ? 'Liga' : 'Copa';
-        redirigir_con_mensaje(url('admin/torneos.php'), 'success', "{$etiquetaModo} eliminada.");
+        redirigir_con_mensaje(url('admin/torneos.php'), 'success', 'Copa o liga eliminada.');
     } catch (RuntimeException $e) {
         redirigir_con_mensaje(url('admin/torneos.php'), 'error', $e->getMessage());
     }
@@ -144,7 +139,6 @@ if (($_SERVER['REQUEST_METHOD'] === 'POST') && ($_POST['accion'] ?? '') === 'reg
 }
 
 $deportePorDefecto = $torneoEditar['deporte'] ?? 'basketball';
-$modoPorDefecto = $torneoEditar['modo'] ?? 'copa';
 $generoPorDefecto = $torneoEditar['genero'] ?? 'mixto';
 $torneos = torneos_listar(false, $usuarioId);
 
@@ -186,23 +180,15 @@ require __DIR__ . '/includes/admin_layout_top.php';
                 </div>
                 <div class="form-text">Solo letras, números y guiones. Tu copa o liga quedará en: <strong id="previewUrlCopa"><?= !empty($torneoEditar['es_predeterminado']) ? e(SITE_ORIGIN . BASE_URL . '/') : e(SITE_ORIGIN . BASE_URL . '/' . ($torneoEditar['slug'] ?? '') . '/') ?></strong></div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-6">
                 <label class="form-label small fw-semibold">Deporte</label>
                 <select name="deporte" id="selectDeporte" class="form-select">
                     <option value="basketball" <?= $deportePorDefecto === 'basketball' ? 'selected' : '' ?>>Basketball</option>
                     <option value="futbol" <?= $deportePorDefecto === 'futbol' ? 'selected' : '' ?>>Fútbol</option>
                 </select>
-                <div class="form-text">Define los valores iniciales de empates y puntos abajo.</div>
+                <div class="form-text">Define los valores iniciales de empates y puntos abajo, y el catálogo de eventos (goles/puntos, tarjetas/faltas) de cada partido.</div>
             </div>
-            <div class="col-md-4">
-                <label class="form-label small fw-semibold">Modo</label>
-                <select name="modo" class="form-select">
-                    <option value="copa" <?= $modoPorDefecto === 'copa' ? 'selected' : '' ?>>Copa (marcador final)</option>
-                    <option value="liga" <?= $modoPorDefecto === 'liga' ? 'selected' : '' ?>>Liga (con jugadores, goles y tarjetas)</option>
-                </select>
-                <div class="form-text">En modo liga puedes cargar la plantilla de jugadores y la ficha de cada partido.</div>
-            </div>
-            <div class="col-md-4">
+            <div class="col-md-6">
                 <label class="form-label small fw-semibold">Género</label>
                 <select name="genero" class="form-select">
                     <option value="mixto" <?= $generoPorDefecto === 'mixto' ? 'selected' : '' ?>>Mixto / no aplica</option>
@@ -337,7 +323,6 @@ require __DIR__ . '/includes/admin_layout_top.php';
             <div class="card-suave p-3 h-100 d-flex flex-column <?= ($_SESSION['torneo_activo_id'] ?? null) === $t['id'] ? 'border border-2' : '' ?>" style="<?= ($_SESSION['torneo_activo_id'] ?? null) === $t['id'] ? 'border-color:var(--color-primario) !important;' : '' ?>">
                 <div class="d-flex align-items-center gap-2 mb-2">
                     <span class="badge rounded-pill text-bg-light border small"><?= $t['deporte'] === 'futbol' ? '⚽ Fútbol' : '🏀 Basketball' ?></span>
-                    <?php if (($t['modo'] ?? 'copa') === 'liga'): ?><span class="badge rounded-pill text-bg-light border small">Liga</span><?php endif; ?>
                     <?php if (($t['genero'] ?? 'mixto') !== 'mixto'): ?><span class="badge rounded-pill text-bg-light border small"><?= $t['genero'] === 'femenino' ? 'Femenino' : 'Masculino' ?></span><?php endif; ?>
                     <?php if (!$t['activo']): ?><span class="badge rounded-pill text-bg-secondary small">Inactiva</span><?php endif; ?>
                     <?php if ($t['es_predeterminado']): ?><span class="badge rounded-pill text-bg-warning small">Predeterminada</span><?php endif; ?>

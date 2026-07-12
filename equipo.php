@@ -37,13 +37,9 @@ foreach ($tabla as $fila) {
 $partidosEquipo = array_values(array_filter($partidos, fn($p) => (int) $p['equipo_local'] === $id || (int) $p['equipo_visitante'] === $id));
 usort($partidosEquipo, fn($a, $b) => strcmp($a['fecha'] . $a['hora'], $b['fecha'] . $b['hora']));
 
-$esLiga = ($torneo['modo'] ?? 'copa') === 'liga';
-$jugadoresEquipo = [];
-if ($esLiga) {
-    $jugadoresTodos = db_leer('jugadores', $torneo['id']);
-    $jugadoresEquipo = array_values(array_filter($jugadoresTodos, fn($j) => (int) $j['equipo_id'] === $id && !empty($j['activo'])));
-    usort($jugadoresEquipo, fn($a, $b) => $a['dorsal'] <=> $b['dorsal']);
-}
+$jugadoresTodos = db_leer('jugadores', $torneo['id']);
+$jugadoresEquipo = array_values(array_filter($jugadoresTodos, fn($j) => (int) $j['equipo_id'] === $id && !empty($j['activo'])));
+usort($jugadoresEquipo, fn($a, $b) => $a['dorsal'] <=> $b['dorsal']);
 
 $titulo_pagina = $equipo['nombre'] . ' — ' . $torneo['nombre'];
 $pagina_activa = 'equipos';
@@ -102,10 +98,9 @@ require __DIR__ . '/includes/layout_top.php';
         </div>
         <?php endif; ?>
 
-        <?php if ($esLiga): ?>
         <h4 class="mb-3"><?= e(forma_genero($torneo['genero'] ?? null, 'Jugadores', 'Jugadoras')) ?></h4>
         <?php if (empty($jugadoresEquipo)): ?>
-            <p class="text-muted small mb-5">Todavía no hay <?= e(mb_strtolower(forma_genero($torneo['genero'] ?? null, 'jugadores', 'jugadoras'))) ?> registrados para este equipo.</p>
+            <p class="text-muted small mb-5">Todavía no hay <?= e(mb_strtolower(forma_genero($torneo['genero'] ?? null, 'jugadores', 'jugadoras'))) ?> <?= e(forma_genero($torneo['genero'] ?? null, 'registrados', 'registradas')) ?> para este equipo.</p>
         <?php else: ?>
         <div class="row row-cols-2 row-cols-md-4 g-3 mb-5">
             <?php foreach ($jugadoresEquipo as $j): ?>
@@ -118,11 +113,10 @@ require __DIR__ . '/includes/layout_top.php';
             <?php endforeach; ?>
         </div>
         <?php endif; ?>
-        <?php endif; ?>
 
         <h4 class="mb-3">Partidos de <?= e($equipo['nombre']) ?></h4>
         <div class="row row-cols-1 row-cols-lg-2 g-3">
-            <?php foreach ($partidosEquipo as $p): $local = $equiposPorId[$p['equipo_local']]; $visit = $equiposPorId[$p['equipo_visitante']]; $jugado = $p['estado'] === 'jugado'; $clicable = ($torneo['modo'] ?? 'copa') === 'liga' && $jugado; ?>
+            <?php foreach ($partidosEquipo as $p): $local = $equiposPorId[$p['equipo_local']]; $visit = $equiposPorId[$p['equipo_visitante']]; $jugado = $p['estado'] === 'jugado'; $clicable = $jugado; ?>
             <div class="col">
                 <div class="partido-card h-100 <?= $clicable ? 'fila-clicable' : '' ?>" <?= $clicable ? 'data-href="' . e(url_copa('partido.php?id=' . $p['id'])) . '"' : '' ?>>
                     <div class="d-flex justify-content-between align-items-center mb-2">

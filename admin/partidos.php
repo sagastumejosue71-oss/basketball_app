@@ -28,9 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id = (int) $_POST['id'];
         $partidos = array_values(array_filter($partidos, fn($p) => $p['id'] !== $id));
         db_guardar('partidos', $partidos, $torneo['id']);
-        if (($torneo['modo'] ?? 'copa') === 'liga') {
-            db_guardar_eventos_partido($torneo['id'], $id, []);
-        }
+        db_guardar_eventos_partido($torneo['id'], $id, []);
         redirigir_con_mensaje(url('admin/partidos.php'), 'success', 'Encuentro eliminado correctamente.');
     }
 
@@ -307,7 +305,7 @@ require __DIR__ . '/includes/admin_layout_top.php';
             <h6 class="text-muted text-uppercase small fw-bold mb-2 mt-4">Jornada <?= $numJornada ?></h6>
             <div class="row row-cols-1 row-cols-lg-2 g-3 mb-2">
                 <?php foreach ($lista as $p): ?>
-                    <?= admin_tarjeta_partido($p, $equiposPorId, $torneo) ?>
+                    <?= admin_tarjeta_partido($p, $equiposPorId) ?>
                 <?php endforeach; ?>
             </div>
             <?php endforeach; ?>
@@ -330,7 +328,7 @@ require __DIR__ . '/includes/admin_layout_top.php';
             <?php else: ?>
                 <div class="row row-cols-1 row-cols-lg-2 g-3">
                     <?php foreach ($playoffsPorFase[$f] as $p): ?>
-                        <?= admin_tarjeta_partido($p, $equiposPorId, $torneo) ?>
+                        <?= admin_tarjeta_partido($p, $equiposPorId) ?>
                     <?php endforeach; ?>
                 </div>
             <?php endif; ?>

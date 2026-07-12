@@ -31,11 +31,15 @@ const COLUMNAS_BOOLEANAS_POR_TABLA = [
     'jugadores' => ['activo'],
 ];
 
+// 'modo' (copa/liga) ya NO está aquí a propósito: hasta ahora era el interruptor que
+// activaba jugadores/eventos/PDF solo en "modo liga"; ahora esas funciones están
+// disponibles siempre, así que la columna quedó sin uso (se deja en la tabla sin tocar,
+// no hace falta migrarla) y torneos_guardar() ya no la lee ni la escribe.
 const COLUMNAS_TORNEO = [
     'slug', 'nombre', 'subtitulo', 'temporada', 'descripcion', 'sede_principal', 'logo',
     'color_primario', 'color_secundario', 'color_acento', 'fecha_inicio', 'fecha_fin', 'formato',
     'instagram', 'hero_frase', 'deporte', 'num_equipos', 'fases_playoff', 'permite_empates',
-    'puntos_victoria', 'puntos_empate', 'puntos_derrota', 'es_predeterminado', 'activo', 'modo',
+    'puntos_victoria', 'puntos_empate', 'puntos_derrota', 'es_predeterminado', 'activo',
     'genero',
 ];
 

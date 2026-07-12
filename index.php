@@ -33,15 +33,11 @@ foreach ($equipos as $eq) {
     $equiposPorId[$eq['id']] = $eq;
 }
 
-$esLiga = ($torneo['modo'] ?? 'copa') === 'liga';
 $deporte = $torneo['deporte'] ?? null;
 $basketball = es_basketball($deporte);
-$topGoleadores = [];
-if ($esLiga) {
-    $jugadores = db_leer('jugadores', $torneo['id']);
-    $eventos = db_leer('partido_eventos', $torneo['id']);
-    $topGoleadores = array_slice(calcular_goleadores($eventos, $jugadores, $equiposPorId, $deporte), 0, 5);
-}
+$jugadores = db_leer('jugadores', $torneo['id']);
+$eventos = db_leer('partido_eventos', $torneo['id']);
+$topGoleadores = array_slice(calcular_goleadores($eventos, $jugadores, $equiposPorId, $deporte), 0, 5);
 
 $patrocOficiales = array_values(array_filter($patrocinadores, fn($p) => $p['nivel'] === 'oficial'));
 $patrocOro = array_values(array_filter($patrocinadores, fn($p) => $p['nivel'] === 'oro'));
@@ -130,8 +126,8 @@ require __DIR__ . '/includes/layout_top.php';
     </div>
 </section>
 
-<!-- GOLEADORES (solo modo liga) -->
-<?php if ($esLiga && !empty($topGoleadores)): ?>
+<!-- GOLEADORES (solo si hay eventos cargados) -->
+<?php if (!empty($topGoleadores)): ?>
 <section class="seccion pt-0" id="goleadores">
     <div class="container">
         <div class="d-flex flex-wrap justify-content-between align-items-end mb-4 seccion-titulo">

@@ -9,9 +9,8 @@ require_once __DIR__ . '/includes/torneo_actual.php';
 
 $equipos = db_leer('equipos', $torneo['id']);
 $partidos = db_leer('partidos', $torneo['id']);
-$esLiga = ($torneo['modo'] ?? 'copa') === 'liga';
 $deporte = $torneo['deporte'] ?? null;
-$eventos = $esLiga ? db_leer('partido_eventos', $torneo['id']) : [];
+$eventos = db_leer('partido_eventos', $torneo['id']);
 $tabla = calcular_tabla($equipos, $partidos, $torneo, $eventos);
 
 $explicacionPuntos = $torneo['permite_empates']
@@ -47,7 +46,7 @@ require __DIR__ . '/includes/layout_top.php';
                         <th class="text-center">PF</th>
                         <th class="text-center">PC</th>
                         <th class="text-center">DIF</th>
-                        <?php if ($esLiga): ?><th class="text-center" title="<?= e(etiqueta_faltas_leves($deporte)) ?>"><?= e(etiqueta_ta($deporte)) ?></th><th class="text-center" title="<?= e(etiqueta_faltas_graves($deporte)) ?>"><?= e(etiqueta_tr($deporte)) ?></th><?php endif; ?>
+                        <th class="text-center" title="<?= e(etiqueta_faltas_leves($deporte)) ?>"><?= e(etiqueta_ta($deporte)) ?></th><th class="text-center" title="<?= e(etiqueta_faltas_graves($deporte)) ?>"><?= e(etiqueta_tr($deporte)) ?></th>
                         <th class="text-center">PTS</th>
                         <th>Racha</th>
                     </tr>
@@ -75,10 +74,8 @@ require __DIR__ . '/includes/layout_top.php';
                         <td class="text-center" data-label="PF"><?= $fila['pf'] ?></td>
                         <td class="text-center" data-label="PC"><?= $fila['pc'] ?></td>
                         <td class="text-center fw-semibold <?= $fila['dif'] >= 0 ? 'text-success' : 'text-danger' ?>" data-label="DIF"><?= $fila['dif'] >= 0 ? '+' : '' ?><?= $fila['dif'] ?></td>
-                        <?php if ($esLiga): ?>
                         <td class="text-center" data-label="<?= e(etiqueta_ta($deporte)) ?>"><?= $fila['tarjetas_amarillas'] ?></td>
                         <td class="text-center" data-label="<?= e(etiqueta_tr($deporte)) ?>"><?= $fila['tarjetas_rojas'] ?></td>
-                        <?php endif; ?>
                         <td class="text-center fw-bold" data-label="PTS"><?= $fila['pts'] ?></td>
                         <td data-label="Racha">
                             <?php if (empty($fila['racha'])): ?>
@@ -114,10 +111,8 @@ require __DIR__ . '/includes/layout_top.php';
                 <div class="small text-muted"><strong class="text-dark">PF</strong> Puntos a favor</div>
                 <div class="small text-muted"><strong class="text-dark">PC</strong> Puntos en contra</div>
                 <div class="small text-muted"><strong class="text-dark">DIF</strong> Diferencia</div>
-                <?php if ($esLiga): ?>
                 <div class="small text-muted"><strong class="text-dark"><?= e(etiqueta_ta($deporte)) ?></strong> <?= e(etiqueta_faltas_leves($deporte)) ?></div>
                 <div class="small text-muted"><strong class="text-dark"><?= e(etiqueta_tr($deporte)) ?></strong> <?= e(etiqueta_faltas_graves($deporte)) ?></div>
-                <?php endif; ?>
                 <div class="small text-muted"><strong class="text-dark">PTS</strong> Puntos en la tabla</div>
             </div>
         </div>
