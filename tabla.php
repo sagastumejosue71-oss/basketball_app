@@ -100,6 +100,27 @@ require __DIR__ . '/includes/layout_top.php';
             <p class="small text-muted mb-0"><span class="d-inline-block" style="width:10px;height:10px;background:var(--color-acento);border-radius:2px;"></span> Zona de Playoffs (Top 4)</p>
             <p class="small text-muted mb-0"><?= e($explicacionPuntos) ?></p>
         </div>
+
+        <div class="card-suave p-3 mt-3">
+            <p class="small fw-semibold text-muted mb-2">¿Qué significa cada columna?</p>
+            <div class="row row-cols-2 row-cols-md-4 g-2">
+                <div class="small text-muted"><strong class="text-dark">PJ</strong> Partidos jugados</div>
+                <div class="small text-muted"><strong class="text-dark">PG</strong> Partidos ganados</div>
+                <?php if ($torneo['permite_empates']): ?>
+                <div class="small text-muted"><strong class="text-dark">PE</strong> Partidos empatados</div>
+                <?php endif; ?>
+                <div class="small text-muted"><strong class="text-dark">PP</strong> Partidos perdidos</div>
+                <div class="small text-muted"><strong class="text-dark">%G</strong> Porcentaje de victorias</div>
+                <div class="small text-muted"><strong class="text-dark">PF</strong> Puntos a favor</div>
+                <div class="small text-muted"><strong class="text-dark">PC</strong> Puntos en contra</div>
+                <div class="small text-muted"><strong class="text-dark">DIF</strong> Diferencia</div>
+                <?php if ($esLiga): ?>
+                <div class="small text-muted"><strong class="text-dark"><?= e(etiqueta_ta($deporte)) ?></strong> <?= e(etiqueta_faltas_leves($deporte)) ?></div>
+                <div class="small text-muted"><strong class="text-dark"><?= e(etiqueta_tr($deporte)) ?></strong> <?= e(etiqueta_faltas_graves($deporte)) ?></div>
+                <?php endif; ?>
+                <div class="small text-muted"><strong class="text-dark">PTS</strong> Puntos en la tabla</div>
+            </div>
+        </div>
     </div>
 </section>
 
